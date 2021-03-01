@@ -1,0 +1,35 @@
+#pragma once
+#include <stdint.h>
+#include <type_traits>
+#include <array>
+#include "misc.h"
+
+
+// Bit Genie uses the little endian rank-file mapping (LERF) 
+// https://www.chessprogramming.org/Square_Mapping_Consideration
+enum class Square : uint8_t {
+  A1, B1, C1, D1, E1, F1, G1, H1, 
+  A2, B2, C2, D2, E2, F2, G2, H2,
+  A3, B3, C3, D3, E3, F3, G3, H3,
+  A4, B4, C4, D4, E4, F4, G4, H4,
+  A5, B5, C5, D5, E5, F5, G5, H5,
+  A6, B6, C6, D6, E6, F6, G6, H6,
+  A7, B7, C7, D7, E7, F7, G7, H7,
+  A8, B8, C8, D8, E8, F8, G8, H8, 
+  total, bad
+};
+
+// Number of squares that would be skipped
+// if moved in a particular direction. Relies 
+// on LERF mapping (enum Square)
+// https://www.chessprogramming.org/Square_Mapping_Consideration
+enum class Direction : int8_t {
+  north = 8,  south = -8, 
+  east  = 1,  west  = -1,
+};
+
+inline Square operator++(Square& sq, int) {
+  Square temp = sq;
+  sq = static_cast<Square>(to_underlying(sq) + 1);
+  return temp;
+}
