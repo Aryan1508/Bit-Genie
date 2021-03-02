@@ -1,5 +1,5 @@
-#include "position_history.h"
 #include "position.h"
+#include "position_history.h"
 
 PositionHistory::PositionHistory() 
   : total(0)
@@ -7,6 +7,12 @@ PositionHistory::PositionHistory()
   history.fill(ZobristKey());
 }
 
-void PositionHistory::add(Position const& position) {
+void PositionHistory::reset() 
+{
+  total = 0;
+}
+
+void PositionHistory::add(Position const& position) 
+{
   history[total++] = position.hash();
 }

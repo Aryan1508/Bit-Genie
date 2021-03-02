@@ -1,12 +1,16 @@
 #pragma once
+#include <array>
 #include "bitboard.h"
+#include "castle_rights.h"
+#include "piece_manager.h"
 #include "piece.h"
+#include "position_history.h"
+#include <string_view>
 #include "Square.h"
 #include "zobrist.h"
-#include <array>
-#include <string_view>
 
-class Position {
+class Position 
+{
 public:
   Position();
 
@@ -14,22 +18,21 @@ public:
   // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
   Position(std::string_view);
 
+  void parse_fen(std::string_view) const;
+
   ZobristKey hash() const;
 private:
-  void reset_bitboards();
-  void reset_squares();
+  // Reset ep_sq to Square::Bad
   void reset_enpassant();
+
+  // Reset all position attributes
   void reset(); 
 
 private:
-  // All pieces(with color) on the board indexed by Square
-  std::array<Piece, total_squares> squares;
-
-  // Bitboards of pieces (pawn, knight etc) indexed by Piece::Type
-  std::array<Bitboard, total_pieces> bitboards;
-
-  // Total occupancy a each color, indexed by Piece::Color 
-  std::array<Bitboard, total_colors> colors;
+  // 'pieces' answers the question "what piece stands on what square"
+  // and uses btiboards internally to manage those pieces and perform 
+  // functions like move-generation
+  PieceManager pieces;
 
   // Is any en-passant possible in the position? ep_sq
   // holds the value of that Square
@@ -37,4 +40,9 @@ private:
 
   // Zobrist-hash of the current position 
   ZobristKey key;
+
+  // Total history of all previously-encountered
+  // positions. Used for un-making moves
+  // and detecting 3-fold repetitions
+  PositionHistory history;
 };

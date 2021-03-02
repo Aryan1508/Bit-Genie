@@ -1,9 +1,10 @@
 #pragma once
-#include "misc.h"
 #include "bitmask.h"
 #include <iostream>
+#include "misc.h"
 
-class Bitboard {
+class Bitboard
+{
 public:
   Bitboard();
 
@@ -56,7 +57,8 @@ public:
   //  . . . . . .  -->  . . . . . .  BUT NOT  1 . . . . .  
   //  . . . . . 1       . . . . . .           . . . . . .
   template<Direction dir>
-  Bitboard shift() const {
+  Bitboard shift() const
+  {
     return dir == Direction::north ? bits << 8
       :    dir == Direction::south ? bits >> 8
       :    dir == Direction::east  ? (bits << 1) & ~BitMask::file_a
@@ -64,7 +66,13 @@ public:
   }
 
   // Check whether the bit at the given square is set
-  bool test_bit(const Square) const;
+  bool test(const Square) const;
+
+  // Set a single bit
+  void set(const Square);
+
+  // Reset to 0
+  void reset();
 
   // Reverse the byte-order of the bitboard
   Bitboard reverse_bytes() const;

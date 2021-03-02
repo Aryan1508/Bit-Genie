@@ -1,7 +1,8 @@
 #pragma once
 #include <stdint.h>
 
-namespace BitMask {
+namespace BitMask
+{
   constexpr uint64_t file_a = 0x0101010101010101;
   constexpr uint64_t file_b = file_a << 1;
   constexpr uint64_t file_c = file_b << 1;
@@ -25,5 +26,4 @@ namespace BitMask {
   constexpr uint64_t rank6 = rank5 << 8;
   constexpr uint64_t rank7 = rank6 << 8;
   constexpr uint64_t rank8 = rank7 << 8;
-  constexpr uint64_t center_sqs = 0x1818000000;
 }

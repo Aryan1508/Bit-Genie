@@ -3,7 +3,8 @@
 
 // Hash of a chess position 
 // https://en.wikipedia.org/wiki/Zobrist_hashing
-class ZobristKey {
+class ZobristKey
+{
 public:
   ZobristKey();
 
@@ -14,6 +15,9 @@ public:
   void hash_side();
   void hash_piece(const Square, const Piece);
   void hash_castle(const Bitboard old_rooks, const Bitboard new_rooks);
+
+  // reset the hash to 0
+  void reset();
 
   // Initialize random keys for hashing
   static void init();

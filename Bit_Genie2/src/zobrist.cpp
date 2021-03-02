@@ -1,14 +1,15 @@
-#include "zobrist.h"
-#include "piece.h"
-#include "Square.h"
-#include "misc.h"
+#include <array>
 #include "board.h"
 #include "bitboard.h"
-#include <array>
 #include <iostream>
+#include "misc.h"
+#include "piece.h"
 #include <random>
+#include "Square.h"
+#include "zobrist.h"
 
-namespace {
+namespace
+{
   //              piece y of color x on square sq
   // indexed by [piece_type][piece_color][square]
   uint64_t piece_keys[total_pieces][total_colors][total_squares];
@@ -26,23 +27,33 @@ ZobristKey::ZobristKey()
   : hash(0)
 {}
 
-void ZobristKey::hash_side() {
+void ZobristKey::hash_side()
+{
   hash ^= color_key;
 }
 
-void ZobristKey::hash_piece(Square sq, Piece piece) {
-  hash ^= piece_keys[piece.type()][piece.color()][to_underlying(sq)];
+void ZobristKey::hash_piece(Square sq, Piece piece)
+{
+  hash ^= piece_keys[piece.type()][piece.color()][to_int(sq)];
 }
 
-void ZobristKey::hash_castle(const Bitboard old_rooks, const Bitboard new_rooks) {
+void ZobristKey::hash_castle(const Bitboard old_rooks, const Bitboard new_rooks)
+{
   Bitboard removed_rooks = old_rooks ^ new_rooks;
   while (removed_rooks) {
     const Square removed_rook = removed_rooks.pop_lsb();
-    hash ^= castle_keys[removed_rook];
+    hash ^= castle_keys[to_int(removed_rook)];
   }
 }
 
-void ZobristKey::init() {
+void ZobristKey::reset()
+{
+  hash = 0;
+}
+
+void ZobristKey::init()
+{
+  printf("Initializing Zobrist keys... ");
   std::mt19937 gen(0);
   std::uniform_int_distribution<uint64_t> dist(10, std::numeric_limits<uint64_t>::max());
 
@@ -51,14 +62,14 @@ void ZobristKey::init() {
   for (int i = 0; i < total_files; i++)
     enpassant_keys[i] = dist(gen);
 
-  for (int i = 0; i < total_pieces; i++) {
-    for (int j = 0; j < total_squares; j++) {
+  for (int i = 0; i < total_pieces; i++) 
+  {
+    for (int j = 0; j < total_squares; j++)
+    {
+      castle_keys[j] = dist(gen);
       piece_keys[i][Piece::white][j] = dist(gen);
       piece_keys[i][Piece::black][j] = dist(gen);
     }
   }
-
-  for (int i = 0; i < total_castle_types; i++)
-    for (int j = 0; j < total_colors; j++)
-      castle_keys[i][j] = dist(gen);
+  printf("done.\n");
 }

@@ -1,9 +1,10 @@
 #pragma once
+#include <array>
 #include "misc.h"
 #include "zobrist.h"
-#include <array>
 
-class PositionHistory {
+class PositionHistory
+{
 public:
   PositionHistory();
 
@@ -11,6 +12,8 @@ public:
   // the array
   void add(Position const&);
 
+  // Reset total to 0
+  void reset();
 private:
   std::size_t total;
   std::array<ZobristKey, 256> history;
