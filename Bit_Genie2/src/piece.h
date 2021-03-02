@@ -10,10 +10,17 @@ public:
 
   Piece(); // Empty piece
   Piece(const Type, const Color);
+  
+  // Create piece from fen-string piece letter
+  Piece(const char);
 
-  Color color() const;
-  Type  type() const;
-  bool is_empty() const;
+  Color get_color() const;
+  Type  get_type() const;
+  bool  is_empty() const;
+
+  // Generate a letter for a piece 
+  // white pawn (p), empty(.)
+  char letter() const;
 public:
   enum Color: uint8_t
   {
@@ -26,6 +33,14 @@ public:
     rook    , queen , king, empty
   };
 private:
+  // Functions to get the color
+  // and type of a fen-string piece
+  static Type  get_type(const char);
+  static Color get_color(const char);
+
+private:
+  void create(const Type, const Color);
+
   uint8_t data;
 };
 

@@ -34,7 +34,7 @@ void ZobristKey::hash_side()
 
 void ZobristKey::hash_piece(Square sq, Piece piece)
 {
-  hash ^= piece_keys[piece.type()][piece.color()][to_int(sq)];
+  hash ^= piece_keys[piece.get_type()][piece.get_color()][to_int(sq)];
 }
 
 void ZobristKey::hash_castle(const Bitboard old_rooks, const Bitboard new_rooks)

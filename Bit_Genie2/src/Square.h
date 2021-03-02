@@ -1,8 +1,8 @@
 #pragma once
-#include <stdint.h>
-#include <type_traits>
 #include <array>
 #include "misc.h"
+#include <stdint.h>
+#include <type_traits>
 
 
 // Bit Genie uses the little endian rank-file mapping (LERF) 
@@ -30,9 +30,35 @@ enum class Direction : int8_t
   east  = 1,  west  = -1,
 };
 
+inline Square flip_square(const Square sq)
+{
+  return static_cast<Square>(to_int(sq) ^ 56);
+}
+
 inline Square operator++(Square& sq, int) 
 {
   Square temp = sq;
   sq = static_cast<Square>(to_int(sq) + 1);
   return temp;
 }
+
+inline Square& operator+=(Square& sq, int inc)
+{
+  sq = static_cast<Square>(to_int(sq) + inc);
+  return sq;
+}
+
+inline bool is_ok(Square sq)
+{
+  return sq >= Square::A1 && sq <= Square::H8;
+}
+
+// Little-trick to convert a string square to 
+// an integer index from enum Square
+// Example : 'e4' -> Square::E4 -> 28
+inline Square strsq_toi(std::string_view sq) {
+  return static_cast <Square>((sq[0] - 97) + ((sq[1] - 49) * 8));
+}
+
+// Verify that a square is valid (useful for parsing fen)
+bool is_valid_sq(std::string_view);

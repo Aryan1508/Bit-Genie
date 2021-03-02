@@ -151,11 +151,14 @@
     <ClCompile Include="src\board.cpp" />
     <ClCompile Include="src\piece_manager.cpp" />
     <ClCompile Include="src\castle_rights.cpp" />
+    <ClCompile Include="src\string_parse.cpp" />
+    <ClCompile Include="src\square.cpp" />
     <ClCompile Include="src\zobrist.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\bitboard.h" />
     <ClInclude Include="src\castle_rights.h" />
+    <ClInclude Include="src\string_parse.h" />
     <ClInclude Include="src\piece_manager.h" />
     <ClInclude Include="src\misc.h" />
     <ClInclude Include="src\board.h" />

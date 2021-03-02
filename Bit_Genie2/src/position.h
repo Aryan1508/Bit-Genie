@@ -18,13 +18,11 @@ public:
   // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
   Position(std::string_view);
 
-  void parse_fen(std::string_view) const;
-
+  // Return the current hashed value
+  // of the position
   ZobristKey hash() const;
-private:
-  // Reset ep_sq to Square::Bad
-  void reset_enpassant();
 
+private:
   // Reset all position attributes
   void reset(); 
 
@@ -34,10 +32,6 @@ private:
   // functions like move-generation
   PieceManager pieces;
 
-  // Is any en-passant possible in the position? ep_sq
-  // holds the value of that Square
-  Square ep_sq;
-
   // Zobrist-hash of the current position 
   ZobristKey key;
 
@@ -45,4 +39,7 @@ private:
   // positions. Used for un-making moves
   // and detecting 3-fold repetitions
   PositionHistory history;
+
+  // The side which will play the next move
+  Piece::Color side_to_play;
 };
