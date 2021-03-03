@@ -42,7 +42,7 @@ public:
   // Check if number of bits set in bitboard are > 1
   bool has_multiple() const;
 
-  // Shift all the bits in the given direction according to LERF Square mapping
+  // Shift all the bits in the given direction
   //
   // Example 1
   //       shift<Direction::north>
@@ -61,8 +61,8 @@ public:
   {
     return dir == Direction::north ? bits << 8
       :    dir == Direction::south ? bits >> 8
-      :    dir == Direction::east  ? (bits << 1) & ~BitMask::file_a
-      :    /* west */ (bits >> 1) & ~BitMask::file_h;
+      :    dir == Direction::east  ? (bits << 1) & BitMask::not_file_a
+      :    /* west */ (bits >> 1) & BitMask::not_file_h;
   }
 
   // Check whether the bit at the given square is set

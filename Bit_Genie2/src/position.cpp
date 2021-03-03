@@ -82,6 +82,6 @@ std::ostream& operator<<(std::ostream& o, Position const& position)
   o << "\nside to play : " << position.side_to_play;
   o << "\ncastle rights: " << position.castle_rights;
   o << "\nen-passant sq: " << position.pieces.ep_sq;
-  
+  o << "\nhalf-moves   : " << position.half_moves;
   return o;
 }
