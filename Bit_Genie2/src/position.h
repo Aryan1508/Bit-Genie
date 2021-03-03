@@ -14,18 +14,27 @@ class Position
 public:
   Position();
 
-  // Create a new position with a Fen string 
+  // Parse a fen 
   // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
-  Position(std::string_view);
+  bool set_fen(std::string_view);
 
   // Return the current hashed value
   // of the position
   ZobristKey hash() const;
 
+  friend std::ostream& operator<<(std::ostream&, Position const&);
 private:
   // Reset all position attributes
   void reset(); 
 
+  // set side_to_play from 'w' -> Piece::white or 'b' -> Piece::black
+  bool parse_fen_side(std::string_view);
+
+  // set halfmove_nb from fen 
+  bool parse_fen_hmn(std::string_view);
+
+  // (set to 0)
+  void reset_halfmoves();
 private:
   // 'pieces' answers the question "what piece stands on what square"
   // and uses btiboards internally to manage those pieces and perform 
@@ -40,6 +49,12 @@ private:
   // and detecting 3-fold repetitions
   PositionHistory history;
 
+  // Manages castle rights 
+  CastleRights castle_rights;
+
   // The side which will play the next move
   Piece::Color side_to_play;
+
+  // Total number of half-moves played in the position
+  int half_moves;
 };

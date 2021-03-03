@@ -48,7 +48,7 @@ inline Square& operator+=(Square& sq, int inc)
   return sq;
 }
 
-inline bool is_ok(Square sq)
+inline bool is_ok(const Square sq)
 {
   return sq >= Square::A1 && sq <= Square::H8;
 }
@@ -62,3 +62,6 @@ inline Square strsq_toi(std::string_view sq) {
 
 // Verify that a square is valid (useful for parsing fen)
 bool is_valid_sq(std::string_view);
+
+// print out a square label, example `a1`
+std::ostream& operator<<(std::ostream&, const Square);

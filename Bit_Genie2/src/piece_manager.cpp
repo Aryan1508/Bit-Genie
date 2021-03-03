@@ -38,8 +38,19 @@ void PieceManager::reset()
   ep_sq = Square::bad;
 }
 
-bool PieceManager::set_ep_square(std::string_view sq)
+void PieceManager::reset_ep()
 {
+  ep_sq = Square::bad;
+}
+
+bool PieceManager::parse_fen_ep(std::string_view sq)
+{
+  reset_ep();
+  if (sq == "-")
+  {
+    return true;
+  }
+
   if (!is_valid_sq(sq))
   {
     return false;
@@ -96,9 +107,10 @@ bool PieceManager::add_rank(Square& counter, std::string_view rank)
       return false;
     }
   }
+  return true;
 }
 
-bool PieceManager::set_pieces(std::string_view fen)
+bool PieceManager::parse_fen_board(std::string_view fen)
 {
   reset();
   // pieces fen cannot contain whitespaces
@@ -115,9 +127,10 @@ bool PieceManager::set_pieces(std::string_view fen)
   for (auto const& rank : split_string(fen, '/'))
   {
     if (!add_rank(square_counter, rank))
+    {
       return false;
+    }
   }
-
   return true;
 }
 

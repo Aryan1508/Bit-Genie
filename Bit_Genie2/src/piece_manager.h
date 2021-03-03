@@ -15,11 +15,11 @@ public:
 
   // Set the en-passant square from a string-square
   // example sq -> 'e4'
-  bool set_ep_square(std::string_view);
+  bool parse_fen_ep(std::string_view);
 
   // Initialize bitboards and squares from 
   // fen for pieces
-  bool set_pieces(std::string_view);
+  bool parse_fen_board(std::string_view);
 
   friend std::ostream& operator<<(std::ostream&, PieceManager const&);
 private:
@@ -36,6 +36,8 @@ private:
   // Return value is to check if string is invalid
   bool add_rank(Square& counter, std::string_view);
 
+  // Set ep to Square::bad
+  void reset_ep();
 public:
   // Total occupancy(Bitboards) of White / Black
   std::array<Bitboard, total_colors> colors;

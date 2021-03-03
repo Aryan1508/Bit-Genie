@@ -1,4 +1,5 @@
 #include "Square.h"
+#include "board.h"
 
 namespace
 {
@@ -28,4 +29,14 @@ bool is_valid_sq(std::string_view sq)
   return verify_sq_size(sq)
      &&  verify_sq_file(sq[0])
      &&  verify_sq_rank(sq[1]);
+}
+
+std::ostream& operator<<(std::ostream& o, const Square sq)
+{
+  if (sq == Square::bad)
+  {
+    return o << '-';
+  }
+  assert(is_ok(sq));
+  return o << get_square_file(sq) << get_square_rank(sq);
 }

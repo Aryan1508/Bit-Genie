@@ -9,3 +9,6 @@ enum class Rank : uint8_t { one, two, three, four, five, six, seven, eight, tota
 
 Rank get_square_rank(const Square);
 File get_square_file(const Square);
+
+std::ostream& operator<<(std::ostream&, const File);
+std::ostream& operator<<(std::ostream&, const Rank);

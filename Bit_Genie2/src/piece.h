@@ -30,7 +30,7 @@ public:
   enum Type : uint8_t
   {
     pawn = 0, knight, bishop,
-    rook    , queen , king, empty
+    rook    , queen , king, empty = 255
   };
 private:
   // Functions to get the color
@@ -44,6 +44,7 @@ private:
   uint8_t data;
 };
 
+std::ostream& operator<<(std::ostream&, const Piece::Color);
 std::ostream& operator<<(std::ostream&, const Piece);
 
 //     Piece structure ( 8 bits)

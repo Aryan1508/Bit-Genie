@@ -12,7 +12,8 @@ void CastleRights::reset()
   rooks.reset();
 }
 
-bool CastleRights::set(const char right) {
+bool CastleRights::set(const char right) 
+{
   if      (right == 'k') rooks.set(Square::H8);
   else if (right == 'q') rooks.set(Square::A8);
   else if (right == 'K') rooks.set(Square::H1);
@@ -22,28 +23,50 @@ bool CastleRights::set(const char right) {
   return true;
 }
 
-bool CastleRights::set(std::string_view rights)
+//  k -> black can castle short
+//  q -> black can castle long
+//  K -> white can castle short
+//  Q -> white can castle long
+bool CastleRights::parse_fen(std::string_view rights)
 {
-  if (rights.size() == 0)
-    return false;
+  reset();
+  if (rights == "-")
+  {
+    return true;
+  }
 
-  // In case of an invalid  string,
-  // the original bitboard  isn't changed
-  Bitboard original = rooks;
+  if (rights.size() == 0)
+  {
+    return false;
+  }
 
   for (const char right : rights) 
   {
-    if (!set(right)) {
-      // Invalid character encountered, reset to original 
-      // form and return false
-      rooks = original;
+    if (!set(right)) 
+    {
       return false;
     }
   }
   return true;
 }
 
-//  k -> black can castle short
-//  q -> black can castle long
-//  K -> white can castle short
-//  Q -> white can castle long
+std::ostream& operator<<(std::ostream& o, const CastleRights rights)
+{
+  if (rights.rooks.test(Square::H1))
+  {
+    o << 'K';
+  }
+  if (rights.rooks.test(Square::A1))
+  {
+    o << 'Q';
+  }
+  if (rights.rooks.test(Square::H8))
+  {
+    o << 'k';
+  }
+  if (rights.rooks.test(Square::A8))
+  {
+    o << 'q';
+  }
+  return o;
+}

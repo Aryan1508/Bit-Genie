@@ -18,9 +18,9 @@ public:
   // `Kq` (white short, black long)
   // `kQ` (black short, white long)
   // return value is to check validity of fen
-  bool set(std::string_view);
+  bool parse_fen(std::string_view);
 
-  Bitboard data() const { return rooks; }
+  friend std::ostream& operator<<(std::ostream&, const CastleRights);
 private:
   // Set a single castle right
   // example:

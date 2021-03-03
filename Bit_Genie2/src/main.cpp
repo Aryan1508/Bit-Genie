@@ -10,8 +10,8 @@ int main()
 {
   ZobristKey::init();
 
-  PieceManager pieces;
-  pieces.set_pieces("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R");
+  Position position;
+  position.set_fen("PPPP1PPP/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq e4 0 1");
 
-  std::cout << pieces;
+  std::cout << position;
 }

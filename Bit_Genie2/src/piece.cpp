@@ -52,8 +52,10 @@ Piece::Color Piece::get_color(const char label)
 
 char Piece::letter() const {
   if (is_empty())
+  {
     return '.';
-
+  }
+    
   Type t = get_type();
 
   char c = t == Piece::pawn   ? 'p' : t == Piece::knight ? 'n' :
@@ -62,16 +64,27 @@ char Piece::letter() const {
   return get_color() == white ? std::toupper(c) : c;
 }
 
+static constexpr const char* color_labels[]
+{
+  "White", "Black"
+};
+
+static constexpr const char* type_labels[]
+{
+  "Pawn", "Knight", "Bishop", "Rook", "Queen", "King"
+};
+
+std::ostream& operator<<(std::ostream& o, const Piece::Color color)
+{
+  return o << color_labels[to_int(color)];
+}
+
 std::ostream& operator<<(std::ostream& o, const Piece piece) 
 {
-  static constexpr const char* color_labels[]
+  if (piece.is_empty())
   {
-    "White", "Black"
-  };
-  static constexpr const char* type_labels[]
-  {
-    "Pawn", "Knight", "Bishop", "Rook", "Queen", "King"
-  };
-  if (piece.is_empty()) return o << '-';
-  return o << color_labels[piece.get_color()] << ' ' << type_labels[piece.get_type()];
+    return o << '-';
+  }
+
+  return o << piece.get_color() << ' ' << type_labels[piece.get_type()];
 }
