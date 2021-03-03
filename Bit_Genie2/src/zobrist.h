@@ -13,14 +13,20 @@ public:
   void generate(Position const&);
 
   void hash_side();
+  void hash_ep(const Square);
   void hash_piece(const Square, const Piece);
-  void hash_castle(const Bitboard old_rooks, const Bitboard new_rooks);
+  void hash_castle(const CastleRights, const CastleRights);
 
   // reset the hash to 0
   void reset();
 
   // Initialize random keys for hashing
   static void init();
+
+  friend std::ostream& operator<<(std::ostream& o, const ZobristKey);
+private:
+  void hash_pieces(Position const&);
+
 private:
   uint64_t hash;
 };

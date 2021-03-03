@@ -4,6 +4,7 @@
 #include <iostream>
 #include "misc.h"
 #include "piece.h"
+#include "position.h"
 #include <random>
 #include "Square.h"
 #include "zobrist.h"
@@ -37,10 +38,11 @@ void ZobristKey::hash_piece(Square sq, Piece piece)
   hash ^= piece_keys[piece.get_type()][piece.get_color()][to_int(sq)];
 }
 
-void ZobristKey::hash_castle(const Bitboard old_rooks, const Bitboard new_rooks)
+void ZobristKey::hash_castle(const CastleRights old_rooks, const CastleRights new_rooks)
 {
-  Bitboard removed_rooks = old_rooks ^ new_rooks;
-  while (removed_rooks) {
+  Bitboard removed_rooks = old_rooks.data() ^ new_rooks.data();
+  while (removed_rooks) 
+  {
     const Square removed_rook = removed_rooks.pop_lsb();
     hash ^= castle_keys[to_int(removed_rook)];
   }
@@ -72,4 +74,44 @@ void ZobristKey::init()
     }
   }
   printf("done.\n");
+}
+
+void ZobristKey::hash_pieces(Position const& position)
+{
+  for (Square sq = Square::A1;sq <= Square::H8;sq++)
+  {
+    if (!(position.get_piece(sq).is_empty()))
+    {
+      hash_piece(sq, position.get_piece(sq));
+    }
+  }
+}
+
+void ZobristKey::hash_ep(const Square sq)
+{
+  hash ^= enpassant_keys[to_int(get_square_file(sq))];
+}
+
+void ZobristKey::generate(Position const& position)
+{
+  // Reset the key to 0 to hash in new information
+  reset();
+
+  hash_pieces(position);
+  hash_castle(CastleRights(), position.get_castle_rights());
+
+  if (position.player() == Piece::white)
+  {
+    hash_side();
+  }
+
+  if (position.get_ep() != Square::bad)
+  {
+    hash_ep(position.get_ep());
+  }
+}
+
+std::ostream& operator<<(std::ostream& o, const ZobristKey key)
+{
+  return o << std::hex << key.hash << std::dec;
 }

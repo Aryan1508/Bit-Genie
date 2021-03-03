@@ -20,6 +20,8 @@ public:
   // return value is to check validity of fen
   bool parse_fen(std::string_view);
 
+  Bitboard data() const { return rooks; }
+
   friend std::ostream& operator<<(std::ostream&, const CastleRights);
 private:
   // Set a single castle right

@@ -7,6 +7,7 @@
 // bitboards of a position
 class PieceManager 
 {
+  friend class Position;
 public:
   PieceManager();
 

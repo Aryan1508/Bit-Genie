@@ -22,6 +22,13 @@ public:
   // of the position
   ZobristKey hash() const;
 
+  // Piece standing on given square
+  Piece const& get_piece(const Square) const;
+
+  Piece::Color player() const;
+  CastleRights get_castle_rights() const;
+  Square get_ep() const;
+
   friend std::ostream& operator<<(std::ostream&, Position const&);
 private:
   // Reset all position attributes

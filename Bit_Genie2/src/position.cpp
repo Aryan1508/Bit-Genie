@@ -26,6 +26,11 @@ void Position::reset_halfmoves()
   half_moves = 0;
 }
 
+Piece const& Position::get_piece(const Square sq) const
+{
+  return pieces.squares[to_int(sq)];
+}
+
 bool Position::parse_fen_side(std::string_view label)
 {
   if (label == "w")
@@ -71,9 +76,26 @@ bool Position::set_fen(std::string_view fen)
   if (!valid)
   {
     *this = temp;
+    return false;
   }
 
+  key.generate(*this);
   return valid;
+}
+
+CastleRights Position::get_castle_rights() const
+{
+  return castle_rights;
+}
+
+Square Position::get_ep() const
+{
+  return pieces.ep_sq;
+}
+
+Piece::Color Position::player() const
+{
+  return side_to_play;
 }
 
 std::ostream& operator<<(std::ostream& o, Position const& position)
@@ -83,5 +105,6 @@ std::ostream& operator<<(std::ostream& o, Position const& position)
   o << "\ncastle rights: " << position.castle_rights;
   o << "\nen-passant sq: " << position.pieces.ep_sq;
   o << "\nhalf-moves   : " << position.half_moves;
+  o << "\nzobrist-key  : " << position.key;
   return o;
 }
