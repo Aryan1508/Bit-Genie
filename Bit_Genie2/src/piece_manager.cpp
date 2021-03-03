@@ -86,7 +86,7 @@ bool PieceManager::add_rank(Square& counter, std::string_view rank)
 
     if (std::isalpha(c))
     {
-      if (!add_piece(counter, c))
+      if (!add_piece(flip_square(counter), c))
       {
         return false;
       }
@@ -141,7 +141,7 @@ std::ostream& operator<<(std::ostream& o, PieceManager const& pm)
     if (to_int(sq) % 8 == 0)
       o << '\n';
 
-    o << pm.squares[to_int(sq)].letter() << ' ';
+    o << pm.squares[to_int(flip_square(sq))].letter() << ' ';
   }
   return o;
 }

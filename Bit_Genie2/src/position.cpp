@@ -5,7 +5,7 @@
 
 Position::Position() 
 {
-  reset();
+  set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 }
 
 void Position::reset() 
@@ -14,6 +14,7 @@ void Position::reset()
   pieces.reset();
   castle_rights.reset();
   reset_halfmoves();
+  side_to_play = Piece::white;
 }
 
 ZobristKey Position::hash() const 
