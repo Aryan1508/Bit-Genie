@@ -28,6 +28,7 @@ enum class Square : uint8_t;
 // Forward declarations for all classes
 class Bitboard;
 class CastleRights;
+class Move;
 class Piece;
 class PieceManager;
 class Position;
