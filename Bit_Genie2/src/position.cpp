@@ -32,6 +32,16 @@ Piece const& Position::get_piece(const Square sq) const
   return pieces.squares[to_int(sq)];
 }
 
+Bitboard Position::get_piece_bb(Piece::Type type) const
+{
+  return pieces.get_piece_bb(Piece(type, side_to_play));
+}
+
+Bitboard Position::enemy_bb() const
+{
+  return pieces.get_occupancy(switch_color(side_to_play));
+}
+
 bool Position::parse_fen_side(std::string_view label)
 {
   if (label == "w")

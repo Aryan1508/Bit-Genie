@@ -92,6 +92,7 @@ public:
 
 public:
   Bitboard operator^(const Bitboard other) const { return bits ^ other.bits; }
+  Bitboard operator&(const Bitboard other) const { return bits & other.bits; }
 
 private:
   uint64_t bits;

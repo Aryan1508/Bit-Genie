@@ -30,6 +30,16 @@ PieceManager::PieceManager()
   reset();
 }
 
+Bitboard PieceManager::get_occupancy(Piece::Color color) const
+{
+  return colors[color];
+}
+
+Bitboard PieceManager::get_piece_bb(Piece piece) const
+{
+  return pieces[piece.get_type()] & colors[piece.get_color()];
+}
+
 void PieceManager::reset()
 {
   colors.fill(0);

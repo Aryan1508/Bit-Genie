@@ -29,6 +29,7 @@ enum class Square : uint8_t;
 class Bitboard;
 class CastleRights;
 class Move;
+class Movelist;
 class Piece;
 class PieceManager;
 class Position;

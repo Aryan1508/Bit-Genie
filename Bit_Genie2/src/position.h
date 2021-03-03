@@ -29,6 +29,15 @@ public:
   CastleRights get_castle_rights() const;
   Square get_ep() const;
 
+  // Return the bitboard of knights of the current color
+  Bitboard get_piece_bb(Piece::Type) const;
+ 
+  // Return the total occupancy of the enemy player
+  Bitboard enemy_bb() const;
+
+  // Return the total occupancy of the current player
+  Bitboard friend_bb() const;
+
   friend std::ostream& operator<<(std::ostream&, Position const&);
 private:
   // Reset all position attributes

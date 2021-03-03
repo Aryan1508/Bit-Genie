@@ -92,5 +92,14 @@
     <ClInclude Include="src\move.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\movelist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\attacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\movegen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

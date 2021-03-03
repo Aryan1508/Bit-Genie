@@ -47,6 +47,11 @@ private:
 std::ostream& operator<<(std::ostream&, const Piece::Color);
 std::ostream& operator<<(std::ostream&, const Piece);
 
+inline Piece::Color switch_color(const Piece::Color color)
+{
+  return static_cast<Piece::Color>(!color);
+}
+
 //     Piece structure ( 8 bits)
 // 
 // Bits          Use

@@ -159,6 +159,9 @@
   <ItemGroup>
     <ClInclude Include="src\bitboard.h" />
     <ClInclude Include="src\castle_rights.h" />
+    <ClInclude Include="src\attacks.h" />
+    <ClInclude Include="src\movegen.h" />
+    <ClInclude Include="src\movelist.h" />
     <ClInclude Include="src\move.h" />
     <ClInclude Include="src\string_parse.h" />
     <ClInclude Include="src\piece_manager.h" />

@@ -22,6 +22,12 @@ public:
   // fen for pieces
   bool parse_fen_board(std::string_view);
 
+  // Bitboard of all positions of the current piece
+  Bitboard get_piece_bb(Piece) const;
+
+  // Total occupancy of a color
+  Bitboard get_occupancy(Piece::Color) const;
+
   friend std::ostream& operator<<(std::ostream&, PieceManager const&);
 private:
   // Add a piece (of fen format) to the given
