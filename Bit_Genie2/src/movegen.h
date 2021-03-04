@@ -14,8 +14,20 @@ public:
   void generate(Position const& position)
   {
     Bitboard targets = get_targets(position);
+    Bitboard occupancy = position.total_occupancy();
 
-    add_knight_moves(position, targets);
+    // Generate moves for all normal pieces
+    generate_normal_moves(position, Piece::knight, targets, Attacks::knight);
+    generate_normal_moves(position, Piece::king  , targets, Attacks::king);
+    generate_normal_moves(position, Piece::bishop, targets, Attacks::bishop, occupancy);
+    generate_normal_moves(position, Piece::rook  , targets, Attacks::rook  , occupancy);
+    generate_normal_moves(position, Piece::queen , targets, Attacks::queen , occupancy);
+    generate_normal_moves(position, Piece::pawn  , targets, Attacks::pawn  , position);
+
+    // Seperate function for castles because 
+    // they don't follow the same rules 
+
+
   }
 
 public:
@@ -48,22 +60,21 @@ private:
     }
   }
 
-  void add_knight_moves(Position const& position, Bitboard knights, Bitboard targets)
+  //  All pieces other king-castles, have the same routine for move gen
+  //  
+  // 1) Iterate through all the pieces of that type on the board
+  // 2) Generate a bitboard of attacks for that piece( in namespace Attacks )
+  // 3) Iterate through all the bits in those attacks, and add it to the movelist
+  // 
+  template<typename Callable, typename... Args>
+  void generate_normal_moves(Position const& position, Piece::Type type, const Bitboard targets, Callable F, Args const&... args)
   {
-    // Pinned knights cannot move, so remove those
-    knights &= ~position.get_pinned_mask();
-
-    while (knights)
+    Bitboard pieces = position.pieces.get_piece_bb(Piece(type, position.player()));
+    while (pieces)
     {
-      const Square sq = knights.pop_lsb();
-      add_normal_moves(sq, Attacks::knight_attacks(sq) & targets);
+      const Square sq = pieces.pop_lsb();
+      const Bitboard attacks = F(sq, args...) & targets;
+      add_normal_moves(sq, attacks);
     }
-  }
-
-  void add_knight_moves(Position const& position, Bitboard targets)
-  {
-    const Piece piece = Piece(Piece::knight, position.player());
-    const Bitboard knights = position.pieces.get_piece_bb(piece);
-    add_knight_moves(position, knights, targets);
   }
 };

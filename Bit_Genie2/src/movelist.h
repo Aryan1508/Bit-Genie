@@ -24,6 +24,11 @@ public:
     return last;
   }
 
+  int size() const
+  {
+    return static_cast<int>(last - moves.begin());
+  }
+
   void add(Move&& move)
   {
     *last++ = std::move(move);

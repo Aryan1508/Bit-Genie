@@ -24,13 +24,6 @@ public:
   // Return the current state of the en-passant 
   Square get_ep() const;
 
-  // Check whether the piece standing on the square is pinned
-  // by the opponent or not
-  bool is_pinned(const Square) const;
-
-  // Return the pinned mask
-  Bitboard get_pinned_mask() const;
-
   // bitboard-occupancy of the current player
   Bitboard friend_bb() const;
 
@@ -73,8 +66,6 @@ private:
 
   // Parse the fen square for ep into ep_sq
   bool parse_fen_ep(std::string_view);
-
-  void update_pinned_mask();
 private:
   // The side which will play the next move
   Piece::Color side_to_play;
@@ -84,7 +75,4 @@ private:
 
   // En-passant square of the board(if possible)
   Square ep_sq;
-
-  // Bitboard of all pieces pinned by the opponent player
-  Bitboard pinned;
 };

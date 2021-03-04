@@ -18,9 +18,6 @@ int main()
   MoveGenerator<MoveGenType::normal> generator;
   generator.generate(position);
 
-  for (auto const move : generator.movelist)
-  {
-    std::cout << move << '\n';
-  }
+  std::cout << "size: " << generator.movelist.size();
 
 }

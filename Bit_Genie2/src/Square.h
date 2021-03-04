@@ -42,6 +42,11 @@ inline Square operator++(Square& sq, int)
   return temp;
 }
 
+inline Square operator+(Square sq, Direction dir)
+{
+  return static_cast<Square>(to_int(sq) + to_int(dir));
+}
+
 inline Square& operator+=(Square& sq, int inc)
 {
   sq = static_cast<Square>(to_int(sq) + inc);

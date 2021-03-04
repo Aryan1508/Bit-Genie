@@ -14,7 +14,6 @@ void Position::reset()
   key.reset();
   pieces.reset();
   castle_rights.reset();
-  pinned.reset();
   reset_halfmoves();
   side_to_play = Piece::white;
 }
@@ -22,11 +21,6 @@ void Position::reset()
 void Position::reset_halfmoves()
 {
   half_moves = 0;
-}
-
-Bitboard Position::get_pinned_mask() const
-{
-  return pinned;
 }
 
 Bitboard Position::friend_bb() const
@@ -42,20 +36,6 @@ Bitboard Position::enemy_bb() const
 Bitboard Position::total_occupancy() const
 {
   return friend_bb() | enemy_bb();
-}
-
-bool Position::is_pinned(const Square sq) const
-{
-  return (pinned & Bitboard(sq)).is_empty();
-}
-
-void Position::update_pinned_mask()
-{
-  using namespace Attacks;
-
-  const Square king_sq = pieces.get_king_sq(side_to_play);
-  const Bitboard potential_pinned = queen_attacks(king_sq, total_occupancy());
-  
 }
 
 bool Position::parse_fen_side(std::string_view label)
