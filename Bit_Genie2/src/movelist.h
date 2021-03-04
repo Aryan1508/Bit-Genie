@@ -6,6 +6,11 @@
 class Movelist
 {
 public:
+  Movelist()
+  {
+    last = moves.begin();
+  }
+
   using iterator = std::array<Move, 256>::iterator;
   using const_iterator = std::array<Move, 256>::const_iterator;
   

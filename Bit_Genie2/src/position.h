@@ -18,27 +18,43 @@ public:
   // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
   bool set_fen(std::string_view);
 
-  // Return the current hashed value
-  // of the position
-  ZobristKey hash() const;
-
-  // Piece standing on given square
-  Piece const& get_piece(const Square) const;
-
+  // Return the current player's color
   Piece::Color player() const;
-  CastleRights get_castle_rights() const;
+
+  // Return the current state of the en-passant 
   Square get_ep() const;
 
-  // Return the bitboard of knights of the current color
-  Bitboard get_piece_bb(Piece::Type) const;
- 
-  // Return the total occupancy of the enemy player
-  Bitboard enemy_bb() const;
+  // Check whether the piece standing on the square is pinned
+  // by the opponent or not
+  bool is_pinned(const Square) const;
 
-  // Return the total occupancy of the current player
+  // Return the pinned mask
+  Bitboard get_pinned_mask() const;
+
+  // bitboard-occupancy of the current player
   Bitboard friend_bb() const;
 
+  // bitboard-occupancy of the enemy player
+  Bitboard enemy_bb() const;
+
+  // bitboard-occupancy of both the players
+  Bitboard total_occupancy() const;
+
   friend std::ostream& operator<<(std::ostream&, Position const&);
+public:
+  // Manage board-pieces
+  PieceManager pieces;
+
+  // Manage castle rights
+  CastleRights castle_rights;
+
+  // Zobrist-hash of the current position 
+  ZobristKey key;
+
+  // Total history of all previously-encountered
+  // positions. Used for un-making moves
+  // and detecting 3-fold repetitions
+  PositionHistory history;
 private:
   // Reset all position attributes
   void reset(); 
@@ -51,26 +67,24 @@ private:
 
   // (set to 0)
   void reset_halfmoves();
+
+  // set to Square::bad
+  void reset_ep();
+
+  // Parse the fen square for ep into ep_sq
+  bool parse_fen_ep(std::string_view);
+
+  void update_pinned_mask();
 private:
-  // 'pieces' answers the question "what piece stands on what square"
-  // and uses btiboards internally to manage those pieces and perform 
-  // functions like move-generation
-  PieceManager pieces;
-
-  // Zobrist-hash of the current position 
-  ZobristKey key;
-
-  // Total history of all previously-encountered
-  // positions. Used for un-making moves
-  // and detecting 3-fold repetitions
-  PositionHistory history;
-
-  // Manages castle rights 
-  CastleRights castle_rights;
-
   // The side which will play the next move
   Piece::Color side_to_play;
 
   // Total number of half-moves played in the position
   int half_moves;
+
+  // En-passant square of the board(if possible)
+  Square ep_sq;
+
+  // Bitboard of all pieces pinned by the opponent player
+  Bitboard pinned;
 };

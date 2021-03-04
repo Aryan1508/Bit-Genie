@@ -80,9 +80,10 @@ void ZobristKey::hash_pieces(Position const& position)
 {
   for (Square sq = Square::A1;sq <= Square::H8;sq++)
   {
-    if (!(position.get_piece(sq).is_empty()))
+    const Piece piece = position.pieces.get_piece(sq);
+    if (!piece.is_empty())
     {
-      hash_piece(sq, position.get_piece(sq));
+      hash_piece(sq, piece);
     }
   }
 }
@@ -98,7 +99,7 @@ void ZobristKey::generate(Position const& position)
   reset();
 
   hash_pieces(position);
-  hash_castle(CastleRights(), position.get_castle_rights());
+  hash_castle(CastleRights(), position.castle_rights);
 
   if (position.player() == Piece::white)
   {

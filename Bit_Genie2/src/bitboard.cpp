@@ -35,6 +35,11 @@ Bitboard::operator bool() const
   return bits != 0;
 }
 
+bool Bitboard::is_empty() const
+{
+  return bits == 0;
+}
+
 void Bitboard::reset() {
   bits = 0;
 }

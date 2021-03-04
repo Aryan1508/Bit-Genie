@@ -77,6 +77,8 @@ public:
   // Reverse the byte-order of the bitboard
   Bitboard reverse_bytes() const;
  
+  bool is_empty() const;
+
   // Print the individual bits of the bitboard 
   // in the form of a chess board
   // 
@@ -91,8 +93,36 @@ public:
   friend std::ostream& operator<<(std::ostream&, Bitboard);
 
 public:
-  Bitboard operator^(const Bitboard other) const { return bits ^ other.bits; }
-  Bitboard operator&(const Bitboard other) const { return bits & other.bits; }
+  Bitboard operator~() const 
+  { 
+    return ~bits; 
+  }
+
+  Bitboard operator^(const Bitboard other) const 
+  { 
+    return bits ^ other.bits;
+  }
+
+  Bitboard operator&(const Bitboard other) const
+  { 
+    return bits & other.bits;
+  }
+
+  Bitboard operator|(const Bitboard other) const
+  { 
+    return bits | other.bits;
+  }
+
+  Bitboard& operator&=(const Bitboard other)
+  {
+    bits &= other.bits;
+    return *this;
+  }
+
+  uint64_t to_uint64_t() const
+  {
+    return bits;
+  }
 
 private:
   uint64_t bits;

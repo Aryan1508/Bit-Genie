@@ -14,10 +14,6 @@ public:
   // 0-init all arrays, fill squares with empty pieces
   void reset();
 
-  // Set the en-passant square from a string-square
-  // example sq -> 'e4'
-  bool parse_fen_ep(std::string_view);
-
   // Initialize bitboards and squares from 
   // fen for pieces
   bool parse_fen_board(std::string_view);
@@ -27,6 +23,13 @@ public:
 
   // Total occupancy of a color
   Bitboard get_occupancy(Piece::Color) const;
+
+  // Return the piece standing on the given square
+  Piece const& get_piece(const Square) const;
+
+  // Return the square of which the king of the given
+  // color is situated in 
+  Square get_king_sq(Piece::Color) const;
 
   friend std::ostream& operator<<(std::ostream&, PieceManager const&);
 private:
@@ -42,9 +45,6 @@ private:
   // Add a whole rank of pieces of a fen
   // Return value is to check if string is invalid
   bool add_rank(Square& counter, std::string_view);
-
-  // Set ep to Square::bad
-  void reset_ep();
 public:
   // Total occupancy(Bitboards) of White / Black
   std::array<Bitboard, total_colors> colors;
@@ -55,6 +55,6 @@ public:
   // Array of pieces on each square
   std::array<Piece, total_squares> squares;
 
-  // En-passant square of the board(if possible)
-  Square ep_sq;
+  // Bitboard of all pieces pinned by the opponent player
+  Bitboard pinned;
 };

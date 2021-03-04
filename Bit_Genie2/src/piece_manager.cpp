@@ -45,29 +45,12 @@ void PieceManager::reset()
   colors.fill(0);
   pieces.fill(0);
   squares.fill(Piece());
-  ep_sq = Square::bad;
 }
 
-void PieceManager::reset_ep()
+Square PieceManager::get_king_sq(Piece::Color color) const 
 {
-  ep_sq = Square::bad;
-}
-
-bool PieceManager::parse_fen_ep(std::string_view sq)
-{
-  reset_ep();
-  if (sq == "-")
-  {
-    return true;
-  }
-
-  if (!is_valid_sq(sq))
-  {
-    return false;
-  }
-
-  ep_sq = strsq_toi(sq);
-  return true;
+  Bitboard king = get_piece_bb(Piece(Piece::king, color));
+  return king.get_lsb();
 }
 
 bool PieceManager::add_piece(const Square sq, const char label)
@@ -118,6 +101,12 @@ bool PieceManager::add_rank(Square& counter, std::string_view rank)
     }
   }
   return true;
+}
+
+Piece const& PieceManager::get_piece(const Square sq) const
+{
+  assert(is_ok(sq));
+  return squares[to_int(sq)];
 }
 
 bool PieceManager::parse_fen_board(std::string_view fen)

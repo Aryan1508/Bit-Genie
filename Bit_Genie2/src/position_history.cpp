@@ -14,5 +14,5 @@ void PositionHistory::reset()
 
 void PositionHistory::add(Position const& position) 
 {
-  history[total++] = position.hash();
+  history[total++] = position.key;
 }

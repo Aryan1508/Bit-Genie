@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\magicmoves.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\bitboard.cpp" />
     <ClCompile Include="src\piece.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="src\bitboard.h" />
     <ClInclude Include="src\castle_rights.h" />
     <ClInclude Include="src\attacks.h" />
+    <ClInclude Include="src\magicmoves.hpp" />
     <ClInclude Include="src\movegen.h" />
     <ClInclude Include="src\movelist.h" />
     <ClInclude Include="src\move.h" />
