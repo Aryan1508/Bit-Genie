@@ -1,4 +1,5 @@
 #include "castle_rights.h"
+#include "piece.h"
 #include "Square.h"
 #include <unordered_map>
 
@@ -10,6 +11,42 @@ CastleRights::CastleRights()
 void CastleRights::reset()
 {
   rooks.reset();
+}
+
+Bitboard CastleRights::get_rooks(Piece::Color color) const
+{
+  return color == Piece::white ? rooks & BitMask::rank1 : rooks & BitMask::rank8;
+}
+
+bool CastleRights::castle_path_is_clear(const Square rook, const Bitboard occupancy)
+{
+  assert(is_ok(rook));
+  static constexpr uint64_t castle_occ_masks[total_squares]{
+    0XE, 0, 0, 0, 0, 0, 0, 0X60,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0XE00000000000000, 0, 0, 0, 0, 0, 0, 0X6000000000000000
+  };
+  return !(castle_occ_masks[to_int(rook)] & occupancy.to_uint64_t());
+}
+
+Bitboard CastleRights::get_castle_path(const Square sq)
+{
+  constexpr uint64_t castle_paths[total_squares]{
+    0X1C, 0, 0, 0, 0, 0, 0, 0X30,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0X1c00000000000000, 0, 0, 0, 0, 0, 0, 0X3000000000000000
+  };
+  return castle_paths[to_int(sq)];
 }
 
 bool CastleRights::set(const char right) 

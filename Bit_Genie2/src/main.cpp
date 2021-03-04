@@ -13,11 +13,4 @@ int main()
   Attacks::init();
   ZobristKey::init();
 
-  Position position;
-
-  MoveGenerator<MoveGenType::normal> generator;
-  generator.generate(position);
-
-  std::cout << "size: " << generator.movelist.size();
-
 }

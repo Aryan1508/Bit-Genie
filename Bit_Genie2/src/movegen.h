@@ -26,8 +26,7 @@ public:
 
     // Seperate function for castles because 
     // they don't follow the same rules 
-
-
+    generate_castle(position);
   }
 
 public:
@@ -50,7 +49,7 @@ private:
       type == MoveGenType::noisy ? position.enemy_bb() : ~position.total_occupancy();
   }
 
-  void add_normal_moves(const Square from, Bitboard attacks)
+  void add_normal_moves(Square from, Bitboard attacks)
   {
     assert(is_ok(from));
     while (attacks)
@@ -67,7 +66,7 @@ private:
   // 3) Iterate through all the bits in those attacks, and add it to the movelist
   // 
   template<typename Callable, typename... Args>
-  void generate_normal_moves(Position const& position, Piece::Type type, const Bitboard targets, Callable F, Args const&... args)
+  void generate_normal_moves(Position const& position, Piece::Type type, Bitboard targets, Callable F, Args const&... args)
   {
     Bitboard pieces = position.pieces.get_piece_bb(Piece(type, position.player()));
     while (pieces)
@@ -75,6 +74,48 @@ private:
       const Square sq = pieces.pop_lsb();
       const Bitboard attacks = F(sq, args...) & targets;
       add_normal_moves(sq, attacks);
+    }
+  }
+
+  bool castle_path_is_attacked(Position const& position, Square rook, Piece::Color enemy)
+  {
+    Bitboard path = CastleRights::get_castle_path(rook);
+
+    while (path)
+    {
+      Square sq = path.pop_lsb();
+      if (Attacks::square_attacked(position, sq, enemy))
+        return true;
+    }
+    return false;
+  }
+
+  void generate_castle(Position const& position)
+  {
+    Bitboard occupancy = position.total_occupancy();
+    bool is_white = position.player() == Piece::white;
+    Square king_sq = is_white ? Square::E1 : Square::E8;
+    
+    Bitboard rooks = position.castle_rights.get_rooks(position.player());
+    while (rooks)
+    {
+      Square rook = rooks.pop_lsb();
+
+      if (!CastleRights::castle_path_is_clear(rook, occupancy))
+        continue;
+
+      if (castle_path_is_attacked(position, rook, switch_color(position.player())))
+        continue;
+
+      if (rook == Square::A1 || rook == Square::A8)
+      {
+        movelist.add(Move(king_sq, rook + Direction::east, Move::castle));
+      }
+
+      else
+      {
+        movelist.add(Move(king_sq, rook + Direction::west, Move::castle));
+      }
     }
   }
 };

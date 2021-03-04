@@ -75,4 +75,28 @@ namespace Attacks
     attacks |= pawn_captues(sq, position.player(), enemy);
     return attacks;
   }
+
+  inline bool square_attacked(Position const& position, Square sq, Piece::Color enemy)
+  {
+    auto const& pieces = position.pieces;
+    Bitboard us = pieces.get_occupancy(switch_color(enemy));
+    Bitboard them = pieces.get_occupancy(enemy);
+    Bitboard occupancy = us | them;
+
+    Bitboard pawns   = pieces.get_piece_bb(Piece(Piece::pawn  , enemy));
+    Bitboard knights = pieces.get_piece_bb(Piece(Piece::knight, enemy));
+    Bitboard bishops = pieces.get_piece_bb(Piece(Piece::bishop, enemy));
+    Bitboard rooks   = pieces.get_piece_bb(Piece(Piece::rook  , enemy));
+    Bitboard queens  = pieces.get_piece_bb(Piece(Piece::queen , enemy));
+    Bitboard kings   = pieces.get_piece_bb(Piece(Piece::king  , enemy));
+
+    bishops |= queens;
+    rooks |= queens;
+
+    return (BitMask::pawn_attacks[switch_color(enemy)][to_int(sq)] & pawns.to_uint64_t()) 
+        || (bishop(sq, occupancy) & bishops)
+        || (rook(sq, occupancy)   & rooks)
+        || (knight(sq) & knights)
+        || (king(sq) & kings);
+  }
 }

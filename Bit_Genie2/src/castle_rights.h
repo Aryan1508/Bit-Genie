@@ -1,5 +1,6 @@
 #pragma once
 #include "bitboard.h"
+#include "piece.h"
 #include <string_view>
 
 // This class uses a bitboard internally 
@@ -20,7 +21,13 @@ public:
   // return value is to check validity of fen
   bool parse_fen(std::string_view);
 
+  // Return the rooks of the specific color
+  Bitboard get_rooks(Piece::Color) const;
+
   Bitboard data() const { return rooks; }
+
+  static bool castle_path_is_clear(const Square rook, const Bitboard);
+  static Bitboard get_castle_path(const Square);
 
   friend std::ostream& operator<<(std::ostream&, const CastleRights);
 private:
