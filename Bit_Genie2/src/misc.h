@@ -22,6 +22,7 @@ constexpr int total_castle_types = 2;
 // Forward declarations for most enum(classes)
 enum class Direction : int8_t;
 enum class File : uint8_t;
+enum class MoveGenType : uint8_t;
 enum class Rank : uint8_t;
 enum class Square : uint8_t;
 

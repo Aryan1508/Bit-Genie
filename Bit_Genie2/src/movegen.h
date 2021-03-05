@@ -6,7 +6,7 @@
 #include "movelist.h" 
 #include "position.h"
 
-enum class MoveGenType { normal, noisy, quiet };
+enum class MoveGenType : uint8_t { normal, noisy, quiet };
 
 template<MoveGenType type = MoveGenType::normal>
 class MoveGenerator
