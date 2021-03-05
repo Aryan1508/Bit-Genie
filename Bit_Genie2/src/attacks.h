@@ -76,6 +76,37 @@ namespace Attacks
     return attacks;
   }
 
+  inline Bitboard pawn_ep(const Square sq, Position const& position)
+  {
+    using Dir = Direction;
+
+    if (position.get_ep() == Square::bad) return 0;
+
+    Bitboard sq_bb(sq);
+    Bitboard ep_bb(position.get_ep());
+
+    if (position.player() == Piece::white)
+    {
+      Bitboard ep_rank = BitMask::rank6;
+
+      Bitboard forward = sq_bb.shift<Dir::north>();
+      Bitboard left = forward.shift<Dir::west>();
+      Bitboard right = forward.shift<Dir::east>();
+
+      return (left | right) & ep_bb & ep_rank;
+    }
+    else
+    {
+      Bitboard ep_rank = BitMask::rank3;
+
+      Bitboard forward = sq_bb.shift<Dir::south>();
+      Bitboard left = forward.shift<Dir::west>();
+      Bitboard right = forward.shift<Dir::east>();
+
+      return (left | right) & ep_bb & ep_rank;
+    }
+  }
+
   inline bool square_attacked(Position const& position, Square sq, Piece::Color enemy)
   {
     auto const& pieces = position.pieces;

@@ -1,6 +1,7 @@
 #pragma once
 #include "attacks.h"
 #include "bitboard.h"
+#include "board.h"
 #include "misc.h"
 #include "movelist.h" 
 #include "position.h"
@@ -16,16 +17,13 @@ public:
     Bitboard targets = get_targets(position);
     Bitboard occupancy = position.total_occupancy();
 
-    // Generate moves for all normal pieces
     generate_normal_moves(position, Piece::knight, targets, Attacks::knight);
     generate_normal_moves(position, Piece::king  , targets, Attacks::king);
     generate_normal_moves(position, Piece::bishop, targets, Attacks::bishop, occupancy);
     generate_normal_moves(position, Piece::rook  , targets, Attacks::rook  , occupancy);
     generate_normal_moves(position, Piece::queen , targets, Attacks::queen , occupancy);
-    generate_normal_moves(position, Piece::pawn  , targets, Attacks::pawn  , position);
-
-    // Seperate function for castles because 
-    // they don't follow the same rules 
+    
+    generate_pawn_moves(position, targets);
     generate_castle(position);
   }
 
@@ -59,6 +57,29 @@ private:
     }
   }
 
+  void add_ep_moves(Square from, Bitboard attacks)
+  {
+    assert(is_ok(from));
+    while (attacks)
+    {
+      const Square to = attacks.pop_lsb();
+      movelist.add(Move(from, to, Move::enpassant));
+    }
+  }
+  
+  void add_promotion_moves(Square from, Bitboard attacks)
+  {
+    assert(is_ok(from));
+    while (attacks)
+    {
+      const Square to = attacks.pop_lsb();
+      movelist.add(Move(from, to, Move::promotion, Move::knight));
+      movelist.add(Move(from, to, Move::promotion, Move::bishop));
+      movelist.add(Move(from, to, Move::promotion, Move::rook));
+      movelist.add(Move(from, to, Move::promotion, Move::queen));
+    }
+  }
+
   //  All pieces other king-castles, have the same routine for move gen
   //  
   // 1) Iterate through all the pieces of that type on the board
@@ -66,14 +87,40 @@ private:
   // 3) Iterate through all the bits in those attacks, and add it to the movelist
   // 
   template<typename Callable, typename... Args>
-  void generate_normal_moves(Position const& position, Piece::Type type, Bitboard targets, Callable F, Args const&... args)
+  void generate_normal_moves(Position const& position, Piece::Type p_type, Bitboard targets, Callable F, Args const&... args)
   {
-    Bitboard pieces = position.pieces.get_piece_bb(Piece(type, position.player()));
+    Bitboard pieces = position.pieces.get_piece_bb(Piece(p_type, position.player()));
     while (pieces)
     {
-      const Square sq = pieces.pop_lsb();
-      const Bitboard attacks = F(sq, args...) & targets;
+      Square sq = pieces.pop_lsb();
+      Bitboard attacks = F(sq, args...) & targets;
       add_normal_moves(sq, attacks);
+    }
+  }
+
+  void generate_pawn_moves(Position const& position, Bitboard targets)
+  {
+    constexpr bool gen_ep = type == MoveGenType::noisy || type == MoveGenType::normal;
+
+    Rank promotion_rank = position.player() == Piece::white ? Rank::seven : Rank::two;
+
+    Bitboard pieces = position.pieces.get_piece_bb(Piece(Piece::pawn, position.player()));
+
+    while (pieces)
+    {
+      Square sq = pieces.pop_lsb();
+      Bitboard attacks = Attacks::pawn(sq, position) & targets;
+      
+      if (get_square_rank(sq) == promotion_rank)
+        add_promotion_moves(sq, attacks);
+
+      else
+      {
+        add_normal_moves(sq, attacks);
+
+        if constexpr (gen_ep)
+          add_ep_moves(sq, Attacks::pawn_ep(sq, position));
+      }
     }
   }
 
