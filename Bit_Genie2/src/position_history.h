@@ -6,15 +6,25 @@
 class PositionHistory
 {
 public:
+  // All the info that is expensive to re-calculate 
+  // while reverting a move 
+  struct Undo
+  {
+    int          half_moves = 0;
+    Square       ep_sq = Square::bad;
+    CastleRights castle;
+    ZobristKey   key;
+    Piece        captured;
+  };
+
   PositionHistory();
 
-  // Add the hash of the current position into 
-  // the array
-  void add(Position const&);
+  void add(Move, Position const&);
+  Piece revert(Position&);
 
   // Reset total to 0
   void reset();
 private:
-  std::size_t total;
-  std::array<ZobristKey, 256> history;
+  int total;
+  std::array<Undo, 256> history;
 };

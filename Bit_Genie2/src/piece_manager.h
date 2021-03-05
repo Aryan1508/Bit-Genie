@@ -36,11 +36,15 @@ private:
   // Add a piece (of fen format) to the given
   // square. Used in fen-parsing. 
   // Return value is to check if string is invalid
-  bool add_piece(Square sq, const char piece);
+  bool add_piece(Square sq, char piece);
 
   // Add a normal piece on
   // the board (update all arrays)
-  void add_piece(const Square, const Piece);
+  void add_piece(Square, Piece);
+
+  void add_piece(Square, Bitboard, Piece);
+
+  Piece clear_sq(Square);
 
   // Add a whole rank of pieces of a fen
   // Return value is to check if string is invalid

@@ -125,6 +125,13 @@ public:
     return *this;
   }
 
+  Bitboard& operator^=(const Bitboard other)
+  {
+    bits ^= other.bits;
+    return *this;
+  }
+
+
   uint64_t to_uint64_t() const
   {
     return bits;

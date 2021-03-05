@@ -21,9 +21,9 @@ Piece::Piece(const Type type, const Color color)
   create(type, color);
 }
 
-Piece::Piece(char label)
+Piece::Piece(std::string_view label)
 {
-  create(get_type(label), get_color(label));
+  create(get_type(label[0]), get_color(label[0]));
 }
 
 bool Piece::is_empty() const

@@ -90,6 +90,7 @@ void ZobristKey::hash_pieces(Position const& position)
 
 void ZobristKey::hash_ep(const Square sq)
 {
+  assert(is_ok(sq));
   hash ^= enpassant_keys[to_int(get_square_file(sq))];
 }
 

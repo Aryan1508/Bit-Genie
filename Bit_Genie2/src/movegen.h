@@ -24,7 +24,7 @@ public:
     generate_normal_moves(position, Piece::queen , targets, Attacks::queen , occupancy);
     
     generate_pawn_moves(position, targets);
-    generate_castle(position);
+    //generate_castle(position);
   }
 
 public:
@@ -126,7 +126,7 @@ private:
     {
       Square rook = rooks.pop_lsb();
 
-      if (!CastleRights::castle_path_is_clear(rook, occupancy))
+      if (!(CastleRights::castle_path_is_clear(rook, occupancy)))
         continue;
 
       if (castle_path_is_attacked(position, rook, switch_color(position.player())))

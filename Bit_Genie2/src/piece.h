@@ -12,7 +12,7 @@ public:
   Piece(const Type, const Color);
   
   // Create piece from fen-string piece letter
-  Piece(const char);
+  explicit Piece(std::string_view);
 
   Color get_color() const;
   Type  get_type() const;
@@ -21,6 +21,11 @@ public:
   // Generate a letter for a piece 
   // white pawn (p), empty(.)
   char letter() const;
+
+  inline bool operator==(const Piece other)
+  {
+    return data == other.data;
+  }
 public:
   enum Color: uint8_t
   {

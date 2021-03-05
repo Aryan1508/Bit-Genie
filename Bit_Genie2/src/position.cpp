@@ -1,8 +1,14 @@
 #include "attacks.h"
 #include <iomanip>
+#include "move.h"
 #include "position.h"
 #include "string_parse.h"
 #include <vector>
+
+static inline bool should_update_ep(Square from, Square to, Piece moving)
+{
+  return ((to_int(from) ^ to_int(to)) == 16) && moving.get_type() == Piece::pawn;
+}
 
 Position::Position() 
 {
@@ -100,6 +106,11 @@ Piece::Color Position::player() const
   return side_to_play;
 }
 
+int Position::get_halfmoves() const
+{
+  return half_moves;
+}
+
 void Position::reset_ep()
 {
   ep_sq = Square::bad;
@@ -131,4 +142,104 @@ std::ostream& operator<<(std::ostream& o, Position const& position)
   o << "\nhalf-moves   : " << position.half_moves;
   o << "\nzobrist-key  : " << position.key;
   return o;
+}
+
+void Position::switch_players()
+{
+  side_to_play = switch_color(side_to_play);
+}
+
+void Position::add_piece(Square sq, Piece piece)
+{
+  Bitboard sq_bb(sq);
+  pieces.add_piece(sq, sq_bb, piece);
+  key.hash_piece(sq, piece);
+}
+
+Piece Position::clear_sq(Square sq)
+{
+  Piece removed = pieces.clear_sq(sq);
+  key.hash_piece(sq, removed);
+  return removed;
+}
+
+void Position::update_ep(Square from, Square to)
+{
+  auto enemy = switch_color(side_to_play);
+
+  Bitboard potential = BitMask::pawn_attacks[enemy][to_int(to) ^ 8];
+  Bitboard enemy_pawns = pieces.get_piece_bb(Piece(Piece::pawn, enemy));
+
+  if (potential & enemy_pawns)
+  {
+    ep_sq = to_sq(to_int(to) ^ 8);
+  }
+}
+
+void Position::apply_normal_move(Move move)
+{
+  CastleRights old_castle = castle_rights;
+  Square from = move.from();
+  Square to   = move.to();
+
+  Piece moving_piece = clear_sq(from);
+
+  if (moving_piece.get_type() == Piece::pawn || move.is_capture(*this))
+  {
+    reset_halfmoves();
+    
+    if (move.is_capture(*this))
+      clear_sq(to);
+  }
+
+  add_piece(to, moving_piece);
+  castle_rights.update(move);
+  key.hash_castle(old_castle, castle_rights);
+
+  if (should_update_ep(from, to, moving_piece))
+    update_ep(from, to);
+}
+
+void Position::apply_move(Move move)
+{
+  history.add(move, *this);
+
+  if (ep_sq != Square::bad)
+    key.hash_ep(ep_sq);
+
+  reset_ep();
+  half_moves++;
+
+  switch (move.type())
+  {
+  case Move::normal:
+    apply_normal_move(move);
+    break;
+
+  default:
+    assert(false);
+    break;
+  }
+
+  key.hash_side();
+  switch_players();
+}
+
+void Position::revert_normal_move(Move move, Piece captured)
+{
+  Square from = move.from();
+  Square to = move.to();
+
+  Piece moving = pieces.clear_sq(to);
+  pieces.add_piece(from, moving);
+
+  if (!captured.is_empty())
+    pieces.add_piece(to, captured);
+}
+
+void Position::revert_move(Move move)
+{
+  Piece captured = history.revert(*this);
+  revert_normal_move(move, captured);
+  switch_players();
 }

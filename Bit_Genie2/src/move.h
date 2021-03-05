@@ -30,6 +30,7 @@ public:
     return data != other.data;
   }
 
+  bool is_capture(Position const&);
 private:
   uint16_t data;
 };

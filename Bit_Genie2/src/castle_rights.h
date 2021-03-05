@@ -24,6 +24,11 @@ public:
   // Return the rooks of the specific color
   Bitboard get_rooks(Piece::Color) const;
 
+  // Some moves disable certain castle rights
+  // For example moving the king removes all your castle rights
+  // Moving a rook removes that specific castle right
+  void update(Move);
+
   Bitboard data() const { return rooks; }
 
   static bool castle_path_is_clear(const Square rook, const Bitboard);

@@ -59,15 +59,31 @@ bool PieceManager::add_piece(const Square sq, const char label)
   {
     return false;
   }
-  add_piece(sq, Piece(label));
+  add_piece(sq, Piece(std::string(1, label)));
   return true;
 }
 
-void PieceManager::add_piece(Square sq, const Piece piece)
+void PieceManager::add_piece(Square sq, Piece piece)
+{
+  add_piece(sq, Bitboard(sq), piece);
+}
+
+void PieceManager::add_piece(Square sq, Bitboard sq_bb, Piece piece)
 {
   squares[to_int(sq)] = piece;
-  colors[to_int(piece.get_color())].set(sq);
-  pieces[to_int(piece.get_type())].set(sq);
+  colors[piece.get_color()] ^= sq_bb;
+  pieces[piece.get_type()] ^= sq_bb;
+}
+
+Piece PieceManager::clear_sq(Square sq)
+{
+  Bitboard sq_bb(sq);
+  Piece piece = squares[to_int(sq)];
+
+  squares[to_int(sq)] = Piece();
+  colors[piece.get_color()] ^= sq_bb;
+  pieces[piece.get_type()] ^= sq_bb;
+  return piece;
 }
 
 bool PieceManager::add_rank(Square& counter, std::string_view rank)

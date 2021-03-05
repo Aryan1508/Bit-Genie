@@ -1,4 +1,5 @@
 #include "move.h"
+#include "position.h"
 #include "Square.h"
 #include <string>
 
@@ -24,6 +25,11 @@ Move::GenType Move::type() const
 Piece::Type Move::promoted() const
 {
   return static_cast<Piece::Type>((data >> 14) & 0b11);
+}
+
+bool Move::is_capture(Position const& position)
+{
+  return position.pieces.get_piece(to()) != Piece();
 }
 
 std::ostream& operator<<(std::ostream& o, const Move move)

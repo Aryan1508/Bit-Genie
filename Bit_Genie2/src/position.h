@@ -11,6 +11,7 @@
 
 class Position 
 {
+  friend class PositionHistory;
 public:
   Position();
 
@@ -32,6 +33,14 @@ public:
 
   // bitboard-occupancy of both the players
   Bitboard total_occupancy() const;
+
+  // Perform a move (class Move) on the position
+  void apply_move(Move);
+
+  // Undo the latest move applied
+  void revert_move(Move);
+
+  int get_halfmoves() const;
 
   friend std::ostream& operator<<(std::ostream&, Position const&);
 public:
@@ -66,6 +75,26 @@ private:
 
   // Parse the fen square for ep into ep_sq
   bool parse_fen_ep(std::string_view);
+
+  // pass the turn to the opponent
+  void switch_players();
+
+  // Add the given piece on the given square
+  // and update the Zobrist key
+  void add_piece(Square, Piece);
+  
+  // Remove the piece standing on the given square
+  // and update the Zobrist key
+  Piece clear_sq(Square);
+
+  // Perform a normal(not castle, enpassant or promotion) move
+  void apply_normal_move(Move);
+
+  // Perform a normal(not castle, enpassant or promotion) move
+  void revert_normal_move(Move, Piece);
+
+  void update_ep(Square from, Square to);
+  
 private:
   // The side which will play the next move
   Piece::Color side_to_play;
