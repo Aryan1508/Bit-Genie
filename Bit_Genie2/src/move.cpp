@@ -8,12 +8,12 @@ Move::Move()
 
 Square Move::from() const
 {
-  return static_cast<Square>(data & 0x3f);
+  return to_sq(data & 0x3f);
 }
 
 Square Move::to() const
 {
-  return static_cast<Square>((data >> 6) & 0x3f);
+  return to_sq((data >> 6) & 0x3f);
 }
 
 Move::GenType Move::type() const

@@ -118,7 +118,7 @@ bool Position::parse_fen_ep(std::string_view sq)
     return false;
   }
 
-  ep_sq = strsq_toi(sq);
+  ep_sq = to_sq(sq);
   return true;
 }
 

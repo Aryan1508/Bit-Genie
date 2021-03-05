@@ -4,14 +4,6 @@
 #include <stdint.h>
 #include <type_traits>
 
-// Used for converting enum class types to its underlying type 
-// Example: Square -> uint8_t
-template <typename E>
-constexpr typename std::underlying_type<E>::type to_int(E e) noexcept
-{
-  return static_cast<typename std::underlying_type<E>::type>(e);
-}
-
 // Global constants 
 constexpr int total_pieces = 6;
 constexpr int total_colors = 2;
@@ -36,3 +28,11 @@ class PieceManager;
 class Position;
 class PositionHistory;
 class ZobristKey;
+
+// Used for converting enum class types to its underlying type 
+// Example: Square -> uint8_t
+template <typename E>
+constexpr typename std::underlying_type<E>::type to_int(E e) noexcept
+{
+  return static_cast<typename std::underlying_type<E>::type>(e);
+}

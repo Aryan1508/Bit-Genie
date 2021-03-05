@@ -80,7 +80,7 @@ Square Bitboard::get_lsb() const
 #elif defined(__GNUC__)
   unsigned long ind = __builtin_ctzll(bb);
 #endif
-  return static_cast<Square>(ind);
+  return to_sq(ind);
 }
 
 Square Bitboard::pop_lsb() 
