@@ -36,7 +36,7 @@ bool CastleRights::castle_path_is_clear(const Square rook, const Bitboard occupa
 
 Bitboard CastleRights::get_castle_path(const Square sq)
 {
-  constexpr uint64_t castle_paths[total_squares]{
+  static constexpr uint64_t castle_paths[total_squares]{
     0, 0, 0X1C, 0, 0, 0, 0X30, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,

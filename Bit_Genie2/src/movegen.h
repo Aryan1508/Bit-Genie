@@ -8,7 +8,7 @@
 
 enum class MoveGenType { normal, noisy, quiet };
 
-template<MoveGenType type>
+template<MoveGenType type = MoveGenType::normal>
 class MoveGenerator
 {
 public:
@@ -41,8 +41,6 @@ private:
     // 
     //    Quiet moves are non-captures so all squares
     //    that areN'T occupied by the current player, nor the enemy
-    //
-
     return type == MoveGenType::normal ? ~position.friend_bb() :
       type == MoveGenType::noisy ? position.enemy_bb() : ~position.total_occupancy();
   }
