@@ -78,7 +78,7 @@ Square Bitboard::get_lsb() const
   unsigned long ind;
   _BitScanForward64(&ind, bits);
 #elif defined(__GNUC__)
-  unsigned long ind = __builtin_ctzll(bb);
+  unsigned long ind = __builtin_ctzll(bits);
 #endif
   return to_sq(ind);
 }

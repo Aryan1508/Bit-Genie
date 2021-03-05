@@ -61,14 +61,14 @@ void CastleRights::update(Move move)
   static constexpr uint64_t KE8 = 0xbbffffffffffffff;
 
   static constexpr uint64_t mask[total_squares]{
-     RC1, -1, -1, -1, KE1, -1, -1, RG1,
-    -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1,
-    RC8, -1, -1, -1, KE8, -1, -1, RG8,
+     RC1, ~0ull, ~0ull, ~0ull, KE1, ~0ull, ~0ull, RG1,
+    ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull,
+    ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull,
+    ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull,
+    ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull,
+    ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull,
+    ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull, ~0ull,
+    RC8, ~0ull, ~0ull, ~0ull, KE8, ~0ull, ~0ull, RG8,
   };
 
   rooks &= mask[to_int(move.from())];

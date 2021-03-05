@@ -42,6 +42,10 @@ public:
 
   int get_halfmoves() const;
 
+   // Check if a pseudo-legal is legal 
+  // i.e It shouldn't leave our own king in check
+  bool move_was_legal(Move) const;
+
   friend std::ostream& operator<<(std::ostream&, Position const&);
 public:
   // Manage board-pieces
@@ -77,7 +81,10 @@ private:
   bool parse_fen_ep(std::string_view);
 
   // pass the turn to the opponent
-  void switch_players();
+  inline void switch_players()
+  {
+    side_to_play = switch_color(side_to_play);
+  }
 
   // Add the given piece on the given square
   // and update the Zobrist key
@@ -90,12 +97,16 @@ private:
   // Perform a normal(not castle, enpassant or promotion) move
   void apply_normal_move(Move);
 
+  Piece apply_enpassant(Move);
+
   // Perform a normal(not castle, enpassant or promotion) move
   void revert_normal_move(Move, Piece);
 
+  void revert_enpassant(Move, Piece);
+
   void update_ep(Square from, Square to);
   
-private:
+public:
   // The side which will play the next move
   Piece::Color side_to_play;
 

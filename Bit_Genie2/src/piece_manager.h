@@ -58,7 +58,4 @@ public:
 
   // Array of pieces on each square
   std::array<Piece, total_squares> squares;
-
-  // Bitboard of all pieces pinned by the opponent player
-  Bitboard pinned;
 };

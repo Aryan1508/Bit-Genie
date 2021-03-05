@@ -3,10 +3,6 @@
 #include "Square.h"
 #include <string>
 
-Move::Move()
-  : data(0)
-{}
-
 Square Move::from() const
 {
   return to_sq(data & 0x3f);
@@ -29,7 +25,7 @@ Piece::Type Move::promoted() const
 
 bool Move::is_capture(Position const& position)
 {
-  return position.pieces.get_piece(to()) != Piece();
+  return !position.pieces.get_piece(to()).is_empty();
 }
 
 std::ostream& operator<<(std::ostream& o, const Move move)

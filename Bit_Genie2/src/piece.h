@@ -26,6 +26,10 @@ public:
   {
     return data == other.data;
   }
+  inline bool operator!=(const Piece other)
+  {
+    return data != other.data;
+  }
 public:
   enum Color: uint8_t
   {

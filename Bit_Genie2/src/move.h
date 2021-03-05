@@ -8,7 +8,10 @@ public:
   enum GenType { normal, enpassant, castle, promotion };
   enum PromPiece { knight, bishop, rook, queen };
 
-  Move();
+  inline Move()
+  {
+    data = 0;
+  }
 
   Move(Square from, Square to, GenType type = normal, PromPiece promoted = PromPiece::knight)
   {

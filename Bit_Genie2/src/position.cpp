@@ -5,10 +5,7 @@
 #include "string_parse.h"
 #include <vector>
 
-static inline bool should_update_ep(Square from, Square to, Piece moving)
-{
-  return ((to_int(from) ^ to_int(to)) == 16) && moving.get_type() == Piece::pawn;
-}
+
 
 Position::Position() 
 {
@@ -144,13 +141,9 @@ std::ostream& operator<<(std::ostream& o, Position const& position)
   return o;
 }
 
-void Position::switch_players()
-{
-  side_to_play = switch_color(side_to_play);
-}
-
 void Position::add_piece(Square sq, Piece piece)
 {
+  assert(is_ok(sq));
   Bitboard sq_bb(sq);
   pieces.add_piece(sq, sq_bb, piece);
   key.hash_piece(sq, piece);
@@ -163,12 +156,17 @@ Piece Position::clear_sq(Square sq)
   return removed;
 }
 
+static inline bool should_update_ep(Square from, Square to, Piece::Type moving)
+{
+  int f = to_int(from);
+  int t = to_int(to);
+  return ((f ^ t) == 16) && moving == Piece::pawn;
+}
+
 void Position::update_ep(Square from, Square to)
 {
-  auto enemy = switch_color(side_to_play);
-
-  Bitboard potential = BitMask::pawn_attacks[enemy][to_int(to) ^ 8];
-  Bitboard enemy_pawns = pieces.get_piece_bb(Piece(Piece::pawn, enemy));
+  Bitboard potential = BitMask::pawn_attacks[side_to_play][to_int(to) ^ 8];
+  Bitboard enemy_pawns = pieces.get_piece_bb(Piece(Piece::pawn, switch_color(side_to_play)));
 
   if (potential & enemy_pawns)
   {
@@ -196,7 +194,7 @@ void Position::apply_normal_move(Move move)
   castle_rights.update(move);
   key.hash_castle(old_castle, castle_rights);
 
-  if (should_update_ep(from, to, moving_piece))
+  if (should_update_ep(from, to, moving_piece.get_type()))
     update_ep(from, to);
 }
 
@@ -216,6 +214,10 @@ void Position::apply_move(Move move)
     apply_normal_move(move);
     break;
 
+  case Move::enpassant:
+    apply_enpassant(move);
+    break;
+
   default:
     assert(false);
     break;
@@ -225,8 +227,24 @@ void Position::apply_move(Move move)
   switch_players();
 }
 
+Piece Position::apply_enpassant(Move move)
+{
+  reset_halfmoves();
+
+  Square from = move.from();
+  Square to = move.to();
+  Square ep = player() == Piece::white ? to + Direction::south : to + Direction::north;
+
+
+  Piece moving = clear_sq(from);
+  add_piece(to, moving);
+
+  return clear_sq(ep);
+}
+
 void Position::revert_normal_move(Move move, Piece captured)
 {
+  auto const& arr = pieces.squares;
   Square from = move.from();
   Square to = move.to();
 
@@ -237,9 +255,58 @@ void Position::revert_normal_move(Move move, Piece captured)
     pieces.add_piece(to, captured);
 }
 
+void Position::revert_enpassant(Move move, Piece captured)
+{
+  Square ep = player() == Piece::white ? move.to() + Direction::north : move.to() + Direction::south;
+
+  Piece moving = pieces.clear_sq(move.to());
+  pieces.add_piece(move.from(), moving);
+  pieces.add_piece(ep, captured);
+}
+
 void Position::revert_move(Move move)
 {
   Piece captured = history.revert(*this);
-  revert_normal_move(move, captured);
+
+  switch (move.type())
+  {
+  case Move::normal:
+    revert_normal_move(move, captured);
+    break;
+
+  case Move::enpassant:
+    revert_enpassant(move, captured);
+    break;
+
+  default:
+    assert(false);
+    break;
+  }
   switch_players();
+}
+
+bool Position::move_was_legal(Move move) const
+{
+  Piece moving = history.previous().moving;
+  Bitboard our_king = pieces.get_piece_bb(Piece(Piece::king, switch_color(side_to_play)));
+
+  if (moving.get_type() == Piece::king)
+  {
+    return !Attacks::square_attacked(*this, our_king.get_lsb(), side_to_play);
+  }
+  else
+  {
+    Square sq = our_king.get_lsb();
+
+    Bitboard occupancy = total_occupancy();
+
+    Bitboard bishops = pieces.get_piece_bb(Piece(Piece::bishop, side_to_play));
+    Bitboard rooks   = pieces.get_piece_bb(Piece(Piece::rook  , side_to_play));
+    Bitboard queens  = pieces.get_piece_bb(Piece(Piece::queen , side_to_play));
+
+    bishops |= queens;
+    rooks |= queens;
+
+    return !((Attacks::bishop(sq, occupancy) & bishops) || (Attacks::rook(sq, occupancy) & rooks));
+  }
 }

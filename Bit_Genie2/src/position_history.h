@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include "misc.h"
+#include "move.h"
 #include "zobrist.h"
 
 class PositionHistory
@@ -15,11 +16,14 @@ public:
     CastleRights castle;
     ZobristKey   key;
     Piece        captured;
+    Piece        moving;
+    Move         move;
   };
 
   PositionHistory();
 
   void add(Move, Position const&);
+  Undo const& previous() const;
   Piece revert(Position&);
 
   // Reset total to 0
