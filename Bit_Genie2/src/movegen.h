@@ -47,45 +47,25 @@ private:
       type == MoveGenType::noisy ? position.enemy_bb() : ~position.total_occupancy();
   }
 
-  void add_normal_moves(Square from, Bitboard attacks)
+  template<bool is_promo = false>
+  void add_moves(Square from, Bitboard attacks, Move::GenType gen_type)
   {
     assert(is_ok(from));
     while (attacks)
     {
-      const Square to = attacks.pop_lsb();
-      movelist.add(Move(from, to));
+      Square to = attacks.pop_lsb();
+      if constexpr (is_promo)
+      {
+        movelist.add(Move(from, to, gen_type, Move::knight));
+        movelist.add(Move(from, to, gen_type, Move::bishop));
+        movelist.add(Move(from, to, gen_type, Move::rook));
+        movelist.add(Move(from, to, gen_type, Move::queen));
+
+      }
+      movelist.add(Move(from, to, gen_type));
     }
   }
 
-  void add_ep_moves(Square from, Bitboard attacks)
-  {
-    assert(is_ok(from));
-    while (attacks)
-    {
-      const Square to = attacks.pop_lsb();
-      movelist.add(Move(from, to, Move::enpassant));
-    }
-  }
-  
-  void add_promotion_moves(Square from, Bitboard attacks)
-  {
-    assert(is_ok(from));
-    while (attacks)
-    {
-      const Square to = attacks.pop_lsb();
-      movelist.add(Move(from, to, Move::promotion, Move::knight));
-      movelist.add(Move(from, to, Move::promotion, Move::bishop));
-      movelist.add(Move(from, to, Move::promotion, Move::rook));
-      movelist.add(Move(from, to, Move::promotion, Move::queen));
-    }
-  }
-
-  //  All pieces other king-castles, have the same routine for move gen
-  //  
-  // 1) Iterate through all the pieces of that type on the board
-  // 2) Generate a bitboard of attacks for that piece( in namespace Attacks )
-  // 3) Iterate through all the bits in those attacks, and add it to the movelist
-  // 
   template<typename Callable, typename... Args>
   void generate_normal_moves(Position const& position, Piece::Type p_type, Bitboard targets, Callable F, Args const&... args)
   {
@@ -94,7 +74,7 @@ private:
     {
       Square sq = pieces.pop_lsb();
       Bitboard attacks = F(sq, args...) & targets;
-      add_normal_moves(sq, attacks);
+      add_moves(sq, attacks, Move::normal);
     }
   }
 
@@ -112,14 +92,14 @@ private:
       Bitboard attacks = Attacks::pawn(sq, position) & targets;
       
       if (get_square_rank(sq) == promotion_rank)
-        add_promotion_moves(sq, attacks);
+        add_moves<true>(sq, attacks, Move::promotion);
 
       else
       {
-        add_normal_moves(sq, attacks);
+        add_moves(sq, attacks, Move::normal);
 
         if constexpr (gen_ep)
-          add_ep_moves(sq, Attacks::pawn_ep(sq, position));
+          add_moves(sq, Attacks::pawn_ep(sq, position), Move::enpassant);
       }
     }
   }
@@ -154,15 +134,7 @@ private:
       if (castle_path_is_attacked(position, rook, switch_color(position.player())))
         continue;
 
-      if (rook == Square::A1 || rook == Square::A8)
-      {
-        movelist.add(Move(king_sq, rook + Direction::east, Move::castle));
-      }
-
-      else
-      {
-        movelist.add(Move(king_sq, rook + Direction::west, Move::castle));
-      }
+      movelist.add(Move(king_sq, rook, Move::castle));
     }
   }
 };

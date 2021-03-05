@@ -14,7 +14,7 @@ int main()
   ZobristKey::init();
 
   Position position;
-  position.set_fen("3k4/P7/8/8/8/8/8/1K6 w - - 0 1");
+  position.set_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0");
 
   MoveGenerator<MoveGenType::normal> gen;
   gen.generate(position);

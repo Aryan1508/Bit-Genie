@@ -22,14 +22,14 @@ bool CastleRights::castle_path_is_clear(const Square rook, const Bitboard occupa
 {
   assert(is_ok(rook));
   static constexpr uint64_t castle_occ_masks[total_squares]{
-    0XE, 0, 0, 0, 0, 0, 0, 0X60,
+    0, 0, 0XE, 0, 0, 0X60, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
-    0XE00000000000000, 0, 0, 0, 0, 0, 0, 0X6000000000000000
+    0, 0, 0XE00000000000000, 0, 0, 0, 0X6000000000000000, 0
   };
   return !(castle_occ_masks[to_int(rook)] & occupancy.to_uint64_t());
 }
@@ -37,24 +37,24 @@ bool CastleRights::castle_path_is_clear(const Square rook, const Bitboard occupa
 Bitboard CastleRights::get_castle_path(const Square sq)
 {
   constexpr uint64_t castle_paths[total_squares]{
-    0X1C, 0, 0, 0, 0, 0, 0, 0X30,
+    0, 0, 0X1C, 0, 0, 0, 0X30, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
-    0X1c00000000000000, 0, 0, 0, 0, 0, 0, 0X3000000000000000
+    0, 0, 0X1c00000000000000, 0, 0, 0, 0X3000000000000000, 0
   };
   return castle_paths[to_int(sq)];
 }
 
 bool CastleRights::set(const char right) 
 {
-  if      (right == 'k') rooks.set(Square::H8);
-  else if (right == 'q') rooks.set(Square::A8);
-  else if (right == 'K') rooks.set(Square::H1);
-  else if (right == 'Q') rooks.set(Square::A1);
+  if      (right == 'k') rooks.set(Square::G8);
+  else if (right == 'q') rooks.set(Square::C8);
+  else if (right == 'K') rooks.set(Square::G1);
+  else if (right == 'Q') rooks.set(Square::C1);
   else return false;
 
   return true;
@@ -89,19 +89,19 @@ bool CastleRights::parse_fen(std::string_view rights)
 
 std::ostream& operator<<(std::ostream& o, const CastleRights rights)
 {
-  if (rights.rooks.test(Square::H1))
+  if (rights.rooks.test(Square::G1))
   {
     o << 'K';
   }
-  if (rights.rooks.test(Square::A1))
+  if (rights.rooks.test(Square::C1))
   {
     o << 'Q';
   }
-  if (rights.rooks.test(Square::H8))
+  if (rights.rooks.test(Square::G8))
   {
     o << 'k';
   }
-  if (rights.rooks.test(Square::A8))
+  if (rights.rooks.test(Square::C8))
   {
     o << 'q';
   }
