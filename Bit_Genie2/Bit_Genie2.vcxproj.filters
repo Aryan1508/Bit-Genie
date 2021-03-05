@@ -30,9 +30,6 @@
     <ClCompile Include="src\position.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\position_history.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\board.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,10 +45,10 @@
     <ClCompile Include="src\string_parse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\move.cpp">
+    <ClCompile Include="src\magicmoves.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\magicmoves.cpp">
+    <ClCompile Include="src\move.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

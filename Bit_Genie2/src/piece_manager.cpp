@@ -37,13 +37,13 @@ Bitboard PieceManager::get_occupancy(Piece::Color color) const
 
 Bitboard PieceManager::get_piece_bb(Piece piece) const
 {
-  return pieces[piece.get_type()] & colors[piece.get_color()];
+  return bitboards[piece.get_type()] & colors[piece.get_color()];
 }
 
 void PieceManager::reset()
 {
   colors.fill(0);
-  pieces.fill(0);
+  bitboards.fill(0);
   squares.fill(Piece());
 }
 
@@ -72,7 +72,7 @@ void PieceManager::add_piece(Square sq, Bitboard sq_bb, Piece piece)
 {
   squares[to_int(sq)] = piece;
   colors[piece.get_color()] ^= sq_bb;
-  pieces[piece.get_type()] ^= sq_bb;
+  bitboards[piece.get_type()] ^= sq_bb;
 }
 
 Piece PieceManager::clear_sq(Square sq)
@@ -82,7 +82,7 @@ Piece PieceManager::clear_sq(Square sq)
 
   squares[to_int(sq)] = Piece();
   colors[piece.get_color()] ^= sq_bb;
-  pieces[piece.get_type()] ^= sq_bb;
+  bitboards[piece.get_type()] ^= sq_bb;
   return piece;
 }
 

@@ -35,16 +35,16 @@ public:
   Bitboard total_occupancy() const;
 
   // Perform a move (class Move) on the position
-  void apply_move(Move);
+  void apply_move(uint16_t);
 
   // Undo the latest move applied
-  void revert_move(Move);
+  void revert_move();
 
   int get_halfmoves() const;
 
    // Check if a pseudo-legal is legal 
   // i.e It shouldn't leave our own king in check
-  bool move_was_legal(Move) const;
+  bool move_was_legal() const;
 
   friend std::ostream& operator<<(std::ostream&, Position const&);
 public:
@@ -95,14 +95,14 @@ private:
   Piece clear_sq(Square);
 
   // Perform a normal(not castle, enpassant or promotion) move
-  void apply_normal_move(Move);
+  Piece apply_normal_move(uint16_t);
 
-  Piece apply_enpassant(Move);
+  Piece apply_enpassant(uint16_t);
 
   // Perform a normal(not castle, enpassant or promotion) move
-  void revert_normal_move(Move, Piece);
+  void revert_normal_move(uint16_t, Piece);
 
-  void revert_enpassant(Move, Piece);
+  void revert_enpassant(uint16_t, Piece);
 
   void update_ep(Square from, Square to);
   

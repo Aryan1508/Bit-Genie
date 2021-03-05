@@ -11,8 +11,8 @@ public:
     last = moves.begin();
   }
 
-  using iterator = std::array<Move, 256>::iterator;
-  using const_iterator = std::array<Move, 256>::const_iterator;
+  using iterator = std::array<uint16_t, 256>::iterator;
+  using const_iterator = std::array<uint16_t, 256>::const_iterator;
   
   iterator begin()
   {
@@ -29,12 +29,12 @@ public:
     return static_cast<int>(last - moves.begin());
   }
 
-  void add(Move&& move)
+  void add(uint16_t&& move)
   {
     *last++ = std::move(move);
   }
 
 private:
   iterator last;
-  std::array<Move, 256> moves;
+  std::array<uint16_t, 256> moves;
 };

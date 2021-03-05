@@ -54,7 +54,7 @@ public:
   std::array<Bitboard, total_colors> colors;
 
   // Bitboards for each piece type
-  std::array<Bitboard, total_pieces> pieces;
+  std::array<Bitboard, total_pieces> bitboards;
 
   // Array of pieces on each square
   std::array<Piece, total_squares> squares;

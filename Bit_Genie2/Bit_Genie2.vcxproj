@@ -148,7 +148,6 @@
     <ClCompile Include="src\bitboard.cpp" />
     <ClCompile Include="src\piece.cpp" />
     <ClCompile Include="src\position.cpp" />
-    <ClCompile Include="src\position_history.cpp" />
     <ClCompile Include="src\board.cpp" />
     <ClCompile Include="src\piece_manager.cpp" />
     <ClCompile Include="src\castle_rights.cpp" />

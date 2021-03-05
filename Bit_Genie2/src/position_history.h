@@ -16,19 +16,30 @@ public:
     CastleRights castle;
     ZobristKey   key;
     Piece        captured;
-    Piece        moving;
-    Move         move;
+    uint16_t     move;
   };
 
-  PositionHistory();
+  PositionHistory()
+  {
+    total = 0;
+  }
 
-  void add(Move, Position const&);
-  Undo const& previous() const;
-  Piece revert(Position&);
+  Undo& current() 
+  {
+    return history[total];
+  }
 
-  // Reset total to 0
-  void reset();
-private:
+  Undo const& previous() const
+  {
+    return history[total - 1];
+  }
+
+  void reset()
+  {
+    total = 0;
+  }
+
   int total;
+private:
   std::array<Undo, 256> history;
 };

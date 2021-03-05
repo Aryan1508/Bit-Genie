@@ -12,10 +12,6 @@ Piece::Type Piece::get_type() const
   return static_cast<Type>(data & 0b111);
 }
 
-Piece::Piece()
-  : data(empty)
-{}
-
 Piece::Piece(const Type type, const Color color)
 {
   create(type, color);

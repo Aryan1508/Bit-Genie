@@ -174,33 +174,57 @@ void Position::update_ep(Square from, Square to)
   }
 }
 
-void Position::apply_normal_move(Move move)
+Piece Position::apply_normal_move(uint16_t move)
 {
   CastleRights old_castle = castle_rights;
-  Square from = move.from();
-  Square to   = move.to();
+  Square from = GetMoveFrom(move);
+  Square to   = GetMoveTo(move);
+  Piece from_pce = pieces.squares[to_int(from)];
+  Piece captured = pieces.squares[to_int(to)];
 
-  Piece moving_piece = clear_sq(from);
-
-  if (moving_piece.get_type() == Piece::pawn || move.is_capture(*this))
+  if (from_pce.get_type() == Piece::pawn)
   {
     reset_halfmoves();
     
-    if (move.is_capture(*this))
-      clear_sq(to);
+    if (should_update_ep(from, to, from_pce.get_type()))
+      update_ep(from, to);
   }
 
-  add_piece(to, moving_piece);
+  if (move_is_capture(*this, move))
+  {
+    reset_halfmoves();
+
+    pieces.bitboards[captured.get_type()] ^= Bitboard(to);
+    pieces.colors[captured.get_color()] ^= Bitboard(to);
+    key.hash_piece(to, captured);
+  }
+
+  pieces.bitboards[from_pce.get_type()] ^= (Bitboard(from) | Bitboard(to));
+  pieces.colors[from_pce.get_color()] ^= (Bitboard(from) | Bitboard(to));
+  
+  pieces.squares[to_int(to)] = pieces.squares[to_int(from)];
+  pieces.squares[to_int(from)].reset();
+
   castle_rights.update(move);
+
+  key.hash_piece(from, from_pce);
+  key.hash_piece(to, from_pce);
   key.hash_castle(old_castle, castle_rights);
 
-  if (should_update_ep(from, to, moving_piece.get_type()))
-    update_ep(from, to);
+  return captured;
 }
 
-void Position::apply_move(Move move)
+void Position::apply_move(uint16_t move)
 {
-  history.add(move, *this);
+  auto& undo = history.current();
+  
+  undo.castle = castle_rights;
+  undo.ep_sq = ep_sq;
+  undo.half_moves = half_moves;
+  undo.key = key;
+  undo.move = move;
+ 
+  history.total++;
 
   if (ep_sq != Square::bad)
     key.hash_ep(ep_sq);
@@ -208,86 +232,112 @@ void Position::apply_move(Move move)
   reset_ep();
   half_moves++;
 
-  switch (move.type())
-  {
-  case Move::normal:
-    apply_normal_move(move);
-    break;
+  MoveFlag type = GetMoveType(move);
 
-  case Move::enpassant:
-    apply_enpassant(move);
-    break;
+  if (type == MoveFlag::normal)
+    undo.captured = apply_normal_move(move);
 
-  default:
-    assert(false);
-    break;
-  }
+  else if (type == MoveFlag::enpassant)
+    undo.captured = apply_enpassant(move);
 
   key.hash_side();
   switch_players();
 }
 
-Piece Position::apply_enpassant(Move move)
+Piece Position::apply_enpassant(uint16_t move)
 {
   reset_halfmoves();
 
-  Square from = move.from();
-  Square to = move.to();
-  Square ep = player() == Piece::white ? to + Direction::south : to + Direction::north;
+  Square from = GetMoveFrom(move);
+  Square to = GetMoveTo(move);
+  Square ep = to_sq(to_int(GetMoveTo(move)) ^ 8);
 
+  Piece from_pce = pieces.squares[to_int(from)];
+  Piece captured = pieces.squares[to_int(ep)];
 
-  Piece moving = clear_sq(from);
-  add_piece(to, moving);
+  Bitboard moved(Bitboard(from) | Bitboard(to));
 
-  return clear_sq(ep);
+  pieces.bitboards[from_pce.get_type()] ^= moved;
+  pieces.colors[from_pce.get_color()] ^= moved;
+
+  pieces.bitboards[captured.get_type()] ^= Bitboard(ep);
+  pieces.colors[captured.get_color()] ^= Bitboard(ep);
+
+  pieces.squares[to_int(to)] = from_pce;
+  pieces.squares[to_int(from)].reset();
+  pieces.squares[to_int(ep)].reset();
+
+  key.hash_piece(from, from_pce);
+  key.hash_piece(to  , from_pce);
+  key.hash_piece(ep  , captured);
+
+  return captured;
 }
 
-void Position::revert_normal_move(Move move, Piece captured)
+void Position::revert_normal_move(uint16_t move, Piece captured)
 {
-  auto const& arr = pieces.squares;
-  Square from = move.from();
-  Square to = move.to();
+  Square from = GetMoveFrom(move);
+  Square to = GetMoveTo(move);
 
-  Piece moving = pieces.clear_sq(to);
-  pieces.add_piece(from, moving);
+  Piece from_pce = pieces.squares[to_int(to)];
 
-  if (!captured.is_empty())
-    pieces.add_piece(to, captured);
-}
+  pieces.bitboards[from_pce.get_type()] ^= (Bitboard(from) | Bitboard(to));
+  pieces.colors[from_pce.get_color()] ^= (Bitboard(from) | Bitboard(to));
 
-void Position::revert_enpassant(Move move, Piece captured)
-{
-  Square ep = player() == Piece::white ? move.to() + Direction::north : move.to() + Direction::south;
-
-  Piece moving = pieces.clear_sq(move.to());
-  pieces.add_piece(move.from(), moving);
-  pieces.add_piece(ep, captured);
-}
-
-void Position::revert_move(Move move)
-{
-  Piece captured = history.revert(*this);
-
-  switch (move.type())
-  {
-  case Move::normal:
-    revert_normal_move(move, captured);
-    break;
-
-  case Move::enpassant:
-    revert_enpassant(move, captured);
-    break;
-
-  default:
-    assert(false);
-    break;
+  if (!captured.is_empty()) {
+    pieces.bitboards[captured.get_type()] ^= Bitboard(to);
+    pieces.colors[captured.get_color()] ^= Bitboard(to);
   }
+
+  pieces.squares[to_int(from)] = pieces.squares[to_int(to)];
+  pieces.squares[to_int(to)] = captured;
+}
+
+void Position::revert_enpassant(uint16_t move, Piece captured)
+{
+  Square from = GetMoveFrom(move);
+  Square to = GetMoveTo(move);
+
+  Square ep = to_sq(to_int(GetMoveTo(move)) ^ 8);
+  
+  Piece from_pce = pieces.squares[to_int(to)];
+
+  pieces.bitboards[from_pce.get_type()] ^= (Bitboard(from) | Bitboard(to));
+  pieces.colors[from_pce.get_color()] ^= (Bitboard(from) | Bitboard(to));
+
+  pieces.bitboards[captured.get_type()].set(ep);
+  pieces.colors[captured.get_color()].set(ep);
+
+  pieces.squares[to_int(ep)] = captured;
+  pieces.squares[to_int(from)] = pieces.squares[to_int(to)];
+  pieces.squares[to_int(to)].reset();
+}
+
+void Position::revert_move()
+{
+  auto& undo = history.previous();
+  history.total--;
+
+  key           = undo.key;
+  ep_sq         = undo.ep_sq;
+  half_moves    = undo.half_moves;
+  castle_rights = undo.castle;
+
+  MoveFlag type = GetMoveType(undo.move);
+
+  if (type == MoveFlag::normal)
+    revert_normal_move(undo.move, undo.captured);
+
+  else if (type == MoveFlag::enpassant)
+    revert_enpassant(undo.move, undo.captured);
+
   switch_players();
 }
 
-bool Position::move_was_legal(Move move) const
+bool Position::move_was_legal() const
 {
-  Piece moving = history.previous().moving;
+  uint16_t move = history.previous().move;
+  Piece moving = pieces.squares[to_int(GetMoveTo(move))];
   Bitboard our_king = pieces.get_piece_bb(Piece(Piece::king, switch_color(side_to_play)));
 
   if (moving.get_type() == Piece::king)

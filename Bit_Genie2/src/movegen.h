@@ -3,6 +3,7 @@
 #include "bitboard.h"
 #include "board.h"
 #include "misc.h"
+#include "move.h"
 #include "movelist.h" 
 #include "position.h"
 
@@ -46,7 +47,7 @@ private:
   }
 
   template<bool is_promo = false>
-  void add_moves(Square from, Bitboard attacks, Move::GenType gen_type)
+  void add_moves(Square from, Bitboard attacks, MoveFlag gen_type)
   {
     assert(is_ok(from));
     while (attacks)
@@ -54,13 +55,13 @@ private:
       Square to = attacks.pop_lsb();
       if constexpr (is_promo)
       {
-        movelist.add(Move(from, to, gen_type, Move::knight));
-        movelist.add(Move(from, to, gen_type, Move::bishop));
-        movelist.add(Move(from, to, gen_type, Move::rook));
-        movelist.add(Move(from, to, gen_type, Move::queen));
+        movelist.add(Move(from, to, gen_type, Piece::knight));
+        movelist.add(Move(from, to, gen_type, Piece::bishop));
+        movelist.add(Move(from, to, gen_type, Piece::rook));
+        movelist.add(Move(from, to, gen_type, Piece::queen));
 
       }
-      movelist.add(Move(from, to, gen_type));
+      movelist.add(Move(from, to, gen_type, 1));
     }
   }
 
@@ -72,7 +73,7 @@ private:
     {
       Square sq = pieces.pop_lsb();
       Bitboard attacks = F(sq, args...) & targets;
-      add_moves(sq, attacks, Move::normal);
+      add_moves(sq, attacks, MoveFlag::normal);
     }
   }
 
@@ -90,14 +91,14 @@ private:
       Bitboard attacks = Attacks::pawn(sq, position) & targets;
       
       if (get_square_rank(sq) == promotion_rank)
-        add_moves<true>(sq, attacks, Move::promotion);
+        add_moves<true>(sq, attacks, MoveFlag::promotion);
 
       else
       {
-        add_moves(sq, attacks, Move::normal);
+        add_moves(sq, attacks, MoveFlag::normal);
 
         if constexpr (gen_ep)
-          add_moves(sq, Attacks::pawn_ep(sq, position), Move::enpassant);
+          add_moves(sq, Attacks::pawn_ep(sq, position), MoveFlag::enpassant);
       }
     }
   }
@@ -132,7 +133,7 @@ private:
       if (castle_path_is_attacked(position, rook, switch_color(position.player())))
         continue;
 
-      movelist.add(Move(king_sq, rook, Move::castle));
+      movelist.add(Move(king_sq, rook, MoveFlag::castle, Piece::knight));
     }
   }
 };

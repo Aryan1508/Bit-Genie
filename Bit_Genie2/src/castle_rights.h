@@ -27,7 +27,7 @@ public:
   // Some moves disable certain castle rights
   // For example moving the king removes all your castle rights
   // Moving a rook removes that specific castle right
-  void update(Move);
+  void update(uint16_t);
 
   Bitboard data() const { return rooks; }
 

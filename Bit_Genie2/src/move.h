@@ -1,41 +1,14 @@
 #pragma once
 #include "misc.h"
-#include "piece.h"
 
-class Move
-{
-public:
-  enum GenType { normal, enpassant, castle, promotion };
-  enum PromPiece { knight, bishop, rook, queen };
-
-  inline Move()
-  {
-    data = 0;
-  }
-
-  Move(Square from, Square to, GenType type = normal, PromPiece promoted = PromPiece::knight)
-  {
-    data = (to_int(from)) | (to_int(to) << 6) | (type << 12) | (promoted << 14);
-  }
-
-  Square from() const;
-  Square to()   const;
-  GenType type() const;
-  Piece::Type promoted() const;
-
-  bool operator==(const Move other) const
-  {
-    return data == other.data;
-  }
-  
-  bool operator!=(const Move other) const
-  {
-    return data != other.data;
-  }
-
-  bool is_capture(Position const&);
-private:
-  uint16_t data;
+enum class MoveFlag : uint8_t {
+  normal, enpassant, castle, promotion
 };
 
-std::ostream& operator<<(std::ostream& o, const Move);
+#define Move(from, to, type, promoted) (((to_int(from))) | ((to_int(to)) << 6) | ((to_int(type)) << 12) | ((((promoted) - 1) << 14)))
+#define GetMoveFrom(move) Square((move) & 0x3f)
+#define GetMoveTo(move) Square(((move) >> 6) & 0x3f)
+#define GetMoveType(move) MoveFlag(((move) >> 12) & 0x3)
+#define GetMovePromoted(move) (((move) >> 14) & 0b11)
+
+bool move_is_capture(Position const& positio, uint16_t);

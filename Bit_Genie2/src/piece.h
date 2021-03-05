@@ -8,7 +8,9 @@ public:
   enum Color : uint8_t;
   enum Type  : uint8_t;
 
-  Piece(); // Empty piece
+  Piece()
+    : data(empty)
+  {}
   Piece(const Type, const Color);
   
   // Create piece from fen-string piece letter
@@ -29,6 +31,11 @@ public:
   inline bool operator!=(const Piece other)
   {
     return data != other.data;
+  }
+
+  void reset()
+  {
+    data = empty;
   }
 public:
   enum Color: uint8_t

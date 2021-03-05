@@ -51,7 +51,7 @@ Bitboard CastleRights::get_castle_path(const Square sq)
 }
 
 
-void CastleRights::update(Move move)
+void CastleRights::update(uint16_t move)
 {
   static constexpr uint64_t RC1 = 0xfffffffffffffffb;
   static constexpr uint64_t RG1 = 0xffffffffffffffbf;
@@ -71,8 +71,8 @@ void CastleRights::update(Move move)
     RC8, ~0ull, ~0ull, ~0ull, KE8, ~0ull, ~0ull, RG8,
   };
 
-  rooks &= mask[to_int(move.from())];
-  rooks &= mask[to_int(move.to())];
+  rooks &= mask[to_int(GetMoveFrom(move))];
+  rooks &= mask[to_int(GetMoveTo(move))];
 }
 
 bool CastleRights::set(const char right) 
