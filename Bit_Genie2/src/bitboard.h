@@ -25,15 +25,8 @@ inline uint64_t shift(uint64_t bits, Direction dir)
 inline Square get_lsb(uint64_t b) {
   assert(b);
   unsigned long idx;
-
-  if (b & 0xffffffff) {
-    _BitScanForward(&idx, int32_t(b));
-    return Square(idx);
-  }
-  else {
-    _BitScanForward(&idx, int32_t(b >> 32));
-    return Square(idx + 32);
-  }
+  _BitScanForward64(&idx, b);
+  return to_sq(idx);
 }
 
 #else

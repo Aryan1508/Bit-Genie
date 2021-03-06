@@ -86,7 +86,7 @@
 //it uses variable shift for each square
 //#define VARIABLE_SHIFT
 
-#define USE_INLINING /*the MMINLINE keyword is assumed to be available*/
+// #define USE_INLINING /*the MMINLINE keyword is assumed to be available*/
 
 #ifndef __64_BIT_INTEGER_DEFINED__
 #define __64_BIT_INTEGER_DEFINED__

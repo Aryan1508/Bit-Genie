@@ -145,12 +145,12 @@
   <ItemGroup>
     <ClCompile Include="src\magicmoves.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\piece.cpp" />
     <ClCompile Include="src\position.cpp" />
     <ClCompile Include="src\board.cpp" />
     <ClCompile Include="src\piece_manager.cpp" />
     <ClCompile Include="src\castle_rights.cpp" />
     <ClCompile Include="src\move.cpp" />
+    <ClCompile Include="src\piece.cpp" />
     <ClCompile Include="src\string_parse.cpp" />
     <ClCompile Include="src\square.cpp" />
     <ClCompile Include="src\zobrist.cpp" />

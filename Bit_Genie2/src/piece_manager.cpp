@@ -30,21 +30,34 @@ PieceManager::PieceManager()
   reset();
 }
 
-uint64_t PieceManager::get_occupancy(Piece::Color color) const
+uint64_t PieceManager::get_occupancy(Color color) const
 {
-  return colors[color];
+  return colors[to_int(color)];
 }
 
 uint64_t PieceManager::get_piece_bb(Piece piece) const
 {
-  return bitboards[piece.get_type()] & colors[piece.get_color()];
+  return bitboards[to_int(get_piece_type(piece))] & colors[to_int(get_piece_color(piece))];
 }
 
 void PieceManager::reset()
 {
   colors.fill(0);
   bitboards.fill(0);
-  squares.fill(Piece());
+  squares.fill(Piece::empty);
+}
+
+static inline Piece make_piece(char label)
+{
+  Color color = std::isupper(label) ? Color::white : Color::black;
+  label = std::tolower(label);
+  PieceType type =
+    label == 'p' ? PieceType::pawn :
+    label == 'n' ? PieceType::knight :
+    label == 'b' ? PieceType::bishop :
+    label == 'r' ? PieceType::rook :
+    label == 'q' ? PieceType::queen : PieceType::king;
+  return make_piece(type, color);
 }
 
 bool PieceManager::add_piece(const Square sq, const char label)
@@ -53,31 +66,20 @@ bool PieceManager::add_piece(const Square sq, const char label)
   {
     return false;
   }
-  add_piece(sq, Piece(std::string(1, label)));
+  add_piece(sq, make_piece(label));
   return true;
+}
+
+void PieceManager::add_piece(Square sq, uint64_t bb, Piece piece)
+{
+  squares[to_int(sq)] = piece;
+  bitboards[to_int(get_piece_type(piece))] ^= bb;
+  colors[to_int(get_piece_color(piece))] ^= bb;
 }
 
 void PieceManager::add_piece(Square sq, Piece piece)
 {
   add_piece(sq, 1ull << to_int(sq), piece);
-}
-
-void PieceManager::add_piece(Square sq, uint64_t sq_bb, Piece piece)
-{
-  squares[to_int(sq)] = piece;
-  colors[piece.get_color()] ^= sq_bb;
-  bitboards[piece.get_type()] ^= sq_bb;
-}
-
-Piece PieceManager::clear_sq(Square sq)
-{
-  uint64_t sq_bb = 1ull << to_int(sq);
-  Piece piece = squares[to_int(sq)];
-
-  squares[to_int(sq)] = Piece();
-  colors[piece.get_color()] ^= sq_bb;
-  bitboards[piece.get_type()] ^= sq_bb;
-  return piece;
 }
 
 bool PieceManager::add_rank(Square& counter, std::string_view rank)
@@ -150,7 +152,7 @@ std::ostream& operator<<(std::ostream& o, PieceManager const& pm)
     if (to_int(sq) % 8 == 0)
       o << '\n';
 
-    o << pm.squares[to_int(flip_square(sq))].letter() << ' ';
+    o << pm.squares[to_int(flip_square(sq))] << ' ';
   }
   return o;
 }

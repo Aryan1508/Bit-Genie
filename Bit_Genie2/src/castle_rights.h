@@ -22,7 +22,7 @@ public:
   bool parse_fen(std::string_view);
 
   // Return the rooks of the specific color
-  uint64_t get_rooks(Piece::Color) const;
+  uint64_t get_rooks(Color) const;
 
   // Some moves disable certain castle rights
   // For example moving the king removes all your castle rights

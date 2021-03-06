@@ -43,6 +43,8 @@ auto benchmark_function(Callable f, Position& pos, int depth) {
   return std::pair<long long, uint64_t>(time_taken, ret);
 }
 
+#define MINIMIZE_MAGIC
+
 int main()
 {
   Attacks::init();
@@ -60,7 +62,7 @@ int main()
   //  std::cout << GetMoveFrom(move) << GetMoveTo(move) << '\n';
   //}
 
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < 10; i++)
   {
     auto [time_taken, ret] = benchmark_function(perft, position, 6);
 
@@ -69,9 +71,6 @@ int main()
     total += time_taken;
   }
   
-  std::cout << "\n\navg time: " << total / 5.0f << " ms\n";
+  std::cout << "\n\navg time: " << total / 10.0f << " ms\n";
   std::cout << "nodes: " << nodes << "\n\n";
 }
-
-// 5230.67 ms avg
-// nodes: 119060324

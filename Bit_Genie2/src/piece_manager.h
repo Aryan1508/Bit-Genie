@@ -23,14 +23,16 @@ public:
   uint64_t get_piece_bb(Piece) const;
 
   // Total occupancy of a color
-  uint64_t get_occupancy(Piece::Color) const;
+  uint64_t get_occupancy(Color) const;
 
   // Return the piece standing on the given square
   Piece const& get_piece(const Square) const;
 
-  // Return the square of which the king of the given
-  // color is situated in 
-  Square get_king_sq(Piece::Color) const;
+  template<PieceType type>
+  inline uint64_t get_piece_bb(Color color) const
+  {
+    return bitboards[to_int(type)] & colors[to_int(color)];
+  }
 
   friend std::ostream& operator<<(std::ostream&, PieceManager const&);
 private:
@@ -44,8 +46,6 @@ private:
   void add_piece(Square, Piece);
 
   void add_piece(Square, uint64_t, Piece);
-
-  Piece clear_sq(Square);
 
   // Add a whole rank of pieces of a fen
   // Return value is to check if string is invalid

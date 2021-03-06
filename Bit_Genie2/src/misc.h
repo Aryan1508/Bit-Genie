@@ -17,12 +17,14 @@ enum class File : uint8_t;
 enum class MoveGenType : uint8_t;
 enum class Rank : uint8_t;
 enum class Square : uint8_t;
+enum class Piece : uint8_t;
+enum class PieceType : uint8_t;
+enum class PieceColor : uint8_t;
 
 // Forward declarations for all classes
 class CastleRights;
 class Move;
 class Movelist;
-class Piece;
 class PieceManager;
 class Position;
 class PositionHistory;

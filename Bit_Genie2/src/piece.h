@@ -1,85 +1,44 @@
 #pragma once
+#include "misc.h"
 #include <iostream>
-#include <stdint.h>
 
-class Piece 
+enum class Color : uint8_t
 {
-public:
-  enum Color : uint8_t;
-  enum Type  : uint8_t;
-
-  Piece()
-    : data(empty)
-  {}
-  Piece(const Type, const Color);
-  
-  // Create piece from fen-string piece letter
-  explicit Piece(std::string_view);
-
-  Color get_color() const;
-  Type  get_type() const;
-  bool  is_empty() const;
-
-  // Generate a letter for a piece 
-  // white pawn (p), empty(.)
-  char letter() const;
-
-  inline bool operator==(const Piece other)
-  {
-    return data == other.data;
-  }
-  inline bool operator!=(const Piece other)
-  {
-    return data != other.data;
-  }
-
-  void reset()
-  {
-    data = empty;
-  }
-public:
-  enum Color: uint8_t
-  {
-    white = 0, black = 1, 
-  };
-
-  enum Type : uint8_t
-  {
-    pawn = 0, knight, bishop,
-    rook    , queen , king, empty = 255
-  };
-private:
-  // Functions to get the color
-  // and type of a fen-string piece
-  static Type  get_type(const char);
-  static Color get_color(const char);
-
-private:
-  void create(const Type, const Color);
-
-  uint8_t data;
+  white, black
 };
 
-std::ostream& operator<<(std::ostream&, const Piece::Color);
-std::ostream& operator<<(std::ostream&, const Piece);
-
-inline Piece::Color switch_color(const Piece::Color color)
+enum class PieceType : uint8_t
 {
-  return static_cast<Piece::Color>(!color);
+  pawn, knight, bishop, rook, queen, king
+};
+
+enum class Piece : uint8_t 
+{
+  wpawn, wknight, wbishop, wrook, wqueen, qking,
+  bpawn, bknight, bbishop, brook, bqueen, bking, empty
+};
+
+std::ostream& operator<<(std::ostream&, PieceType);
+std::ostream& operator<<(std::ostream&, Color);
+std::ostream& operator<<(std::ostream&, Piece);
+
+
+inline Piece make_piece(PieceType type, Color color)
+{
+  return static_cast<Piece>(to_int(type) + (to_int(color) * 6));
 }
 
-//     Piece structure ( 8 bits)
-// 
-// Bits          Use
-// 
-//  0-3    Type of piece(pawn, knight ...)
-//   4    Color of piece(white, black)
-// 
-//    Example 8 bit number (white queen)
-//   
-//        Color(Black)
-//            |
-//       0000 1 101
-//              \ /
-//             Type (Queen)
-//      
+inline Color get_piece_color(Piece piece)
+{
+  return static_cast<Color>(to_int(piece) / 6);
+}
+
+inline PieceType get_piece_type(Piece piece)
+{
+  return static_cast<PieceType>(to_int(piece) % 6);
+}
+
+inline Color operator!(Color color)
+{
+  return static_cast<Color>(!to_int(color));
+}

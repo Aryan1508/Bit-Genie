@@ -14,9 +14,9 @@ void CastleRights::reset()
   rooks = 0;
 }
 
-uint64_t CastleRights::get_rooks(Piece::Color color) const
+uint64_t CastleRights::get_rooks(Color color) const
 {
-  return color == Piece::white ? rooks & BitMask::rank1 : rooks & BitMask::rank8;
+  return color == Color::white ? rooks & BitMask::rank1 : rooks & BitMask::rank8;
 }
 
 bool CastleRights::castle_path_is_clear(const Square rook, const uint64_t occupancy)

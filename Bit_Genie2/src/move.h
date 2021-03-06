@@ -5,7 +5,7 @@ enum class MoveFlag : uint8_t {
   normal, enpassant, castle, promotion
 };
 
-#define Move(from, to, type, promoted) (((to_int(from))) | ((to_int(to)) << 6) | ((to_int(type)) << 12) | ((((promoted) - 1) << 14)))
+#define Move(from, to, type, promoted) (((to_int(from))) | ((to_int(to)) << 6) | ((to_int(type)) << 12) | (((to_int(promoted) - 1) << 14)))
 #define GetMoveFrom(move) Square((move) & 0x3f)
 #define GetMoveTo(move) Square(((move) >> 6) & 0x3f)
 #define GetMoveType(move) MoveFlag(((move) >> 12) & 0x3)

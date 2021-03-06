@@ -21,7 +21,7 @@ public:
   bool set_fen(std::string_view);
 
   // Return the current player's color
-  Piece::Color player() const;
+  Color player() const;
 
   // Return the current state of the en-passant 
   Square get_ep() const;
@@ -68,7 +68,7 @@ private:
   // Reset all position attributes
   void reset(); 
 
-  // set side_to_play from 'w' -> Piece::white or 'b' -> Piece::black
+  // set side_to_play from 'w' -> Color::white or 'b' -> Color::black
   bool parse_fen_side(std::string_view);
 
   // set halfmove_nb from fen 
@@ -86,7 +86,7 @@ private:
   // pass the turn to the opponent
   inline void switch_players()
   {
-    side_to_play = switch_color(side_to_play);
+    side_to_play = !side_to_play;
   }
 
   // Add the given piece on the given square
@@ -110,7 +110,7 @@ private:
   void update_ep(Square from, Square to);
 public:
   // The side which will play the next move
-  Piece::Color side_to_play;
+  Color side_to_play;
 
   // Total number of half-moves played in the position
   int half_moves;
