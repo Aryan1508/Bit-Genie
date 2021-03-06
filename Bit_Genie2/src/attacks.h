@@ -9,9 +9,7 @@ namespace Attacks
 {
   inline void init()
   {
-    printf("initializing Magic Moves... ");
     initmagicmoves();
-    printf("done.\n");
   }
 
   inline uint64_t knight(Square sq)

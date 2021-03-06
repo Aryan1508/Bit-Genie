@@ -3,6 +3,7 @@
 #include "move.h"
 #include "position.h"
 #include "string_parse.h"
+#include "movegen.h"
 #include <vector>
 #include <algorithm>
 
@@ -350,4 +351,31 @@ static void bb_error(Position const& position)
     std::cout << "reverting";
   std::cout << "\n";
   std::cin.get();
+}
+
+uint64_t Position::perft(int depth, bool root)
+{
+  uint64_t total = 0;
+
+  if (depth == 0)
+    return 1;
+
+  MoveGenerator gen;
+  gen.generate(*this);
+
+  for (auto move : gen.movelist)
+  {
+    apply_move(move);
+    if (move_was_legal()) {
+      uint64_t child = perft(depth - 1, false);
+
+      if (root)
+        std::cout << print_move(move) << ": " << child << '\n';
+
+      total += child;
+    }
+    revert_move();
+  }
+
+  return total;
 }

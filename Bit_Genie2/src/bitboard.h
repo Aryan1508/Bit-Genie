@@ -33,11 +33,9 @@ inline Square get_lsb(uint64_t b) {
 inline Square get_lsb(uint64_t bb)
 {
   assert(bb);
-  return __builtin_ctzll(bb);
+  return static_cast<Square>(__builtin_ctzll(bb));
 }
 #endif // 
-
-
 
 
 inline Square pop_lsb(uint64_t& bb)

@@ -9,6 +9,7 @@ enum class MoveFlag : uint8_t {
 #define GetMoveFrom(move) Square((move) & 0x3f)
 #define GetMoveTo(move) Square(((move) >> 6) & 0x3f)
 #define GetMoveType(move) MoveFlag(((move) >> 12) & 0x3)
-#define GetMovePromoted(move) (((move) >> 14) & 0b11)
+#define GetMovePromoted(move) PieceType((((move) >> 14) & 0b11) + 1)
 
 bool move_is_capture(Position const& positio, uint16_t);
+std::string print_move(uint16_t);
