@@ -8,6 +8,7 @@
 #include <string_view>
 #include "Square.h"
 #include "zobrist.h"
+#include <vector>
 
 class Position 
 {
@@ -25,14 +26,14 @@ public:
   // Return the current state of the en-passant 
   Square get_ep() const;
 
-  // bitboard-occupancy of the current player
-  Bitboard friend_bb() const;
+  // uint64_t-occupancy of the current player
+  uint64_t friend_bb() const;
 
-  // bitboard-occupancy of the enemy player
-  Bitboard enemy_bb() const;
+  // uint64_t-occupancy of the enemy player
+  uint64_t enemy_bb() const;
 
-  // bitboard-occupancy of both the players
-  Bitboard total_occupancy() const;
+  // uint64_t-occupancy of both the players
+  uint64_t total_occupancy() const;
 
   // Perform a move (class Move) on the position
   void apply_move(uint16_t);
@@ -45,6 +46,8 @@ public:
    // Check if a pseudo-legal is legal 
   // i.e It shouldn't leave our own king in check
   bool move_was_legal() const;
+
+  void error_check_bb() const;
 
   friend std::ostream& operator<<(std::ostream&, Position const&);
 public:
@@ -105,7 +108,6 @@ private:
   void revert_enpassant(uint16_t, Piece);
 
   void update_ep(Square from, Square to);
-  
 public:
   // The side which will play the next move
   Piece::Color side_to_play;

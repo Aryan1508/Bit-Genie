@@ -1,14 +1,14 @@
 /**
  *magicmoves.h
  *
- *Header file for magic move bitboard generation.  Include this in any files
+ *Header file for magic move uint64_t generation.  Include this in any files
  *need this functionality.
  *
  *Usage:
  *You must first initialize the generator with a call to initmagicmoves().
  *Then you can use the following macros for generating move bitboards by
  *giving them a square and an occupancy.  The macro will then "return"
- *the correct move bitboard for that particular square and occupancy. It
+ *the correct move uint64_t for that particular square and occupancy. It
  *has been named Rmagic and Bmagic so that it will not conflict with
  *any functions/macros in your chess program called Rmoves/Bmoves. You
  *can macro Bmagic/Rmagic to Bmoves/Rmoves if you wish.  If you want to
@@ -29,7 +29,7 @@
  *
  *The following macros are identical to Rmagic and Bmagic except that the
  *occupancy is assumed to already have been "masked".  Look at the following
- *source or read up on the internet about magic bitboard move generation to
+ *source or read up on the internet about magic uint64_t move generation to
  *understand the usage of these macros and what it means by "an occupancy that
  *has already been masked".  Using the following macros when possible might be
  *a tiny bit faster than using Rmagic and Bmagic because it avoids an array
@@ -43,14 +43,14 @@
  *integer if necessary.
  *
  *If MINIMIZE_MAGIC is defined before including this file:
- *The move bitboard generator will use up 841kb of memory.
+ *The move uint64_t generator will use up 841kb of memory.
  *41kb of memory is used for the bishop database and 800kb is used for the rook
  *database.  If you feel the 800kb rook database is too big, then comment it out
- *and use a more traditional move bitboard generator in conjunction with the
- *magic move bitboard generator for bishops.
+ *and use a more traditional move uint64_t generator in conjunction with the
+ *magic move uint64_t generator for bishops.
  *
  *If MINIMIAZE_MAGIC is not defined before including this file:
- *The move bitboard generator will use up 2304kb of memory but might perform a bit
+ *The move uint64_t generator will use up 2304kb of memory but might perform a bit
  *faster.
  *
  *Copyright (C) 2007 Pradyumna Kannan.

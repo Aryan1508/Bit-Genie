@@ -1,7 +1,7 @@
 /**
  *magicmoves.h
  *
- *Source file for magic move bitboard generation.
+ *Source file for magic move uint64_t generation.
  *
  *See header file for instructions on usage.
  *

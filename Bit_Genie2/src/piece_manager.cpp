@@ -30,12 +30,12 @@ PieceManager::PieceManager()
   reset();
 }
 
-Bitboard PieceManager::get_occupancy(Piece::Color color) const
+uint64_t PieceManager::get_occupancy(Piece::Color color) const
 {
   return colors[color];
 }
 
-Bitboard PieceManager::get_piece_bb(Piece piece) const
+uint64_t PieceManager::get_piece_bb(Piece piece) const
 {
   return bitboards[piece.get_type()] & colors[piece.get_color()];
 }
@@ -45,12 +45,6 @@ void PieceManager::reset()
   colors.fill(0);
   bitboards.fill(0);
   squares.fill(Piece());
-}
-
-Square PieceManager::get_king_sq(Piece::Color color) const 
-{
-  Bitboard king = get_piece_bb(Piece(Piece::king, color));
-  return king.get_lsb();
 }
 
 bool PieceManager::add_piece(const Square sq, const char label)
@@ -65,10 +59,10 @@ bool PieceManager::add_piece(const Square sq, const char label)
 
 void PieceManager::add_piece(Square sq, Piece piece)
 {
-  add_piece(sq, Bitboard(sq), piece);
+  add_piece(sq, 1ull << to_int(sq), piece);
 }
 
-void PieceManager::add_piece(Square sq, Bitboard sq_bb, Piece piece)
+void PieceManager::add_piece(Square sq, uint64_t sq_bb, Piece piece)
 {
   squares[to_int(sq)] = piece;
   colors[piece.get_color()] ^= sq_bb;
@@ -77,7 +71,7 @@ void PieceManager::add_piece(Square sq, Bitboard sq_bb, Piece piece)
 
 Piece PieceManager::clear_sq(Square sq)
 {
-  Bitboard sq_bb(sq);
+  uint64_t sq_bb = 1ull << to_int(sq);
   Piece piece = squares[to_int(sq)];
 
   squares[to_int(sq)] = Piece();

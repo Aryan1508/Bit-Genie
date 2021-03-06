@@ -40,10 +40,10 @@ void ZobristKey::hash_piece(Square sq, Piece piece)
 
 void ZobristKey::hash_castle(const CastleRights old_rooks, const CastleRights new_rooks)
 {
-  Bitboard removed_rooks = old_rooks.data() ^ new_rooks.data();
+  uint64_t removed_rooks = old_rooks.data() ^ new_rooks.data();
   while (removed_rooks) 
   {
-    const Square removed_rook = removed_rooks.pop_lsb();
+    Square removed_rook = pop_lsb(removed_rooks);
     hash ^= castle_keys[to_int(removed_rook)];
   }
 }

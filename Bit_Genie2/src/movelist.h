@@ -2,39 +2,36 @@
 #include "misc.h"
 #include "move.h"
 #include <array>
+#include <iterator>
 
 class Movelist
 {
 public:
   Movelist()
   {
-    last = moves.begin();
+    cap = 0;
   }
 
-  using iterator = std::array<uint16_t, 256>::iterator;
-  using const_iterator = std::array<uint16_t, 256>::const_iterator;
-  
-  iterator begin()
+  uint16_t* begin()
   {
-    return moves.begin();
+    return moves;
   }
 
-  iterator end()
+  uint16_t* end()
   {
-    return last;
+    return moves + cap;
   }
 
   int size() const
   {
-    return static_cast<int>(last - moves.begin());
+    return cap;
   }
 
   void add(uint16_t&& move)
   {
-    *last++ = std::move(move);
+    moves[cap++] = std::move(move);
   }
-
 private:
-  iterator last;
-  std::array<uint16_t, 256> moves;
+  int cap;
+  uint16_t moves[256];
 };

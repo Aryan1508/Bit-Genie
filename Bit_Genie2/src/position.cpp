@@ -4,8 +4,7 @@
 #include "position.h"
 #include "string_parse.h"
 #include <vector>
-
-
+#include <algorithm>
 
 Position::Position() 
 {
@@ -26,17 +25,17 @@ void Position::reset_halfmoves()
   half_moves = 0;
 }
 
-Bitboard Position::friend_bb() const
+uint64_t Position::friend_bb() const
 {
   return pieces.get_occupancy(side_to_play);
 }
 
-Bitboard Position::enemy_bb() const
+uint64_t Position::enemy_bb() const
 {
   return pieces.get_occupancy(switch_color(side_to_play));
 }
 
-Bitboard Position::total_occupancy() const
+uint64_t Position::total_occupancy() const
 {
   return friend_bb() | enemy_bb();
 }
@@ -144,7 +143,7 @@ std::ostream& operator<<(std::ostream& o, Position const& position)
 void Position::add_piece(Square sq, Piece piece)
 {
   assert(is_ok(sq));
-  Bitboard sq_bb(sq);
+  uint64_t sq_bb = 1ull << to_int(sq);
   pieces.add_piece(sq, sq_bb, piece);
   key.hash_piece(sq, piece);
 }
@@ -165,8 +164,8 @@ static inline bool should_update_ep(Square from, Square to, Piece::Type moving)
 
 void Position::update_ep(Square from, Square to)
 {
-  Bitboard potential = BitMask::pawn_attacks[side_to_play][to_int(to) ^ 8];
-  Bitboard enemy_pawns = pieces.get_piece_bb(Piece(Piece::pawn, switch_color(side_to_play)));
+  uint64_t potential = BitMask::pawn_attacks[side_to_play][to_int(to) ^ 8];
+  uint64_t enemy_pawns = pieces.get_piece_bb(Piece(Piece::pawn, switch_color(side_to_play)));
 
   if (potential & enemy_pawns)
   {
@@ -194,13 +193,13 @@ Piece Position::apply_normal_move(uint16_t move)
   {
     reset_halfmoves();
 
-    pieces.bitboards[captured.get_type()] ^= Bitboard(to);
-    pieces.colors[captured.get_color()] ^= Bitboard(to);
+    pieces.bitboards[captured.get_type()] ^= (1ull << to_int(to));
+    pieces.colors[captured.get_color()] ^= (1ull << to_int(to));
     key.hash_piece(to, captured);
   }
 
-  pieces.bitboards[from_pce.get_type()] ^= (Bitboard(from) | Bitboard(to));
-  pieces.colors[from_pce.get_color()] ^= (Bitboard(from) | Bitboard(to));
+  pieces.bitboards[from_pce.get_type()] ^= ((1ull << to_int(from)) | (1ull << to_int(to)));
+  pieces.colors[from_pce.get_color()] ^= ((1ull << to_int(from)) | (1ull << to_int(to)));
   
   pieces.squares[to_int(to)] = pieces.squares[to_int(from)];
   pieces.squares[to_int(from)].reset();
@@ -255,13 +254,13 @@ Piece Position::apply_enpassant(uint16_t move)
   Piece from_pce = pieces.squares[to_int(from)];
   Piece captured = pieces.squares[to_int(ep)];
 
-  Bitboard moved(Bitboard(from) | Bitboard(to));
+  uint64_t moved((1ull << to_int(from)) | (1ull << to_int(to)));
 
   pieces.bitboards[from_pce.get_type()] ^= moved;
   pieces.colors[from_pce.get_color()] ^= moved;
 
-  pieces.bitboards[captured.get_type()] ^= Bitboard(ep);
-  pieces.colors[captured.get_color()] ^= Bitboard(ep);
+  pieces.bitboards[captured.get_type()] ^= (1ull << to_int(ep));
+  pieces.colors[captured.get_color()] ^= (1ull << to_int(ep));
 
   pieces.squares[to_int(to)] = from_pce;
   pieces.squares[to_int(from)].reset();
@@ -270,7 +269,6 @@ Piece Position::apply_enpassant(uint16_t move)
   key.hash_piece(from, from_pce);
   key.hash_piece(to  , from_pce);
   key.hash_piece(ep  , captured);
-
   return captured;
 }
 
@@ -281,12 +279,12 @@ void Position::revert_normal_move(uint16_t move, Piece captured)
 
   Piece from_pce = pieces.squares[to_int(to)];
 
-  pieces.bitboards[from_pce.get_type()] ^= (Bitboard(from) | Bitboard(to));
-  pieces.colors[from_pce.get_color()] ^= (Bitboard(from) | Bitboard(to));
+  pieces.bitboards[from_pce.get_type()] ^= ((1ull << to_int(from)) | (1ull << to_int(to)));
+  pieces.colors[from_pce.get_color()] ^= ((1ull << to_int(from)) | (1ull << to_int(to)));
 
   if (!captured.is_empty()) {
-    pieces.bitboards[captured.get_type()] ^= Bitboard(to);
-    pieces.colors[captured.get_color()] ^= Bitboard(to);
+    pieces.bitboards[captured.get_type()] ^= (1ull << to_int(to));
+    pieces.colors[captured.get_color()] ^= (1ull << to_int(to));
   }
 
   pieces.squares[to_int(from)] = pieces.squares[to_int(to)];
@@ -299,14 +297,14 @@ void Position::revert_enpassant(uint16_t move, Piece captured)
   Square to = GetMoveTo(move);
 
   Square ep = to_sq(to_int(GetMoveTo(move)) ^ 8);
-  
+  uint64_t ep_bb = 1ull << to_int(ep);
   Piece from_pce = pieces.squares[to_int(to)];
 
-  pieces.bitboards[from_pce.get_type()] ^= (Bitboard(from) | Bitboard(to));
-  pieces.colors[from_pce.get_color()] ^= (Bitboard(from) | Bitboard(to));
+  pieces.bitboards[from_pce.get_type()] ^= ((1ull << to_int(from)) | (1ull << to_int(to)));
+  pieces.colors[from_pce.get_color()] ^= ((1ull << to_int(from)) | (1ull << to_int(to)));
 
-  pieces.bitboards[captured.get_type()].set(ep);
-  pieces.colors[captured.get_color()].set(ep);
+  pieces.bitboards[captured.get_type()] ^= ep_bb;
+  pieces.colors[captured.get_color()] ^= ep_bb;
 
   pieces.squares[to_int(ep)] = captured;
   pieces.squares[to_int(from)] = pieces.squares[to_int(to)];
@@ -336,27 +334,38 @@ void Position::revert_move()
 
 bool Position::move_was_legal() const
 {
-  uint16_t move = history.previous().move;
-  Piece moving = pieces.squares[to_int(GetMoveTo(move))];
-  Bitboard our_king = pieces.get_piece_bb(Piece(Piece::king, switch_color(side_to_play)));
+  Square our_king = get_lsb(pieces.get_piece_bb(Piece(Piece::king, switch_color(side_to_play))));
+ 
+  Piece moving = pieces.squares[to_int(GetMoveTo(history.previous().move))];
 
-  if (moving.get_type() == Piece::king)
+ /* if (moving.get_type() == Piece::knight)
   {
-    return !Attacks::square_attacked(*this, our_king.get_lsb(), side_to_play);
-  }
-  else
-  {
-    Square sq = our_king.get_lsb();
-
-    Bitboard occupancy = total_occupancy();
-
-    Bitboard bishops = pieces.get_piece_bb(Piece(Piece::bishop, side_to_play));
-    Bitboard rooks   = pieces.get_piece_bb(Piece(Piece::rook  , side_to_play));
-    Bitboard queens  = pieces.get_piece_bb(Piece(Piece::queen , side_to_play));
+    uint64_t occ = total_occupancy();
+    uint64_t bishops = pieces.bitboards[Piece::bishop] & pieces.colors[side_to_play];
+    uint64_t rooks   = pieces.bitboards[Piece::rook] & pieces.colors[side_to_play];
+    uint64_t queens  = pieces.bitboards[Piece::queen] & pieces.colors[side_to_play];
 
     bishops |= queens;
-    rooks |= queens;
+    rooks   |= queens;
 
-    return !((Attacks::bishop(sq, occupancy) & bishops) || (Attacks::rook(sq, occupancy) & rooks));
-  }
+    return ((Attacks::bishop(our_king, occ) & bishops) | (Attacks::rook(our_king, occ) & rooks)).is_empty();
+  }*/
+  
+  return !Attacks::square_attacked(*this, our_king, side_to_play);
+}
+
+static void print_move(std::ostream& o, uint16_t move)
+{
+  o << GetMoveFrom(move) << GetMoveTo(move);
+}
+
+static void bb_error(Position const& position) 
+{
+  std::cout << "Error on pos after ";
+  if (position.history.total != 0)
+    print_move(std::cout, position.history.previous().move);
+  else
+    std::cout << "reverting";
+  std::cout << "\n";
+  std::cin.get();
 }

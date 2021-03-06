@@ -3,140 +3,80 @@
 #include <iostream>
 #include "misc.h"
 
-class Bitboard
+
+template<Direction dir>
+constexpr uint64_t shift(uint64_t bits) 
 {
-public:
-  Bitboard();
+  return dir == Direction::north ? bits << 8
+    :    dir == Direction::south ? bits >> 8
+    :    dir == Direction::east  ? (bits << 1) & BitMask::not_file_a
+    :    /* west */ (bits >> 1) & BitMask::not_file_h;
+}
 
-  // Create a new bitboard from a new 64-bit number
-  Bitboard(const uint64_t);
+inline uint64_t shift(uint64_t bits, Direction dir)
+{
+  return dir == Direction::north ? bits << 8
+    : dir == Direction::south ? bits >> 8
+    : dir == Direction::east ? (bits << 1) & BitMask::not_file_a
+    :    /* west */ (bits >> 1) & BitMask::not_file_h;
+}
 
-  // Create a bitboard and only set the given bit
-  // indexed by the given square
-  // 
-  //    . . . . . . . . 
-  //    . . . . . . . .
-  //    . . . . . . . . 
-  //    . . . . . . . .
-  //    . . . . . . . .  -> Bitboard(Square::E1)
-  //    . . . . . . . .
-  //    . . . . . . . . 
-  //    . . . . 1 . . .  
-  //  
-  // 
-  explicit Bitboard(const Square);
+#if defined (_MSC_VER)
+inline Square get_lsb(uint64_t b) {
+  assert(b);
+  unsigned long idx;
 
-  
-  // returns false if no bits are set(bits == 0), otherwise true
-  explicit operator bool() const;
+  if (b & 0xffffffff) {
+    _BitScanForward(&idx, int32_t(b));
+    return Square(idx);
+  }
+  else {
+    _BitScanForward(&idx, int32_t(b >> 32));
+    return Square(idx + 32);
+  }
+}
 
-  // Population-count. The total number of bits that are set
-  int popcnt() const;
+#else
+inline Square get_lsb(uint64_t bb)
+{
+  assert(bb);
+  return __builtin_ctzll(bb);
+}
+#endif // 
 
-  // Get the index of the least significant bit 
-  Square get_lsb() const;
 
-  // Clear the least significant bit and return its index
-  Square pop_lsb();
 
-  // Check if number of bits set in bitboard are > 1
-  bool has_multiple() const;
 
-  // Shift all the bits in the given direction
-  //
-  // Example 1
-  //       shift<Direction::north>
-  // . . . . . .       . . . . . .
-  // . . . . . .  -->  . . . 1 . .
-  // . . . 1 . .       . . . . . .
-  // 
-  //      
-  // Example 2
-  //       shift<Direction::east>
-  //  . . . . . .       . . . . . .           . . . . . . 
-  //  . . . . . .  -->  . . . . . .  BUT NOT  1 . . . . .  
-  //  . . . . . 1       . . . . . .           . . . . . .
-  template<Direction dir>
-  Bitboard shift() const
+inline Square pop_lsb(uint64_t& bb)
+{
+  assert(bb);
+  Square index = get_lsb(bb);
+  bb &= (bb - 1);
+  return index;
+}
+
+inline bool test_bit(Square sq, uint64_t bb)
+{
+  return (1ull << to_int(sq)) & bb;
+}
+
+inline void set_bit(Square sq, uint64_t& bb)
+{
+  bb |= (1ull << to_int(sq));
+}
+
+inline void print_uint64_t(uint64_t bb)
+{
+  for (Square sq = Square::A1; sq <= Square::H8; sq++)
   {
-    return dir == Direction::north ? bits << 8
-      :    dir == Direction::south ? bits >> 8
-      :    dir == Direction::east  ? (bits << 1) & BitMask::not_file_a
-      :    /* west */ (bits >> 1) & BitMask::not_file_h;
+    if (to_int(sq) % 8 == 0)
+      std::cout << '\n';
+
+    if (test_bit(sq, bb))
+      std::cout << "1 ";
+
+    else
+      std::cout << ". ";
+
   }
-
-  // Check whether the bit at the given square is set
-  bool test(const Square) const;
-
-  // Set a single bit
-  void set(const Square);
-
-  // Reset to 0
-  void reset();
-
-  // Reverse the byte-order of the bitboard
-  Bitboard reverse_bytes() const;
- 
-  bool is_empty() const;
-
-  // Print the individual bits of the bitboard 
-  // in the form of a chess board
-  // 
-  //  1 1 1 1 1 1 1 1
-  //  1 1 1 1 . 1 1 1
-  //  . . . . . . . .
-  //  . . . . 1 . . .
-  //  . . . . 1 . . .
-  //  . . . . . 1 . .
-  //  1 1 1 1 . 1 1 1
-  //  1 1 1 1 1 1 . 1
-  friend std::ostream& operator<<(std::ostream&, Bitboard);
-
-public:
-  Bitboard operator~() const 
-  { 
-    return ~bits; 
-  }
-
-  Bitboard operator^(const Bitboard other) const 
-  { 
-    return bits ^ other.bits;
-  }
-
-  Bitboard operator&(const Bitboard other) const
-  { 
-    return bits & other.bits;
-  }
-
-  Bitboard operator|(const Bitboard other) const
-  { 
-    return bits | other.bits;
-  }
-
-  Bitboard& operator&=(const Bitboard other)
-  {
-    bits &= other.bits;
-    return *this;
-  }
-
-  Bitboard& operator|=(const Bitboard other)
-  {
-    bits |= other.bits;
-    return *this;
-  }
-
-  Bitboard& operator^=(const Bitboard other)
-  {
-    bits ^= other.bits;
-    return *this;
-  }
-
-
-  uint64_t to_uint64_t() const
-  {
-    return bits;
-  }
-
-private:
-  uint64_t bits;
-};
+}

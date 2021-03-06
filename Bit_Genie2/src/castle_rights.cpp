@@ -11,43 +11,55 @@ CastleRights::CastleRights()
 
 void CastleRights::reset()
 {
-  rooks.reset();
+  rooks = 0;
 }
 
-Bitboard CastleRights::get_rooks(Piece::Color color) const
+uint64_t CastleRights::get_rooks(Piece::Color color) const
 {
   return color == Piece::white ? rooks & BitMask::rank1 : rooks & BitMask::rank8;
 }
 
-bool CastleRights::castle_path_is_clear(const Square rook, const Bitboard occupancy)
+bool CastleRights::castle_path_is_clear(const Square rook, const uint64_t occupancy)
 {
   assert(is_ok(rook));
-  static constexpr uint64_t castle_occ_masks[total_squares]{
-    0, 0, 0XE, 0, 0, 0X60, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0XE00000000000000, 0, 0, 0, 0X6000000000000000, 0
-  };
-  return !(castle_occ_masks[to_int(rook)] & occupancy.to_uint64_t());
+  switch (rook)
+  {
+  case Square::C1:
+    return !(occupancy & 0xE);
+
+  case Square::G1:
+    return !(occupancy & 0x60);
+
+  case Square::C8:
+    return !(occupancy & 0xe00000000000000);
+
+  case Square::G8:
+    return !(occupancy & 0x6000000000000000);
+  default:
+    assert(false);
+    return false;
+  }
 }
 
-Bitboard CastleRights::get_castle_path(const Square sq)
+uint64_t CastleRights::get_castle_path(Square rook)
 {
-  static constexpr uint64_t castle_paths[total_squares]{
-    0, 0, 0X1C, 0, 0, 0, 0X30, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0X1c00000000000000, 0, 0, 0, 0X3000000000000000, 0
-  };
-  return castle_paths[to_int(sq)];
+  switch (rook)
+  {
+  case Square::C1:
+    return 0X1C;
+
+  case Square::G1:
+    return 0X30;
+
+  case Square::C8:
+    return 0X1c00000000000000;
+
+  case Square::G8:
+    return 0X3000000000000000;
+  default:
+    assert(false);
+    return false;
+  }
 }
 
 
@@ -77,10 +89,10 @@ void CastleRights::update(uint16_t move)
 
 bool CastleRights::set(const char right) 
 {
-  if      (right == 'k') rooks.set(Square::G8);
-  else if (right == 'q') rooks.set(Square::C8);
-  else if (right == 'K') rooks.set(Square::G1);
-  else if (right == 'Q') rooks.set(Square::C1);
+  if      (right == 'k') set_bit(Square::G8, rooks);
+  else if (right == 'q') set_bit(Square::C8, rooks);
+  else if (right == 'K') set_bit(Square::G1, rooks);
+  else if (right == 'Q') set_bit(Square::C1, rooks);
   else return false;
 
   return true;
@@ -109,16 +121,16 @@ bool CastleRights::parse_fen(std::string_view rights)
 
 std::ostream& operator<<(std::ostream& o, const CastleRights rights)
 {
-  if (rights.rooks.test(Square::G1))  
+  if (test_bit(Square::G1, rights.rooks))  
     o << 'K';
   
-  if (rights.rooks.test(Square::C1))  
+  if (test_bit(Square::C1, rights.rooks))  
     o << 'Q';
   
-  if (rights.rooks.test(Square::G8))  
+  if (test_bit(Square::G8, rights.rooks))  
     o << 'k';
   
-  if (rights.rooks.test(Square::C8))  
+  if (test_bit(Square::C8, rights.rooks))  
     o << 'q';
  
   return o;

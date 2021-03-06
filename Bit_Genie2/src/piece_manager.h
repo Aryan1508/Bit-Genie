@@ -2,6 +2,7 @@
 #include <array>
 #include "bitboard.h"
 #include "piece.h"
+#include <vector>
 
 // Class for managing different 
 // bitboards of a position
@@ -18,11 +19,11 @@ public:
   // fen for pieces
   bool parse_fen_board(std::string_view);
 
-  // Bitboard of all positions of the current piece
-  Bitboard get_piece_bb(Piece) const;
+  // uint64_t of all positions of the current piece
+  uint64_t get_piece_bb(Piece) const;
 
   // Total occupancy of a color
-  Bitboard get_occupancy(Piece::Color) const;
+  uint64_t get_occupancy(Piece::Color) const;
 
   // Return the piece standing on the given square
   Piece const& get_piece(const Square) const;
@@ -42,7 +43,7 @@ private:
   // the board (update all arrays)
   void add_piece(Square, Piece);
 
-  void add_piece(Square, Bitboard, Piece);
+  void add_piece(Square, uint64_t, Piece);
 
   Piece clear_sq(Square);
 
@@ -50,11 +51,11 @@ private:
   // Return value is to check if string is invalid
   bool add_rank(Square& counter, std::string_view);
 public:
-  // Total occupancy(Bitboards) of White / Black
-  std::array<Bitboard, total_colors> colors;
+  // Total occupancy(bitboards) of White / Black
+  std::array<uint64_t, total_colors> colors;
 
-  // Bitboards for each piece type
-  std::array<Bitboard, total_pieces> bitboards;
+  // bitboards for each piece type
+  std::array<uint64_t, total_pieces> bitboards;
 
   // Array of pieces on each square
   std::array<Piece, total_squares> squares;

@@ -42,6 +42,15 @@ inline Square to_sq<std::string_view>(std::string_view const& sq)
   return static_cast<Square>((sq[0] - 97) + ((sq[1] - 49) * 8));
 }
 
+inline Direction operator+(Direction l, Direction r)
+{
+  return static_cast<Direction>(to_int(l) + to_int(r));
+}
+
+inline Square operator-(Square l, Direction r)
+{
+  return static_cast<Square>(to_int(l) - to_int(r));
+}
 
 inline Square flip_square(const Square sq)
 {

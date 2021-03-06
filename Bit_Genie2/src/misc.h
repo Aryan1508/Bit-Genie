@@ -19,7 +19,6 @@ enum class Rank : uint8_t;
 enum class Square : uint8_t;
 
 // Forward declarations for all classes
-class Bitboard;
 class CastleRights;
 class Move;
 class Movelist;
@@ -36,3 +35,5 @@ constexpr typename std::underlying_type<E>::type to_int(E e) noexcept
 {
   return static_cast<typename std::underlying_type<E>::type>(e);
 }
+
+typedef uint64_t uint64_t;

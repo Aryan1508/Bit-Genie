@@ -145,7 +145,6 @@
   <ItemGroup>
     <ClCompile Include="src\magicmoves.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\bitboard.cpp" />
     <ClCompile Include="src\piece.cpp" />
     <ClCompile Include="src\position.cpp" />
     <ClCompile Include="src\board.cpp" />
