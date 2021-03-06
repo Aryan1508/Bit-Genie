@@ -35,7 +35,7 @@ void ZobristKey::hash_side()
 
 void ZobristKey::hash_piece(Square sq, Piece piece)
 {
-  hash ^= piece_keys[to_int(get_piece_type(piece))][to_int(get_piece_color(piece))][to_int(sq)];
+  hash ^= piece_keys[to_int(type_of(piece))][to_int(color_of(piece))][sq];
 }
 
 void ZobristKey::hash_castle(const CastleRights old_rooks, const CastleRights new_rooks)
@@ -69,8 +69,8 @@ void ZobristKey::init()
     for (int j = 0; j < total_squares; j++)
     {
       castle_keys[j] = dist(gen);
-      piece_keys[i][to_int(Color::white)][j] = dist(gen);
-      piece_keys[i][to_int(Color::black)][j] = dist(gen);
+      piece_keys[i][White][j] = dist(gen);
+      piece_keys[i][Black][j] = dist(gen);
     }
   }
   printf("done.\n");
@@ -81,7 +81,7 @@ void ZobristKey::hash_pieces(Position const& position)
   for (Square sq = Square::A1;sq <= Square::H8;sq++)
   {
     const Piece piece = position.pieces.get_piece(sq);
-    if (piece != Piece::empty)
+    if (piece != Empty)
     {
       hash_piece(sq, piece);
     }
@@ -102,14 +102,14 @@ void ZobristKey::generate(Position const& position)
   hash_pieces(position);
   hash_castle(CastleRights(), position.castle_rights);
 
-  if (position.player() == Color::white)
+  if (position.side == White)
   {
     hash_side();
   }
 
-  if (position.get_ep() != Square::bad)
+  if (position.ep_sq != Square::bad_sq)
   {
-    hash_ep(position.get_ep());
+    hash_ep(position.ep_sq);
   }
 }
 

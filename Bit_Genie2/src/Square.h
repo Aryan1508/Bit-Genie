@@ -7,7 +7,7 @@
 
 // Bit Genie uses the little endian rank-file mapping (LERF) 
 // https://www.chessprogramming.org/Square_Mapping_Consideration
-enum class Square : uint8_t
+enum Square : uint8_t
 {
   A1, B1, C1, D1, E1, F1, G1, H1, 
   A2, B2, C2, D2, E2, F2, G2, H2,
@@ -17,7 +17,7 @@ enum class Square : uint8_t
   A6, B6, C6, D6, E6, F6, G6, H6,
   A7, B7, C7, D7, E7, F7, G7, H7,
   A8, B8, C8, D8, E8, F8, G8, H8, 
-  total, bad
+  bad_sq = 100,
 };
 
 // Number of squares that would be skipped
@@ -54,24 +54,24 @@ inline Square operator-(Square l, Direction r)
 
 inline Square flip_square(const Square sq)
 {
-  return to_sq(to_int(sq) ^ 56);
+  return to_sq(sq ^ 56);
 }
 
 inline Square operator++(Square& sq, int) 
 {
   Square temp = sq;
-  sq = to_sq(to_int(sq) + 1);
+  sq = to_sq(sq + 1);
   return temp;
 }
 
 inline Square operator+(Square sq, Direction dir)
 {
-  return to_sq(to_int(sq) + to_int(dir));
+  return to_sq(sq + to_int(dir));
 }
 
 inline Square& operator+=(Square& sq, int inc)
 {
-  sq = to_sq(to_int(sq) + inc);
+  sq = to_sq(sq + inc);
   return sq;
 }
 

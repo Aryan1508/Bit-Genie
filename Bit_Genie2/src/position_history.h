@@ -12,7 +12,7 @@ public:
   struct Undo
   {
     int          half_moves = 0;
-    Square       ep_sq = Square::bad;
+    Square       ep_sq = Square::bad_sq;
     CastleRights castle;
     ZobristKey   key;
     Piece        captured;

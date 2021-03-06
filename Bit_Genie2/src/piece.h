@@ -2,20 +2,20 @@
 #include "misc.h"
 #include <iostream>
 
-enum class Color : uint8_t
+enum Color : uint8_t
 {
-  white, black
+  White, Black
 };
 
-enum class PieceType : uint8_t
+enum PieceType : uint8_t
 {
-  pawn, knight, bishop, rook, queen, king
+  Pawn, Knight, Bishop, Rook, Queen, King
 };
 
-enum class Piece : uint8_t 
+enum Piece : uint8_t 
 {
-  wpawn, wknight, wbishop, wrook, wqueen, qking,
-  bpawn, bknight, bbishop, brook, bqueen, bking, empty
+  wPawn, wKnight, wBishop, wRook, wQueen, wKing,
+  bPawn, bKnight, bBishop, bRook, bQueen, bKing, Empty
 };
 
 std::ostream& operator<<(std::ostream&, PieceType);
@@ -28,12 +28,12 @@ inline Piece make_piece(PieceType type, Color color)
   return static_cast<Piece>(to_int(type) + (to_int(color) * 6));
 }
 
-inline Color get_piece_color(Piece piece)
+inline Color color_of(Piece piece)
 {
   return static_cast<Color>(to_int(piece) / 6);
 }
 
-inline PieceType get_piece_type(Piece piece)
+inline PieceType type_of(Piece piece)
 {
   return static_cast<PieceType>(to_int(piece) % 6);
 }

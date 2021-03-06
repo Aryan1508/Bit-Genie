@@ -14,37 +14,37 @@ namespace Attacks
 
   inline uint64_t knight(Square sq)
   {
-    return BitMask::knight_attacks[to_int(sq)];
+    return BitMask::knight_attacks[sq];
   }
 
   inline uint64_t king(Square sq)
   {
-    return BitMask::king_attacks[to_int(sq)];
+    return BitMask::king_attacks[sq];
   }
 
   inline uint64_t bishop(Square sq, uint64_t occ)
   {
     assert(is_ok(sq));
-    return Bmagic(to_int(sq), occ);
+    return Bmagic(sq, occ);
   }
 
   inline uint64_t rook(Square sq, uint64_t occ)
   {
     assert(is_ok(sq));
-    return Rmagic(to_int(sq), occ);
+    return Rmagic(sq, occ);
   }
 
   inline uint64_t queen(Square sq, uint64_t occ)
   {
     assert(is_ok(sq));
-    return Qmagic(to_int(sq), occ);
+    return Qmagic(sq, occ);
   }
 
   inline uint64_t pawn_push(Square sq, const Color color, uint64_t empty)
   {
-    if (color == Color::white)
+    if (color == White)
     {
-      uint64_t sq_bb = 1ull << to_int(sq);
+      uint64_t sq_bb = 1ull << sq;
 
       uint64_t single_push = shift<Direction::north>(sq_bb) & empty;
       uint64_t double_push = shift<Direction::north>(single_push) & empty & BitMask::rank4;
@@ -52,7 +52,7 @@ namespace Attacks
     }
     else
     {
-      uint64_t sq_bb = 1ull << to_int(sq);
+      uint64_t sq_bb = 1ull << sq;
 
       uint64_t single_push = shift<Direction::south>(sq_bb) & empty;
       uint64_t double_push = shift<Direction::south>(single_push) & empty & BitMask::rank5;
@@ -62,7 +62,7 @@ namespace Attacks
 
   inline uint64_t pawn_captues(Square sq, const Color color, uint64_t enemy)
   {
-    return BitMask::pawn_attacks[to_int(color)][to_int(sq)] & enemy;
+    return BitMask::pawn_attacks[to_int(color)][sq] & enemy;
   }
 
   inline uint64_t pawn(Square sq, Position const& position)
@@ -71,8 +71,8 @@ namespace Attacks
     uint64_t empty = ~position.total_occupancy();
     uint64_t attacks = 0;
 
-    attacks |= pawn_push(sq, position.player(), empty);
-    attacks |= pawn_captues(sq, position.player(), enemy);
+    attacks |= pawn_push(sq, position.side, empty);
+    attacks |= pawn_captues(sq, position.side, enemy);
     return attacks;
   }
 
@@ -80,12 +80,12 @@ namespace Attacks
   {
     using Dir = Direction;
 
-    if (position.get_ep() == Square::bad) return 0;
+    if (position.ep_sq == Square::bad_sq) return 0;
 
-    uint64_t sq_bb = 1ull << to_int(sq);
-    uint64_t ep_bb = 1ull << to_int(position.get_ep());
+    uint64_t sq_bb = 1ull << sq;
+    uint64_t ep_bb = 1ull << to_int(position.ep_sq);
 
-    if (position.player() == Color::white)
+    if (position.side == White)
     {
       uint64_t ep_rank = BitMask::rank6;
 
@@ -113,17 +113,17 @@ namespace Attacks
     uint64_t us = pieces.get_occupancy(!enemy);
     uint64_t them = pieces.get_occupancy(enemy);
 
-    uint64_t pawns = pieces.get_piece_bb<PieceType::pawn>(enemy);
-    uint64_t knights = pieces.get_piece_bb<PieceType::knight>(enemy);
-    uint64_t bishops = pieces.get_piece_bb<PieceType::bishop>(enemy);
-    uint64_t rooks = pieces.get_piece_bb<PieceType::rook>(enemy);
-    uint64_t queens = pieces.get_piece_bb<PieceType::queen>(enemy);
-    uint64_t kings = pieces.get_piece_bb<PieceType::king>(enemy);
+    uint64_t pawns = pieces.get_piece_bb<Pawn>(enemy);
+    uint64_t knights = pieces.get_piece_bb<Knight>(enemy);
+    uint64_t bishops = pieces.get_piece_bb<Bishop>(enemy);
+    uint64_t rooks = pieces.get_piece_bb<Rook>(enemy);
+    uint64_t queens = pieces.get_piece_bb<Queen>(enemy);
+    uint64_t kings = pieces.get_piece_bb<King>(enemy);
 
     bishops |= queens;
     rooks |= queens;
 
-    return (BitMask::pawn_attacks[to_int(!enemy)][to_int(sq)] & pawns)
+    return (BitMask::pawn_attacks[to_int(!enemy)][sq] & pawns)
       || (bishop(sq, occupancy) & bishops)
       || (rook(sq, occupancy) & rooks)
       || (knight(sq) & knights)

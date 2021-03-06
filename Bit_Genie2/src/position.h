@@ -20,12 +20,6 @@ public:
   // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
   bool set_fen(std::string_view);
 
-  // Return the current player's color
-  Color player() const;
-
-  // Return the current state of the en-passant 
-  Square get_ep() const;
-
   // uint64_t-occupancy of the current player
   uint64_t friend_bb() const;
 
@@ -41,14 +35,10 @@ public:
   // Undo the latest move applied
   void revert_move();
 
-  int get_halfmoves() const;
-
-   // Check if a pseudo-legal is legal 
-  // i.e It shouldn't leave our own king in check
+  // Check if a pseudo-legal is legal after performing
   bool move_was_legal() const;
 
-  void error_check_bb() const;
-
+  // Check if a pseudo-legal move is legal before performing
   bool move_is_legal(uint16_t);
 
   uint64_t perft(int, bool = true);
@@ -72,7 +62,7 @@ private:
   // Reset all position attributes
   void reset(); 
 
-  // set side_to_play from 'w' -> Color::white or 'b' -> Color::black
+  // set side from 'w' -> White or 'b' -> Black
   bool parse_fen_side(std::string_view);
 
   // set halfmove_nb from fen 
@@ -81,7 +71,7 @@ private:
   // (set to 0)
   void reset_halfmoves();
 
-  // set to Square::bad
+  // set to Square::bad_sq
   void reset_ep();
 
   // Parse the fen square for ep into ep_sq
@@ -90,16 +80,8 @@ private:
   // pass the turn to the opponent
   inline void switch_players()
   {
-    side_to_play = !side_to_play;
+    side = !side;
   }
-
-  // Add the given piece on the given square
-  // and update the Zobrist key
-  void add_piece(Square, Piece);
-  
-  // Remove the piece standing on the given square
-  // and update the Zobrist key
-  Piece clear_sq(Square);
 
   // Perform a normal(not castle, enpassant or promotion) move
   Piece apply_normal_move(uint16_t);
@@ -114,7 +96,7 @@ private:
   void update_ep(Square from, Square to);
 public:
   // The side which will play the next move
-  Color side_to_play;
+  Color side;
 
   // Total number of half-moves played in the position
   int half_moves;

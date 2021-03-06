@@ -33,7 +33,7 @@ bool is_valid_sq(std::string_view sq)
 
 std::ostream& operator<<(std::ostream& o, const Square sq)
 {
-  if (sq == Square::bad)
+  if (sq == Square::bad_sq)
   {
     return o << '-';
   }

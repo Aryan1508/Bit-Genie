@@ -4,7 +4,7 @@
 
 bool move_is_capture(Position const& position, uint16_t move)
 {
-  return position.pieces.get_piece(GetMoveTo(move)) != Piece::empty;
+  return position.pieces.get_piece(GetMoveTo(move)) != Empty;
 }
 
 std::string print_move(uint16_t move)

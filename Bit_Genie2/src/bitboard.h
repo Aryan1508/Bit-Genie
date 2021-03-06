@@ -48,19 +48,19 @@ inline Square pop_lsb(uint64_t& bb)
 
 inline bool test_bit(Square sq, uint64_t bb)
 {
-  return (1ull << to_int(sq)) & bb;
+  return (1ull << sq) & bb;
 }
 
 inline void set_bit(Square sq, uint64_t& bb)
 {
-  bb |= (1ull << to_int(sq));
+  bb |= (1ull << sq);
 }
 
 inline void print_uint64_t(uint64_t bb)
 {
   for (Square sq = Square::A1; sq <= Square::H8; sq++)
   {
-    if (to_int(sq) % 8 == 0)
+    if (sq % 8 == 0)
       std::cout << '\n';
 
     if (test_bit(flip_square(sq), bb))
