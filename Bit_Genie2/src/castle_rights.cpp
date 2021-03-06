@@ -83,8 +83,8 @@ void CastleRights::update(uint16_t move)
     RC8, ~0ull, ~0ull, ~0ull, KE8, ~0ull, ~0ull, RG8,
   };
 
-  rooks &= mask[to_int(GetMoveFrom(move))];
-  rooks &= mask[to_int(GetMoveTo(move))];
+  rooks &= mask[to_int(move_from(move))];
+  rooks &= mask[to_int(move_to(move))];
 }
 
 bool CastleRights::set(const char right) 

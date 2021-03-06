@@ -138,8 +138,8 @@ void Position::update_ep(Square from, Square to)
 Piece Position::apply_normal_move(uint16_t move)
 {
   CastleRights old_castle = castle_rights;
-  Square from = GetMoveFrom(move);
-  Square to   = GetMoveTo(move);
+  Square from = move_from(move);
+  Square to   = move_to(move);
   Piece from_pce = pieces.squares[from];
 
   PieceType from_pce_t = type_of(from_pce);
@@ -198,7 +198,7 @@ void Position::apply_move(uint16_t move)
   reset_ep();
   half_moves++;
 
-  MoveFlag type = GetMoveType(move);
+  MoveFlag type = move_flag(move);
 
   if (type == MoveFlag::normal)
     undo.captured = apply_normal_move(move);
@@ -214,9 +214,9 @@ Piece Position::apply_enpassant(uint16_t move)
 {
   reset_halfmoves();
 
-  Square from = GetMoveFrom(move);
-  Square to = GetMoveTo(move);
-  Square ep = to_sq(to_int(GetMoveTo(move)) ^ 8);
+  Square from = move_from(move);
+  Square to = move_to(move);
+  Square ep = to_sq(to_int(move_to(move)) ^ 8);
 
   Piece from_pce = pieces.squares[from];
   Piece captured = pieces.squares[to_int(ep)];
@@ -240,8 +240,8 @@ Piece Position::apply_enpassant(uint16_t move)
 
 void Position::revert_normal_move(uint16_t move, Piece captured)
 {
-  Square from = GetMoveFrom(move);
-  Square to = GetMoveTo(move);
+  Square from = move_from(move);
+  Square to = move_to(move);
 
   Piece from_pce = pieces.squares[to];
 
@@ -259,10 +259,10 @@ void Position::revert_normal_move(uint16_t move, Piece captured)
 
 void Position::revert_enpassant(uint16_t move, Piece captured)
 {
-  Square from = GetMoveFrom(move);
-  Square to = GetMoveTo(move);
+  Square from = move_from(move);
+  Square to = move_to(move);
 
-  Square ep = to_sq(to_int(GetMoveTo(move)) ^ 8);
+  Square ep = to_sq(to_int(move_to(move)) ^ 8);
   uint64_t ep_bb = 1ull << to_int(ep);
   Piece from_pce = pieces.squares[to];
 
@@ -287,7 +287,7 @@ void Position::revert_move()
   half_moves    = undo.half_moves;
   castle_rights = undo.castle;
 
-  MoveFlag type = GetMoveType(undo.move);
+  MoveFlag type = move_flag(undo.move);
 
   if (type == MoveFlag::normal)
     revert_normal_move(undo.move, undo.captured);
@@ -337,13 +337,13 @@ uint64_t Position::perft(int depth, bool root)
 bool Position::move_is_legal(uint16_t move)
 {
   Color us = side;
-  Square from = GetMoveFrom(move);
-  Square to = GetMoveTo(move);
+  Square from = move_from(move);
+  Square to = move_to(move);
 
   uint64_t occupancy = total_occupancy();
 
 
-  if (GetMoveType(move) == MoveFlag::normal)
+  if (move_flag(move) == MoveFlag::normal)
   {
     if (type_of(pieces.squares[from]) == King)
     {
@@ -372,7 +372,7 @@ bool Position::move_is_legal(uint16_t move)
     }
   }
 
-  if (GetMoveType(move) == MoveFlag::enpassant)
+  if (move_flag(move) == MoveFlag::enpassant)
   {
     uint64_t occupancy = total_occupancy();
     Square ep = Square(to ^ 8);

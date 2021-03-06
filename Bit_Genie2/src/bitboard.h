@@ -68,6 +68,5 @@ inline void print_uint64_t(uint64_t bb)
 
     else
       std::cout << ". ";
-
   }
 }

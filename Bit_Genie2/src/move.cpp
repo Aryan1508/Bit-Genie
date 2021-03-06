@@ -4,16 +4,16 @@
 
 bool move_is_capture(Position const& position, uint16_t move)
 {
-  return position.pieces.get_piece(GetMoveTo(move)) != Empty;
+  return position.pieces.get_piece(move_to(move)) != Empty;
 }
 
 std::string print_move(uint16_t move)
 {
   std::stringstream o;
-  o << GetMoveFrom(move) << GetMoveTo(move);
-  if (GetMoveType(move) == MoveFlag::promotion)
+  o << move_from(move) << move_to(move);
+  if (move_flag(move) == MoveFlag::promotion)
   {
-    o << GetMovePromoted(move);
+    o << move_promoted(move);
   }
   return o.str();
 }
