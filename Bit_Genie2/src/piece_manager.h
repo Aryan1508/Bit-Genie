@@ -44,9 +44,6 @@ private:
   // Add a normal piece on
   // the board (update all arrays)
   void add_piece(Square, Piece);
-
-  void add_piece(Square, uint64_t, Piece);
-
   // Add a whole rank of pieces of a fen
   // Return value is to check if string is invalid
   bool add_rank(Square& counter, std::string_view);

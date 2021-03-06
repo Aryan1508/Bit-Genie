@@ -1,6 +1,7 @@
 #pragma once
 #include "misc.h"
 #include "move.h"
+#include "position.h"
 #include <array>
 #include <iterator>
 
@@ -26,9 +27,15 @@ public:
   {
     return cap;
   }
-
-  void add(uint16_t&& move)
+  
+  template<bool check = false>
+  void add(Position& position, uint16_t&& move)
   {
+    if constexpr (check) 
+    {
+      if (!position.move_is_legal(move))
+        return;
+    }
     moves[cap++] = std::move(move);
   }
 private:

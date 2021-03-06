@@ -49,6 +49,8 @@ public:
 
   void error_check_bb() const;
 
+  bool move_is_legal(uint16_t);
+
   uint64_t perft(int, bool = true);
 
   friend std::ostream& operator<<(std::ostream&, Position const&);

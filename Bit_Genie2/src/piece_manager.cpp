@@ -70,16 +70,12 @@ bool PieceManager::add_piece(const Square sq, const char label)
   return true;
 }
 
-void PieceManager::add_piece(Square sq, uint64_t bb, Piece piece)
-{
-  squares[to_int(sq)] = piece;
-  bitboards[to_int(get_piece_type(piece))] ^= bb;
-  colors[to_int(get_piece_color(piece))] ^= bb;
-}
 
 void PieceManager::add_piece(Square sq, Piece piece)
 {
-  add_piece(sq, 1ull << to_int(sq), piece);
+  squares[to_int(sq)] = piece;
+  set_bit(sq, bitboards[to_int(get_piece_type(piece))]);
+  set_bit(sq, colors[to_int(get_piece_color(piece))]);
 }
 
 bool PieceManager::add_rank(Square& counter, std::string_view rank)

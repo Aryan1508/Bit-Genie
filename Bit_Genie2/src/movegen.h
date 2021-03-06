@@ -9,11 +9,11 @@
 
 enum class MoveGenType : uint8_t { normal, noisy, quiet };
 
-template<MoveGenType type = MoveGenType::normal>
+template<bool checked = true, MoveGenType type = MoveGenType::normal>
 class MoveGenerator
 {
 public:
-  void generate(Position const& position)
+  void generate(Position& position)
   {
     uint64_t targets = get_targets(position);
     uint64_t occupancy = position.total_occupancy();
@@ -47,7 +47,7 @@ private:
   }
 
   template<bool is_promo = false>
-  void add_moves(Square from, uint64_t attacks, MoveFlag gen_type)
+  void add_moves(Position& pos, Square from, uint64_t attacks, MoveFlag gen_type)
   {
     assert(is_ok(from));
     while (attacks)
@@ -55,50 +55,50 @@ private:
       Square to = pop_lsb(attacks);
       if constexpr (is_promo)
       {
-        movelist.add(Move(from, to, gen_type, PieceType::knight));
-        movelist.add(Move(from, to, gen_type, PieceType::bishop));
-        movelist.add(Move(from, to, gen_type, PieceType::rook));
-        movelist.add(Move(from, to, gen_type, PieceType::queen));
+        movelist.add<checked><checked>(pos, Move(from, to, gen_type, PieceType::knight));
+        movelist.add<checked><checked>(pos, Move(from, to, gen_type, PieceType::bishop));
+        movelist.add<checked><checked>(pos, Move(from, to, gen_type, PieceType::rook));
+        movelist.add<checked>(pos, Move(from, to, gen_type, PieceType::queen));
 
       }
-      movelist.add(Move(from, to, gen_type, PieceType::knight));
+      movelist.add<checked>(pos, Move(from, to, gen_type, PieceType::knight));
     }
   }
 
   template<typename Callable, typename... Args>
-  void generate_normal_moves(Position const& position, PieceType p_type, uint64_t targets, Callable F, Args const&... args)
+  void generate_normal_moves(Position& position, PieceType p_type, uint64_t targets, Callable F, Args const&... args)
   {
     uint64_t pieces = position.pieces.get_piece_bb(make_piece(p_type, position.player()));
     while (pieces)
     {
       Square sq = pop_lsb(pieces);
       uint64_t attacks = F(sq, args...) & targets;
-      add_moves(sq, attacks, MoveFlag::normal);
+      add_moves(position, sq, attacks, MoveFlag::normal);
     }
   }
 
   template<bool is_promo = false>
-  inline void add_pawn_moves(uint64_t attacks, Direction delta, MoveFlag gen_type = MoveFlag::normal)
+  inline void add_pawn_moves(Position& pos, uint64_t attacks, Direction delta, MoveFlag gen_type = MoveFlag::normal)
   {
     while (attacks)
     {
       Square sq = pop_lsb(attacks);
       if constexpr (is_promo)
       {
-        movelist.add(Move(sq - delta, sq, gen_type, PieceType::knight));
-        movelist.add(Move(sq - delta, sq, gen_type, PieceType::bishop));
-        movelist.add(Move(sq - delta, sq, gen_type, PieceType::rook));
-        movelist.add(Move(sq - delta, sq, gen_type, PieceType::queen));
+        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, PieceType::knight));
+        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, PieceType::bishop));
+        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, PieceType::rook));
+        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, PieceType::queen));
 
       }
       else
       {
-        movelist.add(Move(sq - delta, sq, gen_type, PieceType::knight));
+        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, PieceType::knight));
       }
     }
   }
 
-  void generate_pawn_moves(Position const& position, uint64_t targets)
+  void generate_pawn_moves(Position& position, uint64_t targets)
   {
     constexpr bool gen_ep = type == MoveGenType::noisy || type == MoveGenType::normal;
 
@@ -119,8 +119,8 @@ private:
     {
       uint64_t push_one_normal = shift(pawns_normal, forward) & empty;
       uint64_t push_two_noraml = shift(push_one_normal, forward) & empty & pawn_st_rank;
-      add_pawn_moves(push_one_normal, forward);
-      add_pawn_moves(push_two_noraml, forward + forward);
+      add_pawn_moves(position, push_one_normal, forward);
+      add_pawn_moves(position, push_two_noraml, forward + forward);
     }
 
     if constexpr (type == MoveGenType::normal || type == MoveGenType::noisy)
@@ -136,12 +136,12 @@ private:
         uint64_t left_ep = shift<Direction::west>(forward_one) & ep_bb & ep_rank;
         uint64_t right_ep = shift<Direction::east>(forward_one) & ep_bb & ep_rank;
 
-        add_pawn_moves(left_ep, forward + Direction::west, MoveFlag::enpassant);
-        add_pawn_moves(right_ep, forward + Direction::east, MoveFlag::enpassant);
+        add_pawn_moves(position, left_ep, forward + Direction::west, MoveFlag::enpassant);
+        add_pawn_moves(position, right_ep, forward + Direction::east, MoveFlag::enpassant);
       }
 
-      add_pawn_moves(left, forward + Direction::west);
-      add_pawn_moves(right, forward + Direction::east);
+      add_pawn_moves(position, left, forward + Direction::west);
+      add_pawn_moves(position, right, forward + Direction::east);
     }
   }
 
@@ -175,7 +175,7 @@ private:
       if (castle_path_is_attacked(position, rook, !position.player()))
         continue;
 
-      movelist.add(Move(king_sq, rook, MoveFlag::castle, PieceType::knight));
+      movelist.add<checked>(position, Move(king_sq, rook, MoveFlag::castle, PieceType::knight));
     }
   }
 };

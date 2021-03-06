@@ -19,12 +19,21 @@ auto benchmark_function(Callable f, Position& pos, int depth) {
   return std::pair<long long, uint64_t>(time_taken, ret);
 }
 
+auto foo(Position& position, int d)
+{
+  auto nodes = position.perft(d);
+  return nodes;
+}
+
 int main()
 {
   Attacks::init();
   ZobristKey::init();
   Position position;
 
-  uint64_t nodes = position.perft(6);
-  printf("\nnodes %llu", nodes);
+  auto[time_taken, ret] = benchmark_function(foo, position, 6);
+
+  std::cout << "\nnodes: " << ret << '\n';
+  std::cout << "time  : " << time_taken << " ms\n";
+
 }

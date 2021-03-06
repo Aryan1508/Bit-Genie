@@ -107,27 +107,36 @@ namespace Attacks
     }
   }
 
+  inline bool square_attacked(Position const& position, Square sq, Color enemy, uint64_t occupancy)
+  {
+    auto const& pieces = position.pieces;
+    uint64_t us = pieces.get_occupancy(!enemy);
+    uint64_t them = pieces.get_occupancy(enemy);
+
+    uint64_t pawns = pieces.get_piece_bb<PieceType::pawn>(enemy);
+    uint64_t knights = pieces.get_piece_bb<PieceType::knight>(enemy);
+    uint64_t bishops = pieces.get_piece_bb<PieceType::bishop>(enemy);
+    uint64_t rooks = pieces.get_piece_bb<PieceType::rook>(enemy);
+    uint64_t queens = pieces.get_piece_bb<PieceType::queen>(enemy);
+    uint64_t kings = pieces.get_piece_bb<PieceType::king>(enemy);
+
+    bishops |= queens;
+    rooks |= queens;
+
+    return (BitMask::pawn_attacks[to_int(!enemy)][to_int(sq)] & pawns)
+      || (bishop(sq, occupancy) & bishops)
+      || (rook(sq, occupancy) & rooks)
+      || (knight(sq) & knights)
+      || (king(sq) & kings);
+  }
+
   inline bool square_attacked(Position const& position, Square sq, Color enemy)
   {
     auto const& pieces = position.pieces;
     uint64_t us = pieces.get_occupancy(!enemy);
     uint64_t them = pieces.get_occupancy(enemy);
     uint64_t occupancy = us | them;
-
-    uint64_t pawns   = pieces.get_piece_bb<PieceType::pawn>(enemy);
-    uint64_t knights = pieces.get_piece_bb<PieceType::knight>(enemy);
-    uint64_t bishops = pieces.get_piece_bb<PieceType::bishop>(enemy);
-    uint64_t rooks   = pieces.get_piece_bb<PieceType::rook>(enemy);
-    uint64_t queens  = pieces.get_piece_bb<PieceType::queen>(enemy);
-    uint64_t kings   = pieces.get_piece_bb<PieceType::king>(enemy);
-
-    bishops |= queens;
-    rooks |= queens;
-
-    return (BitMask::pawn_attacks[to_int(!enemy)][to_int(sq)] & pawns) 
-        || (bishop(sq, occupancy) & bishops)
-        || (rook(sq, occupancy)   & rooks)
-        || (knight(sq) & knights)
-        || (king(sq) & kings);
+    
+    return square_attacked(position, sq, enemy, occupancy);
   }
 }

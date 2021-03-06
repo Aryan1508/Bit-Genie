@@ -63,7 +63,7 @@ inline void print_uint64_t(uint64_t bb)
     if (to_int(sq) % 8 == 0)
       std::cout << '\n';
 
-    if (test_bit(sq, bb))
+    if (test_bit(flip_square(sq), bb))
       std::cout << "1 ";
 
     else

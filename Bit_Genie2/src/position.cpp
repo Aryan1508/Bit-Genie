@@ -144,8 +144,7 @@ std::ostream& operator<<(std::ostream& o, Position const& position)
 void Position::add_piece(Square sq, Piece piece)
 {
   assert(is_ok(sq));
-  uint64_t sq_bb = 1ull << to_int(sq);
-  pieces.add_piece(sq, sq_bb, piece);
+  pieces.add_piece(sq, piece);
   key.hash_piece(sq, piece);
 }
 
@@ -353,29 +352,93 @@ static void bb_error(Position const& position)
   std::cin.get();
 }
 
+static uint64_t legal_move_count(Position& position)
+{
+  MoveGenerator<true> gen;
+  gen.generate(position);
+  return gen.movelist.size();
+}
+
 uint64_t Position::perft(int depth, bool root)
 {
-  uint64_t total = 0;
+  uint64_t nodes = 0;
 
-  if (depth == 0)
-    return 1;
-
-  MoveGenerator gen;
+  if (depth == 1)
+  {
+    return legal_move_count(*this);
+  }
+  
+  MoveGenerator<true> gen;
   gen.generate(*this);
 
-  for (auto move : gen.movelist)
+  for (auto m : gen.movelist)
   {
-    apply_move(move);
-    if (move_was_legal()) {
-      uint64_t child = perft(depth - 1, false);
-
-      if (root)
-        std::cout << print_move(move) << ": " << child << '\n';
-
-      total += child;
-    }
+    apply_move(m);
+    nodes += perft(depth - 1, false);
     revert_move();
   }
 
-  return total;
+  return nodes;
+}
+
+bool Position::move_is_legal(uint16_t move)
+{
+  Color us = side_to_play;
+  Square from = GetMoveFrom(move);
+  Square to = GetMoveTo(move);
+
+  uint64_t occupancy = total_occupancy();
+
+
+  if (GetMoveType(move) == MoveFlag::normal)
+  {
+    if (get_piece_type(pieces.squares[to_int(from)]) == PieceType::king)
+    {
+      occupancy ^= (1ull << to_int(from));
+      return !Attacks::square_attacked(*this, to, !side_to_play, occupancy);
+    }
+    else
+    {
+      
+      occupancy ^= (1ull << to_int(from)) ^ (1ull << to_int(to));
+
+      Piece captured = pieces.squares[to_int(to)];
+      uint64_t old = pieces.bitboards[to_int(get_piece_type(captured))];
+
+      if (captured != Piece::empty)
+      {
+        occupancy ^= (1ull << to_int(to));
+        pieces.bitboards[to_int(get_piece_type(captured))] ^= (1ull << to_int(to));
+      }
+
+      uint64_t king = pieces.bitboards[to_int(PieceType::king)] & pieces.colors[to_int(side_to_play)];
+      bool is_legal = !Attacks::square_attacked(*this, get_lsb(king), !side_to_play, occupancy);
+     
+      pieces.bitboards[to_int(get_piece_type(captured))] = old;
+      return is_legal;
+    }
+  }
+
+  if (GetMoveType(move) == MoveFlag::enpassant)
+  {
+    uint64_t occupancy = total_occupancy();
+    Square ep = Square(to_int(to) ^ 8);
+
+    occupancy ^= (1ull << to_int(from)) ^ (1ull << to_int(to)) ^ (1ull << (to_int(ep)));
+    Piece captured = pieces.squares[to_int(to)];
+    uint64_t old = pieces.bitboards[to_int(get_piece_type(captured))];
+
+    pieces.bitboards[to_int(get_piece_type(captured))] ^= (1ull << (to_int(ep)));
+    uint64_t king = pieces.bitboards[to_int(PieceType::king)] & pieces.colors[to_int(side_to_play)];
+    bool is_legal = !Attacks::square_attacked(*this, get_lsb(king), !side_to_play, occupancy);
+
+
+    pieces.bitboards[to_int(get_piece_type(captured))] = old;
+    return is_legal;
+  }
+
+  else
+    assert(false);
+
+  return true;
 }
