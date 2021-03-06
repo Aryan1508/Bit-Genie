@@ -135,50 +135,6 @@ void Position::update_ep(Square from, Square to)
   }
 }
 
-Piece Position::apply_normal_move(uint16_t move)
-{
-  CastleRights old_castle = castle_rights;
-  Square from = move_from(move);
-  Square to   = move_to(move);
-  Piece from_pce = pieces.squares[from];
-
-  PieceType from_pce_t = type_of(from_pce);
-  Color from_pce_c = color_of(from_pce);
-
-  Piece captured = pieces.squares[to];
-
-  if (type_of(from_pce) == Pawn)
-  {
-    reset_halfmoves();
-    
-    if (is_double_push(from, to, from_pce_t))
-      update_ep(from, to);
-    
-  }
-
-  if (!(captured == Empty))
-  {
-    reset_halfmoves();
-
-    pieces.bitboards[to_int(type_of(captured))] ^= (1ull << to);
-    pieces.colors[to_int(color_of(captured))] ^= (1ull << to);
-    key.hash_piece(to, captured);
-  }
-
-  pieces.bitboards[from_pce_t] ^= ((1ull << from) | (1ull << to));
-  pieces.colors[from_pce_c] ^= ((1ull << from) | (1ull << to));
-  
-  pieces.squares[to] = pieces.squares[from];
-  pieces.squares[from] = Empty;
-
-  castle_rights.update(move);
-
-  key.hash_piece(from, from_pce);
-  key.hash_piece(to, from_pce);
-  key.hash_castle(old_castle, castle_rights);
-
-  return captured;
-}
 
 void Position::apply_move(uint16_t move)
 {
@@ -205,6 +161,9 @@ void Position::apply_move(uint16_t move)
 
   else if (type == MoveFlag::enpassant)
     undo.captured = apply_enpassant(move);
+
+  else if (type == MoveFlag::castle)
+    undo.captured = apply_castle(move);
 
   key.hash_side();
   switch_players();
@@ -295,6 +254,9 @@ void Position::revert_move()
   else if (type == MoveFlag::enpassant)
     revert_enpassant(undo.move, undo.captured);
 
+  else if (type == MoveFlag::castle)
+    revert_castle(undo.move);
+
   switch_players();
 }
 
@@ -327,8 +289,12 @@ uint64_t Position::perft(int depth, bool root)
   for (auto m : gen.movelist)
   {
     apply_move(m);
-    nodes += perft(depth - 1, false);
+    auto child = perft(depth - 1, false);
     revert_move();
+
+    if (root)
+      std::cout << print_move(m) << ": " << child << '\n';
+    nodes += child;
   }
 
   return nodes;
@@ -394,4 +360,186 @@ bool Position::move_is_legal(uint16_t move)
     assert(false);
 
   return true;
+}
+
+Piece Position::apply_castle(uint16_t move)
+{
+  auto old_castle = castle_rights;
+  Square from = move_from(move);
+  Square to = move_to(move);
+  Square rook_from = bad_sq, rook_to = bad_sq;
+  Color col;
+
+  switch (to)
+  {
+  case C1:
+    rook_from = A1;
+    rook_to = D1;
+    col = White;
+    break;
+
+  case G1:
+    rook_from = H1;
+    rook_to = F1;
+    col = White;
+    break;
+
+  case C8:
+    rook_from = A8;
+    rook_to = D8;
+    col = Black;
+    break;
+
+  case G8:
+    rook_from = H8;
+    rook_to = F8;
+    col = Black;
+    break;
+
+  default:
+    assert(false);
+    break;
+  }
+
+  PieceType rook = type_of(pieces.squares[rook_from]);
+  PieceType king = type_of(pieces.squares[from]);
+  
+  pieces.bitboards[king] ^= (1ull << from) ^ (1ull << to);
+  pieces.bitboards[rook] ^= (1ull << rook_from) ^ (1ull << rook_to);
+  pieces.colors[col] ^= (1ull << from) ^ (1ull << to) ^ (1ull << rook_from) ^ (1ull << rook_to);
+
+  pieces.squares[to] = pieces.squares[from];
+  pieces.squares[from] = Empty;
+
+  pieces.squares[rook_to] = pieces.squares[rook_from];
+  pieces.squares[rook_from] = Empty;
+
+  castle_rights.update(move);
+
+  key.hash_piece(from, make_piece(king, col));
+  key.hash_piece(to, make_piece(king, col));
+  key.hash_piece(rook_from, make_piece(rook, col));
+  key.hash_piece(rook_to, make_piece(rook, col));
+  key.hash_castle(old_castle, castle_rights);
+
+  return Empty;
+}
+
+void Position::revert_castle(uint16_t move)
+{
+  Square from = move_from(move);
+  Square to = move_to(move);
+  Square rook_from = bad_sq, rook_to = bad_sq;
+  Color col;
+
+  switch (to)
+  {
+  case C1:
+    rook_from = A1;
+    rook_to = D1;
+    col = White;
+    break;
+
+  case G1:
+    rook_from = H1;
+    rook_to = F1;
+    col = White;
+    break;
+
+  case C8:
+    rook_from = A8;
+    rook_to = D8;
+    col = Black;
+    break;
+
+  case G8:
+    rook_from = H8;
+    rook_to = F8;
+    col = Black;
+    break;
+
+  default:
+    assert(false);
+    break;
+  }
+
+  PieceType rook = type_of(pieces.squares[rook_to]);
+  PieceType king = type_of(pieces.squares[to]);
+
+  pieces.bitboards[king] ^= (1ull << from) ^ (1ull << to);
+  pieces.bitboards[rook] ^= (1ull << rook_from) ^ (1ull << rook_to);
+  pieces.colors[col] ^= (1ull << from) ^ (1ull << to) ^ (1ull << rook_from) ^ (1ull << rook_to);
+
+  pieces.squares[from] = pieces.squares[to];
+  pieces.squares[to] = Empty;
+
+  pieces.squares[rook_from] = pieces.squares[rook_to];
+  pieces.squares[rook_to] = Empty;
+}
+
+Piece Position::apply_normal_move(uint16_t move)
+{
+  CastleRights old_castle = castle_rights;
+  Square from = move_from(move);
+  Square to   = move_to(move);
+  Piece from_pce = pieces.squares[from];
+
+  PieceType from_pce_t = type_of(from_pce);
+  Color from_pce_c = color_of(from_pce);
+
+  Piece captured = pieces.squares[to];
+
+  if (type_of(from_pce) == Pawn)
+  {
+    reset_halfmoves();
+    
+    if (is_double_push(from, to, from_pce_t))
+      update_ep(from, to);
+    
+  }
+
+  if (!(captured == Empty))
+  {
+    reset_halfmoves();
+
+    pieces.bitboards[to_int(type_of(captured))] ^= (1ull << to);
+    pieces.colors[to_int(color_of(captured))] ^= (1ull << to);
+    key.hash_piece(to, captured);
+  }
+
+  pieces.bitboards[from_pce_t] ^= ((1ull << from) | (1ull << to));
+  pieces.colors[from_pce_c] ^= ((1ull << from) | (1ull << to));
+  
+  pieces.squares[to] = pieces.squares[from];
+  pieces.squares[from] = Empty;
+
+  castle_rights.update(move);
+
+  key.hash_piece(from, from_pce);
+  key.hash_piece(to, from_pce);
+  key.hash_castle(old_castle, castle_rights);
+
+  return captured;
+}
+
+Piece Position::apply_promotion(uint16_t move)
+{
+  reset_halfmoves();
+
+  CastleRights old_castle = castle_rights;
+  Square from = move_from(move);
+  Square to = move_to(move);
+  Piece from_pce = pieces.squares[from];
+
+  PieceType from_pce_t = type_of(from_pce);
+  Color from_pce_c = color_of(from_pce);
+
+  Piece captured = pieces.squares[to];
+
+  if (!(captured == Empty))
+  {
+    pieces.bitboards[type_of(captured)] ^= (1ull << to);
+    pieces.colors[color_of(captured)] ^= (1ull << to);
+    key.hash_piece(to, captured);
+  }
 }

@@ -85,13 +85,21 @@ private:
 
   // Perform a normal(not castle, enpassant or promotion) move
   Piece apply_normal_move(uint16_t);
-
+  
   Piece apply_enpassant(uint16_t);
+
+  Piece apply_castle(uint16_t);
+
+  Piece apply_promotion(uint16_t);
 
   // Perform a normal(not castle, enpassant or promotion) move
   void revert_normal_move(uint16_t, Piece);
 
   void revert_enpassant(uint16_t, Piece);
+
+  void revert_castle(uint16_t);
+
+  void revert_promotion(uint16_t, Piece);
 
   void update_ep(Square from, Square to);
 public:
