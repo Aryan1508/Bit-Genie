@@ -30,15 +30,21 @@ inline Piece make_piece(PieceType type, Color color)
 
 inline Color color_of(Piece piece)
 {
-  return static_cast<Color>(to_int(piece) / 6);
+  return Color(bool(((piece) + 2 & 0x8)));
 }
 
 inline PieceType type_of(Piece piece)
 {
-  return static_cast<PieceType>(to_int(piece) % 6);
+  static constexpr PieceType lt[]{
+    Pawn, Knight, Bishop, Rook, Queen, King,
+    Pawn, Knight, Bishop, Rook, Queen, King,
+  };
+  return lt[piece];
 }
 
 inline Color operator!(Color color)
 {
   return static_cast<Color>(!to_int(color));
 }
+
+// 1824
