@@ -126,7 +126,7 @@ private:
       add_pawn_moves(position, push_one_normal, forward);
       add_pawn_moves(position, push_two_noraml, forward + forward);
 
-      push_one_normal = shift(pawns_promo, forward);
+      push_one_normal = shift(pawns_promo, forward) & empty;
       add_pawn_moves<true>(position, push_one_normal, forward, MoveFlag::promotion);
     }
 
@@ -189,7 +189,7 @@ private:
       if (castle_path_is_attacked(position, rook, !position.side))
         continue;
 
-      movelist.add<checked>(position, Move(king_sq, rook, MoveFlag::castle, Knight));
+      movelist.add<checked>(position, Move(king_sq, rook, MoveFlag::castle, 1));
     }
   }
 };

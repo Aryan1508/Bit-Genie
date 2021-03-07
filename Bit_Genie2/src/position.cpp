@@ -126,49 +126,13 @@ static inline bool is_double_push(Square from, Square to, PieceType moving)
 
 void Position::update_ep(Square from, Square to)
 {
-  uint64_t potential = BitMask::pawn_attacks[to_int(side)][to ^ 8];
-  uint64_t enemy_pawns = pieces.get_piece_bb(make_piece(Pawn, !side));
+  uint64_t potential = BitMask::pawn_attacks[side][to ^ 8];
+  uint64_t enemy_pawns = pieces.get_piece_bb<Pawn>(!side);
 
   if (potential & enemy_pawns)
   {
     ep_sq = to_sq(to ^ 8);
   }
-}
-
-void Position::apply_move(uint16_t move)
-{
-  auto& undo = history.current();
-  
-  undo.castle = castle_rights;
-  undo.ep_sq = ep_sq;
-  undo.half_moves = half_moves;
-  undo.key = key;
-  undo.move = move;
- 
-  history.total++;
-
-  if (ep_sq != Square::bad_sq)
-    key.hash_ep(ep_sq);
-
-  reset_ep();
-  half_moves++;
-
-  MoveFlag type = move_flag(move);
-
-  if (type == MoveFlag::normal)
-    undo.captured = apply_normal_move(move);
-
-  else if (type == MoveFlag::enpassant)
-    undo.captured = apply_enpassant(move);
-
-  else if (type == MoveFlag::castle)
-    undo.captured = apply_castle(move);
-
-  else
-    undo.captured = apply_promotion(move);
-
-  key.hash_side();
-  switch_players();
 }
 
 Piece Position::apply_enpassant(uint16_t move)
@@ -180,7 +144,7 @@ Piece Position::apply_enpassant(uint16_t move)
   Square ep = to_sq(to_int(move_to(move)) ^ 8);
 
   Piece from_pce = pieces.squares[from];
-  Piece captured = pieces.squares[to_int(ep)];
+  Piece captured = pieces.squares[ep];
 
   pieces.bitboards[type_of(from_pce)] ^= (1ull << from) | (1ull << to);
   pieces.colors[color_of(from_pce)] ^= (1ull << from) | (1ull << to);
@@ -236,33 +200,6 @@ void Position::revert_enpassant(uint16_t move, Piece captured)
   pieces.squares[ep] = captured;
   pieces.squares[from] = pieces.squares[to];
   pieces.squares[to] = Empty;
-}
-
-void Position::revert_move()
-{
-  auto& undo = history.previous();
-  history.total--;
-
-  key           = undo.key;
-  ep_sq         = undo.ep_sq;
-  half_moves    = undo.half_moves;
-  castle_rights = undo.castle;
-
-  MoveFlag type = move_flag(undo.move);
-
-  if (type == MoveFlag::normal)
-    revert_normal_move(undo.move, undo.captured);
-
-  else if (type == MoveFlag::enpassant)
-    revert_enpassant(undo.move, undo.captured);
-
-  else if (type == MoveFlag::castle)
-    revert_castle(undo.move);
-
-  else 
-    revert_promotion(undo.move, undo.captured);
-
-  switch_players();
 }
 
 bool Position::move_was_legal() const
@@ -524,12 +461,12 @@ Piece Position::apply_normal_move(uint16_t move)
       update_ep(from, to);
   }
 
-  if (!(captured == Empty))
+  if (captured != Empty)
   {
     reset_halfmoves();
 
-    pieces.bitboards[to_int(type_of(captured))] ^= (1ull << to);
-    pieces.colors[to_int(color_of(captured))] ^= (1ull << to);
+    pieces.bitboards[type_of(captured)] ^= (1ull << to);
+    pieces.colors[color_of(captured)] ^= (1ull << to);
     key.hash_piece(to, captured);
   }
 
@@ -606,4 +543,66 @@ void Position::revert_promotion(uint16_t move, Piece captured)
 
   pieces.squares[from] = original;
   pieces.squares[to] = captured;
+}
+
+void Position::apply_move(uint16_t move)
+{
+  auto& undo = history.current();
+  
+  undo.castle = castle_rights;
+  undo.ep_sq = ep_sq;
+  undo.half_moves = half_moves;
+  undo.key = key;
+  undo.move = move;
+ 
+  history.total++;
+
+  if (ep_sq != Square::bad_sq)
+    key.hash_ep(ep_sq);
+
+  reset_ep();
+  half_moves++;
+
+  MoveFlag type = move_flag(move);
+
+  if (type == MoveFlag::normal)
+    undo.captured = apply_normal_move(move);
+
+  else if (type == MoveFlag::enpassant)
+    undo.captured = apply_enpassant(move);
+
+  else if (type == MoveFlag::castle)
+    undo.captured = apply_castle(move);
+  else
+    undo.captured = apply_promotion(move);
+
+  key.hash_side();
+  switch_players();
+}
+
+void Position::revert_move()
+{
+  auto& undo = history.previous();
+  history.total--;
+
+  key           = undo.key;
+  ep_sq         = undo.ep_sq;
+  half_moves    = undo.half_moves;
+  castle_rights = undo.castle;
+
+  MoveFlag type = move_flag(undo.move);
+
+  if (type == MoveFlag::normal)
+    revert_normal_move(undo.move, undo.captured);
+
+  else if (type == MoveFlag::enpassant)
+    revert_enpassant(undo.move, undo.captured);
+
+  else if (type == MoveFlag::castle)
+    revert_castle(undo.move);
+
+  else 
+    revert_promotion(undo.move, undo.captured);
+
+  switch_players();
 }

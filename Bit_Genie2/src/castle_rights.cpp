@@ -46,20 +46,28 @@ uint64_t CastleRights::get_castle_path(Square rook)
   switch (rook)
   {
   case Square::C1:
-    return 0XC;
+    return 0x8;
 
   case Square::G1:
     return 0x20;
 
   case Square::C8:
-    return 0x2000000000000000;
+    return 0x800000000000000;
 
   case Square::G8:
-    return 0X3000000000000000;
+    return 0x2000000000000000;
   default:
     assert(false);
     return false;
   }
+
+  /*
+  
+  0x20
+  0x8
+  0x2000000000000000
+  0x800000000000000
+  */
 }
 
 
