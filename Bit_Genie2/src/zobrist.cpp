@@ -49,7 +49,6 @@ void ZobristKey::reset()
 
 void ZobristKey::init()
 {
-  printf("Initializing Zobrist keys... ");
   std::mt19937 gen(0);
   std::uniform_int_distribution<uint64_t> dist(10, std::numeric_limits<uint64_t>::max());
 
@@ -67,7 +66,6 @@ void ZobristKey::init()
       piece_keys[i][Black][j] = dist(gen);
     }
   }
-  printf("done.\n");
 }
 
 void ZobristKey::hash_pieces(Position const& position)

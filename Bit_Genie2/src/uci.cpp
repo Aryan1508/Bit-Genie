@@ -2,16 +2,25 @@
 #include "position.h"
 #include "uciparse.h"
 #include <thread>
+#include <chrono>
 
 static void benchmark_perft(Position position, int depth)
 {
+  using namespace std::chrono;
   uint64_t nodes = 0;
+
+  auto start = high_resolution_clock::now();
   position.perft(depth, nodes);
+  auto stop = high_resolution_clock::now();
+  auto time_taken = duration_cast<milliseconds>(stop - start);
+
   std::cout << "nodes: " << nodes << std::endl;
+  std::cout << "time : " << time_taken.count() << " ms" << std::endl;
 }
 
 void uci_input_loop()
 {
+  std::cout << "Bit Genie by Aryan Parekh" << std::endl;
   UciParser command;
   Position position;
 
