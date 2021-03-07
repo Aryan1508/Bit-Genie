@@ -22,11 +22,17 @@ inline uint64_t shift(uint64_t bits, Direction dir)
 }
 
 #if defined (_MSC_VER)
-inline Square get_lsb(uint64_t b) {
+inline Square get_lsb(uint64_t b) 
+{
   assert(b);
   unsigned long idx;
   _BitScanForward64(&idx, b);
   return to_sq(idx);
+}
+
+inline int popcount64(uint64_t bb)
+{
+  return static_cast<int>(__popcnt64(bb));
 }
 
 #else
@@ -34,6 +40,11 @@ inline Square get_lsb(uint64_t bb)
 {
   assert(bb);
   return static_cast<Square>(__builtin_ctzll(bb));
+}
+
+inline int popcount64(uint64_t bb)
+{
+  return static_cast<int>(__builtin_popcountll (bb));
 }
 #endif
 

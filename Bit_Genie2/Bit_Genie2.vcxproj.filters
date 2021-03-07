@@ -54,6 +54,9 @@
     <ClCompile Include="src\uci.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\eval.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Square.h">
@@ -111,6 +114,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\uci.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\eval.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\searchlimits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\searchinfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\search.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

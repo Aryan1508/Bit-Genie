@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <chrono>
 #include <iostream>
 #include <stdint.h>
 #include <type_traits>
@@ -29,8 +30,17 @@ class Position;
 class PositionHistory;
 class ZobristKey;
 
+struct SearchInfo;
+struct SearchLimits;
+
 template <typename E>
 constexpr typename std::underlying_type<E>::type to_int(E e)
 {
   return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
+inline long long current_time()
+{
+  using namespace std::chrono;
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }

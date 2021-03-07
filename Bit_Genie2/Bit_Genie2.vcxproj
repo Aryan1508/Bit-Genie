@@ -151,6 +151,7 @@
     <ClCompile Include="src\castle_rights.cpp" />
     <ClCompile Include="src\move.cpp" />
     <ClCompile Include="src\piece.cpp" />
+    <ClCompile Include="src\eval.cpp" />
     <ClCompile Include="src\uci.cpp" />
     <ClCompile Include="src\uciparse.cpp" />
     <ClCompile Include="src\stringparse.cpp" />
@@ -161,6 +162,10 @@
     <ClInclude Include="src\bitboard.h" />
     <ClInclude Include="src\castle_rights.h" />
     <ClInclude Include="src\attacks.h" />
+    <ClInclude Include="src\eval.h" />
+    <ClInclude Include="src\search.h" />
+    <ClInclude Include="src\searchinfo.h" />
+    <ClInclude Include="src\searchlimits.h" />
     <ClInclude Include="src\uci.h" />
     <ClInclude Include="src\uciparse.h" />
     <ClInclude Include="src\magicmoves.hpp" />
