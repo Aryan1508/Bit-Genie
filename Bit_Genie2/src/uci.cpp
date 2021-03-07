@@ -1,6 +1,14 @@
 #include "uci.h"
 #include "position.h"
 #include "uciparse.h"
+#include <thread>
+
+static void benchmark_perft(Position position, int depth)
+{
+  uint64_t nodes = 0;
+  position.perft(depth, nodes);
+  std::cout << "nodes: " << nodes << std::endl;
+}
 
 void uci_input_loop()
 {
@@ -12,10 +20,10 @@ void uci_input_loop()
     command.take_input();
 
     if (command == UciCommands::quit)  break;
-    
+
     else if (command == UciCommands::isready)
       std::cout << "readyok" << std::endl;
-    
+
 
     else if (command == UciCommands::uci)
     {
@@ -56,8 +64,8 @@ void uci_input_loop()
         std::cout << "Invalid perft depth" << std::endl;
         continue;
       }
-      uint64_t nodes = position.perft(depth);
-      std::cout << "nodes " << nodes << std::endl;
+
+      benchmark_perft(position, depth);
     }
   }
 }

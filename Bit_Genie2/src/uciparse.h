@@ -8,6 +8,7 @@ enum class UciCommands
   quit,
   isready,
   position,
+  stop,
 
   // *debugging purpose commands*
   print,

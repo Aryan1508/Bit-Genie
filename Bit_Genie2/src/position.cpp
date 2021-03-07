@@ -213,13 +213,12 @@ static inline uint64_t legal_move_count(Position& position)
   return gen.movelist.size();
 }
 
-uint64_t Position::perft(int depth, bool root)
+void Position::perft(int depth, uint64_t& nodes, bool root)
 {
-  uint64_t nodes = 0;
-
   if (depth == 1)
   {
-    return legal_move_count(*this);
+    nodes += legal_move_count(*this);
+    return;
   }
   
   MoveGenerator<true> gen;
@@ -228,11 +227,9 @@ uint64_t Position::perft(int depth, bool root)
   for (auto m : gen.movelist)
   {
     apply_move(m);
-    nodes += perft(depth - 1, false);
+    perft(depth - 1, nodes, false);
     revert_move();
   }
-
-  return nodes;
 }
 
 bool Position::move_is_legal(uint16_t move)

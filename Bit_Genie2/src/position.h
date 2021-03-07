@@ -33,7 +33,7 @@ public:
 
   bool apply_move(std::string);
 
-  uint64_t perft(int, bool = true);
+  void perft(int, uint64_t&, bool = true);
 
   friend std::ostream& operator<<(std::ostream&, Position const&);
 public:

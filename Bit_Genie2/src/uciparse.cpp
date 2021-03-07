@@ -55,6 +55,10 @@ bool UciParser::operator==(UciCommands type) const
     return starts_with(command, "perft");
     break;
 
+  case UciCommands::stop:
+    return command == "stop";
+    break;
+
   default:
     return false;
     break;
