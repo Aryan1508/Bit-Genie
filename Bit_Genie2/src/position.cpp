@@ -2,7 +2,7 @@
 #include <iomanip>
 #include "move.h"
 #include "position.h"
-#include "string_parse.h"
+#include "stringparse.h"
 #include "movegen.h"
 #include <vector>
 #include <algorithm>
@@ -68,8 +68,8 @@ bool Position::parse_fen_hmn(std::string_view fen)
 
 bool Position::set_fen(std::string_view fen)
 {
-  reset();
   Position temp = *this;
+  reset();
 
   std::vector<std::string> parts = split_string(fen, ' ');
 
@@ -602,4 +602,23 @@ void Position::revert_move()
     revert_promotion(undo.move, undo.captured);
 
   switch_players();
+}
+
+bool Position::apply_move(std::string move)
+{
+  MoveGenerator<true> gen;
+  gen.generate(*this);
+
+  auto check = [&](uint16_t comp) { return print_move(comp) == move; };
+  auto& movelist = gen.movelist;
+
+  for (auto m : movelist)
+  {
+    if (print_move(m) == move)
+    {
+      apply_move(m);
+      return true;
+    }
+  }
+  return false;
 }

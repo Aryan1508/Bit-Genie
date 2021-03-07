@@ -36,7 +36,7 @@
     <ClCompile Include="src\square.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\string_parse.cpp">
+    <ClCompile Include="src\stringparse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\magicmoves.cpp">
@@ -46,6 +46,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\piece.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\uciparse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\uci.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,7 +89,7 @@
     <ClInclude Include="src\castle_rights.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\string_parse.h">
+    <ClInclude Include="src\stringparse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\move.h">
@@ -99,6 +105,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\magicmoves.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\uciparse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\uci.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

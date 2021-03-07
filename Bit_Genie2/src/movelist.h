@@ -13,14 +13,14 @@ public:
     cap = 0;
   }
 
-  uint16_t* begin()
+  auto begin()
   {
-    return moves;
+    return moves.begin();
   }
 
-  uint16_t* end()
+  auto end()
   {
-    return moves + cap;
+    return moves.begin() + cap;
   }
 
   int size() const
@@ -38,7 +38,8 @@ public:
     }
     moves[cap++] = std::move(move);
   }
+
+  std::array<uint16_t, 256> moves;
 private:
   int cap;
-  uint16_t moves[256];
 };

@@ -1,6 +1,6 @@
 #include "piece_manager.h"
 #include "Square.h"
-#include "string_parse.h"
+#include "stringparse.h"
 
 static int to_digit(const char c) {
   return c - '0';
@@ -119,6 +119,9 @@ bool PieceManager::parse_fen_board(std::string_view fen)
 
   if (contains_whitespaces(fen))
     return false;  
+  
+  if (fen.size() == 0)
+    return false;
 
   Square square_counter = Square::A1;
 

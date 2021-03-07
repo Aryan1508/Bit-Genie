@@ -6,11 +6,12 @@
 #include "Square.h"
 #include "move.h"
 #include "movegen.h"
+#include "uci.h"
 #include "zobrist.h"
-#include <chrono>
 
 int main()
 {  
   Attacks::init(); 
   ZobristKey::init();
+  uci_input_loop();
 }

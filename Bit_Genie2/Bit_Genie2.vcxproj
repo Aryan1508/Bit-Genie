@@ -151,7 +151,9 @@
     <ClCompile Include="src\castle_rights.cpp" />
     <ClCompile Include="src\move.cpp" />
     <ClCompile Include="src\piece.cpp" />
-    <ClCompile Include="src\string_parse.cpp" />
+    <ClCompile Include="src\uci.cpp" />
+    <ClCompile Include="src\uciparse.cpp" />
+    <ClCompile Include="src\stringparse.cpp" />
     <ClCompile Include="src\square.cpp" />
     <ClCompile Include="src\zobrist.cpp" />
   </ItemGroup>
@@ -159,11 +161,13 @@
     <ClInclude Include="src\bitboard.h" />
     <ClInclude Include="src\castle_rights.h" />
     <ClInclude Include="src\attacks.h" />
+    <ClInclude Include="src\uci.h" />
+    <ClInclude Include="src\uciparse.h" />
     <ClInclude Include="src\magicmoves.hpp" />
     <ClInclude Include="src\movegen.h" />
     <ClInclude Include="src\movelist.h" />
     <ClInclude Include="src\move.h" />
-    <ClInclude Include="src\string_parse.h" />
+    <ClInclude Include="src\stringparse.h" />
     <ClInclude Include="src\piece_manager.h" />
     <ClInclude Include="src\misc.h" />
     <ClInclude Include="src\board.h" />
