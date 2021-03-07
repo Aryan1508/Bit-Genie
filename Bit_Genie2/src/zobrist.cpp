@@ -115,5 +115,5 @@ void ZobristKey::generate(Position const& position)
 
 std::ostream& operator<<(std::ostream& o, const ZobristKey key)
 {
-  return o << std::hex << key.hash << std::dec;
+  return o << std::hex << "0x" << key.hash << std::dec;
 }

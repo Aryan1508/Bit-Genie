@@ -31,8 +31,8 @@ public:
 
   uint64_t data() const { return rooks; }
 
-  static bool castle_path_is_clear(const Square rook, const uint64_t);
-  static uint64_t get_castle_path(const Square);
+  static bool castle_path_is_clear(Square rook, uint64_t);
+  static uint64_t get_castle_path(Square);
 
   friend std::ostream& operator<<(std::ostream&, const CastleRights);
 private:

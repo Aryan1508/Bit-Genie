@@ -135,7 +135,6 @@ void Position::update_ep(Square from, Square to)
   }
 }
 
-
 void Position::apply_move(uint16_t move)
 {
   auto& undo = history.current();
@@ -164,6 +163,9 @@ void Position::apply_move(uint16_t move)
 
   else if (type == MoveFlag::castle)
     undo.captured = apply_castle(move);
+
+  else
+    undo.captured = apply_promotion(move);
 
   key.hash_side();
   switch_players();
@@ -257,6 +259,9 @@ void Position::revert_move()
   else if (type == MoveFlag::castle)
     revert_castle(undo.move);
 
+  else 
+    revert_promotion(undo.move, undo.captured);
+
   switch_players();
 }
 
@@ -316,6 +321,7 @@ bool Position::move_is_legal(uint16_t move)
       occupancy ^= (1ull << from);
       return !Attacks::square_attacked(*this, to, !side, occupancy);
     }
+
     else
     {
       
@@ -338,7 +344,7 @@ bool Position::move_is_legal(uint16_t move)
     }
   }
 
-  if (move_flag(move) == MoveFlag::enpassant)
+  else if (move_flag(move) == MoveFlag::enpassant)
   {
     uint64_t occupancy = total_occupancy();
     Square ep = Square(to ^ 8);
@@ -356,8 +362,29 @@ bool Position::move_is_legal(uint16_t move)
     return is_legal;
   }
 
+  else if (move_flag(move) == MoveFlag::castle)
+  {
+    return !Attacks::square_attacked(*this, to, !side, occupancy);
+  }
   else
-    assert(false);
+  {
+    occupancy ^= (1ull << from) ^ (1ull << to);
+
+    Piece captured = pieces.squares[to];
+    uint64_t old = pieces.bitboards[type_of(captured)];
+
+    if (captured != Empty)
+    {
+      occupancy ^= (1ull << to);
+      pieces.bitboards[type_of(captured)] ^= (1ull << to);
+    }
+
+    uint64_t king = pieces.bitboards[King] & pieces.colors[side];
+    bool is_legal = !Attacks::square_attacked(*this, get_lsb(king), !side, occupancy);
+
+    pieces.bitboards[type_of(captured)] = old;
+    return is_legal;
+  }
 
   return true;
 }
@@ -495,7 +522,6 @@ Piece Position::apply_normal_move(uint16_t move)
     
     if (is_double_push(from, to, from_pce_t))
       update_ep(from, to);
-    
   }
 
   if (!(captured == Empty))
@@ -534,12 +560,50 @@ Piece Position::apply_promotion(uint16_t move)
   PieceType from_pce_t = type_of(from_pce);
   Color from_pce_c = color_of(from_pce);
 
+  PieceType prom_pce = move_promoted(move);
+
   Piece captured = pieces.squares[to];
 
-  if (!(captured == Empty))
+  if (captured != Empty)
   {
     pieces.bitboards[type_of(captured)] ^= (1ull << to);
     pieces.colors[color_of(captured)] ^= (1ull << to);
     key.hash_piece(to, captured);
   }
+
+  pieces.bitboards[from_pce_t] ^= (1ull << from);
+  pieces.bitboards[prom_pce] ^= (1ull << to);
+  pieces.colors[from_pce_c] ^= ((1ull << from) | (1ull << to));
+
+  pieces.squares[from] = Empty;
+  pieces.squares[to] = make_piece(prom_pce, from_pce_c);
+
+  castle_rights.update(move);
+
+  key.hash_piece(from, from_pce);
+  key.hash_piece(to, make_piece(prom_pce, from_pce_c));
+  key.hash_castle(old_castle, castle_rights);
+  return captured;
+}
+
+void Position::revert_promotion(uint16_t move, Piece captured)
+{
+  Square from = move_from(move);
+  Square to = move_to(move);
+
+  Piece original = make_piece(PieceType::Pawn, !side);
+  Piece prom_pce = pieces.squares[to];
+
+  pieces.bitboards[type_of(original)] ^= (1ull << from);
+  pieces.colors[color_of(original)] ^= (1ull << from) ^ (1ull << to);
+  
+  pieces.bitboards[type_of(prom_pce)] ^= (1ull << to);
+
+  if (captured != Empty) {
+    pieces.bitboards[type_of(captured)] ^= (1ull << to);
+    pieces.colors[color_of(captured)] ^= (1ull << to);
+  }
+
+  pieces.squares[from] = original;
+  pieces.squares[to] = captured;
 }

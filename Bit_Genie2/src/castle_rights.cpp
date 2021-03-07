@@ -46,13 +46,13 @@ uint64_t CastleRights::get_castle_path(Square rook)
   switch (rook)
   {
   case Square::C1:
-    return 0X1C;
+    return 0XC;
 
   case Square::G1:
-    return 0X30;
+    return 0x20;
 
   case Square::C8:
-    return 0X1c00000000000000;
+    return 0x2000000000000000;
 
   case Square::G8:
     return 0X3000000000000000;

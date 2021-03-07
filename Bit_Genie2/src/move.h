@@ -6,7 +6,7 @@ enum class MoveFlag : uint8_t
   normal, enpassant, castle, promotion
 };
 
-#define Move(from, to, type, promoted) (((from)) | ((to) << 6) | ((to_int(type)) << 12) | (((to_int(promoted) - 1) << 14)))
+#define Move(from, to, type, promoted) (((from)) | ((to) << 6) | ((to_int(type)) << 12) | (((promoted) - 1) << 14))
 
 constexpr Square move_from(uint16_t move)
 {
@@ -25,7 +25,7 @@ constexpr MoveFlag move_flag(uint16_t move)
 
 constexpr PieceType move_promoted(uint16_t move)
 {
-  return static_cast<PieceType>(((move >> 14) & 0xb11) + 1);
+  return static_cast<PieceType>(((move >> 14) & 0x3) + 1);
 }
 
 bool move_is_capture(Position const& positio, uint16_t);

@@ -23,8 +23,8 @@ std::ostream& operator<<(std::ostream& o, Piece piece)
 {
   constexpr char labels[]
   {
-    'p', 'n', 'b', 'r', 'q', 'k', 
-    'P', 'N', 'B', 'R', 'Q', 'K', '.'
+    'P', 'N', 'B', 'R', 'Q', 'K', 
+    'p', 'n', 'b', 'r', 'q', 'k', '.'
   };
   return o << labels[to_int(piece)];
 }

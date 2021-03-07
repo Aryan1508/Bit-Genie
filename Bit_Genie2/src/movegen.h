@@ -17,6 +17,7 @@ public:
   {
     uint64_t targets = get_targets(position);
     uint64_t occupancy = position.total_occupancy();
+    uint64_t king = position.pieces.get_piece_bb<King>(position.side);
 
     generate_normal_moves(position, King  , targets, Attacks::king);
     generate_normal_moves(position, Knight, targets, Attacks::knight);
@@ -25,7 +26,9 @@ public:
     generate_normal_moves(position, Queen , targets, Attacks::queen , occupancy);
     
     generate_pawn_moves(position, targets);
-    generate_castle(position);
+
+    if (!Attacks::square_attacked(position, get_lsb(king), !position.side, occupancy))
+      generate_castle(position);
   }
 
 public:
@@ -119,8 +122,12 @@ private:
     {
       uint64_t push_one_normal = shift(pawns_normal, forward) & empty;
       uint64_t push_two_noraml = shift(push_one_normal, forward) & empty & pawn_st_rank;
+
       add_pawn_moves(position, push_one_normal, forward);
       add_pawn_moves(position, push_two_noraml, forward + forward);
+
+      push_one_normal = shift(pawns_promo, forward);
+      add_pawn_moves<true>(position, push_one_normal, forward, MoveFlag::promotion);
     }
 
     if constexpr (type == MoveGenType::normal || type == MoveGenType::noisy)
@@ -142,6 +149,13 @@ private:
 
       add_pawn_moves(position, left, forward + Direction::west);
       add_pawn_moves(position, right, forward + Direction::east);
+
+      forward_one = shift(pawns_promo, forward);
+      left = shift<Direction::west>(forward_one) & enemy;
+      right = shift<Direction::east>(forward_one) & enemy;
+
+      add_pawn_moves<true>(position, left, forward + Direction::west, MoveFlag::promotion);
+      add_pawn_moves<true>(position, right, forward + Direction::east, MoveFlag::promotion);
     }
   }
 
