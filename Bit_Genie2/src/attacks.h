@@ -39,16 +39,12 @@ namespace Attacks
 
   inline bool square_attacked(Position const& position, Square sq, Color enemy, uint64_t occupancy)
   {
-    auto const& pieces = position.pieces;
-    uint64_t us   = pieces.get_occupancy(!enemy);
-    uint64_t them = pieces.get_occupancy(enemy);
-
-    uint64_t pawns   = pieces.get_piece_bb<Pawn>(enemy);
-    uint64_t knights = pieces.get_piece_bb<Knight>(enemy);
-    uint64_t bishops = pieces.get_piece_bb<Bishop>(enemy);
-    uint64_t rooks   = pieces.get_piece_bb<Rook>(enemy);
-    uint64_t queens  = pieces.get_piece_bb<Queen>(enemy);
-    uint64_t kings   = pieces.get_piece_bb<King>(enemy);
+    uint64_t pawns   = position.pieces.get_piece_bb<Pawn>(enemy);
+    uint64_t knights = position.pieces.get_piece_bb<Knight>(enemy);
+    uint64_t bishops = position.pieces.get_piece_bb<Bishop>(enemy);
+    uint64_t rooks   = position.pieces.get_piece_bb<Rook>(enemy);
+    uint64_t queens  = position.pieces.get_piece_bb<Queen>(enemy);
+    uint64_t kings   = position.pieces.get_piece_bb<King>(enemy);
 
     bishops |= queens;
     rooks   |= queens;
