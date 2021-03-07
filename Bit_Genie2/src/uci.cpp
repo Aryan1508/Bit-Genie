@@ -46,5 +46,16 @@ void uci_input_loop()
 
     else if (command == UciCommands::print)
       std::cout << position << '\n';
+
+    else if (command == UciCommands::perft)
+    {
+      int depth = command.parse_perft();
+      if (depth <= 0)
+      {
+        std::cout << "Invalid perft depth\n";
+        continue;
+      }
+      std::cout << "nodes: " << position.perft(depth) << '\n';
+    }
   }
 }

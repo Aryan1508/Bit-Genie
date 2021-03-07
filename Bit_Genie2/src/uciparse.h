@@ -25,6 +25,7 @@ public:
   std::pair<std::string, std::vector<std::string>> 
     parse_position_command() const;
 
+  int parse_perft() const;
 private:
   void clean_input();
 private:

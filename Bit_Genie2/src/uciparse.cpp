@@ -14,6 +14,19 @@ void UciParser::clean_input()
   command = remove_extra_whitespaces(command);
 }
 
+int UciParser::parse_perft() const
+{
+  auto options = split_string(command);
+
+  if (options.size() != 2)
+    return 0;
+
+  if (!string_is_number(options[1]))
+    return 0;
+
+  return std::stoi(options[1]);
+}
+
 bool UciParser::operator==(UciCommands type) const
 {
   switch (type)

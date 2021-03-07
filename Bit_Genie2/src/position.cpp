@@ -228,12 +228,8 @@ uint64_t Position::perft(int depth, bool root)
   for (auto m : gen.movelist)
   {
     apply_move(m);
-    auto child = perft(depth - 1, false);
+    nodes += perft(depth - 1, false);
     revert_move();
-
-    if (root)
-      std::cout << print_move(m) << ": " << child << '\n';
-    nodes += child;
   }
 
   return nodes;
