@@ -46,5 +46,3 @@ inline Color operator!(Color color)
 {
   return static_cast<Color>(!to_int(color));
 }
-
-// 1824

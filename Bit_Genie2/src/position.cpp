@@ -69,9 +69,6 @@ bool Position::parse_fen_hmn(std::string_view fen)
 bool Position::set_fen(std::string_view fen)
 {
   reset();
-
-  // Save a copy of the position, if fen is invalid
-  // revert the changes
   Position temp = *this;
 
   std::vector<std::string> parts = split_string(fen, ' ');

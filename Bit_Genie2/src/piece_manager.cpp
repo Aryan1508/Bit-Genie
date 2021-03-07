@@ -13,13 +13,10 @@ static bool contains_whitespaces(std::string_view str)
 
 static bool is_valid_piece(const char piece)
 {
-  std::string valid_pieces = "pnbrqk"; // All piece letters used in fens
+  std::string valid_pieces = "pnbrqk";
   return valid_pieces.find(std::tolower(piece)) != valid_pieces.npos;
 }
 
-// This 'increment' refers to the number
-// in some fen strings which skips a few squares
-// It can only be in between 0 and 9
 static bool is_valid_increment(const int increment)
 {
   return increment > 0 && increment < 9;
@@ -70,7 +67,6 @@ bool PieceManager::add_piece(const Square sq, const char label)
   return true;
 }
 
-
 void PieceManager::add_piece(Square sq, Piece piece)
 {
   squares[sq] = piece;
@@ -120,15 +116,10 @@ Piece const& PieceManager::get_piece(const Square sq) const
 bool PieceManager::parse_fen_board(std::string_view fen)
 {
   reset();
-  // pieces fen cannot contain whitespaces
-  if (contains_whitespaces(fen))
-  {
-    return false;
-  }
 
-  // Start from A1 and fill up letter by letter(piece by piece) 
-  // until H8. If the fen is valid then the final count must be 64
-  // or the total number of squares
+  if (contains_whitespaces(fen))
+    return false;  
+
   Square square_counter = Square::A1;
 
   for (auto const& rank : split_string(fen, '/'))

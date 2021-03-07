@@ -11,14 +11,8 @@
 
 namespace
 {
-  //              piece y of color x on square sq
-  // indexed by [piece_type][piece_color][square]
   uint64_t piece_keys[total_pieces][total_colors][total_squares];
-  
-  // indexed by [get_square_file(enpassant_square)]
   uint64_t enpassant_keys[total_files];
-
-  // indexed by [castle_type][color]
   uint64_t castle_keys[total_squares];
 
   uint64_t color_key;
@@ -96,7 +90,6 @@ void ZobristKey::hash_ep(const Square sq)
 
 void ZobristKey::generate(Position const& position)
 {
-  // Reset the key to 0 to hash in new information
   reset();
 
   hash_pieces(position);

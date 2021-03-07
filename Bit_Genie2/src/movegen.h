@@ -37,14 +37,6 @@ public:
 private:
   uint64_t get_targets(Position const& position)
   {
-    //    Normal moves include both noisy and quiet, so all squares
-    //    except those occupied by the current player are targets
-    //  
-    //    Noisy moves are only captures so the targets are 
-    //    only squares occupied by the enemy 
-    // 
-    //    Quiet moves are non-captures so all squares
-    //    that areN'T occupied by the current player, nor the enemy
     return type == MoveGenType::normal ? ~position.friend_bb() :
       type == MoveGenType::noisy ? position.enemy_bb() : ~position.total_occupancy();
   }
@@ -92,7 +84,6 @@ private:
         movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, Bishop));
         movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, Rook));
         movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, Queen));
-
       }
       else
       {
@@ -122,19 +113,17 @@ private:
     {
       uint64_t push_one_normal = shift(pawns_normal, forward) & empty;
       uint64_t push_two_noraml = shift(push_one_normal, forward) & empty & pawn_st_rank;
+      uint64_t push_one_prom   = shift(pawns_promo, forward) & empty;
 
       add_pawn_moves(position, push_one_normal, forward);
       add_pawn_moves(position, push_two_noraml, forward + forward);
-
-      push_one_normal = shift(pawns_promo, forward) & empty;
-      add_pawn_moves<true>(position, push_one_normal, forward, MoveFlag::promotion);
+      add_pawn_moves<true>(position, push_one_prom, forward, MoveFlag::promotion);
     }
 
     if constexpr (type == MoveGenType::normal || type == MoveGenType::noisy)
     {
       uint64_t forward_one = shift(pawns_normal, forward);
-      uint64_t left = shift<Direction::west>(forward_one) & enemy;
-      uint64_t right = shift<Direction::east>(forward_one) & enemy;
+      uint64_t forward_one_prom = shift(pawns_promo, forward);
 
       if (position.ep_sq != Square::bad_sq)
       {
@@ -147,33 +136,32 @@ private:
         add_pawn_moves(position, right_ep, forward + Direction::east, MoveFlag::enpassant);
       }
 
+      uint64_t left = shift<Direction::west>(forward_one) & enemy;
+      uint64_t right = shift<Direction::east>(forward_one) & enemy;
+
+      uint64_t left_prom = shift<Direction::west>(forward_one) & enemy;
+      uint64_t right_prom = shift<Direction::east>(forward_one) & enemy;
+      
       add_pawn_moves(position, left, forward + Direction::west);
       add_pawn_moves(position, right, forward + Direction::east);
-
-      forward_one = shift(pawns_promo, forward);
-      left = shift<Direction::west>(forward_one) & enemy;
-      right = shift<Direction::east>(forward_one) & enemy;
-
-      add_pawn_moves<true>(position, left, forward + Direction::west, MoveFlag::promotion);
-      add_pawn_moves<true>(position, right, forward + Direction::east, MoveFlag::promotion);
+      add_pawn_moves<true>(position, left_prom, forward + Direction::west, MoveFlag::promotion);
+      add_pawn_moves<true>(position, right_prom, forward + Direction::east, MoveFlag::promotion);
     }
-  }
-
-  bool castle_path_is_attacked(Position const& position, Square rook, Color enemy)
-  {
-    uint64_t path = CastleRights::get_castle_path(rook);
-
-    while (path)
-    {
-      Square sq = pop_lsb(path);
-      if (Attacks::square_attacked(position, sq, enemy))
-        return true;
-    }
-    return false;
   }
 
   void generate_castle(Position& position)
   {
+    auto path_is_attacked = [&](Square rook, Color enemy) {
+      uint64_t path = CastleRights::get_castle_path(rook);
+      while (path)
+      {
+        Square sq = pop_lsb(path);
+        if (Attacks::square_attacked(position, sq, enemy))
+          return true;
+      }
+      return false;
+    };
+
     uint64_t occupancy = position.total_occupancy();
     bool is_white = position.side == White;
     Square king_sq = is_white ? Square::E1 : Square::E8;
@@ -186,7 +174,7 @@ private:
       if (!(CastleRights::castle_path_is_clear(rook, occupancy)))
         continue;
 
-      if (castle_path_is_attacked(position, rook, !position.side))
+      if (path_is_attacked(rook, !position.side))
         continue;
 
       movelist.add<checked>(position, Move(king_sq, rook, MoveFlag::castle, 1));

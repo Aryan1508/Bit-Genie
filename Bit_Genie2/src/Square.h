@@ -3,10 +3,6 @@
 #include "misc.h"
 #include <stdint.h>
 #include <type_traits>
-
-
-// Bit Genie uses the little endian rank-file mapping (LERF) 
-// https://www.chessprogramming.org/Square_Mapping_Consideration
 enum Square : uint8_t
 {
   A1, B1, C1, D1, E1, F1, G1, H1, 
@@ -19,11 +15,6 @@ enum Square : uint8_t
   A8, B8, C8, D8, E8, F8, G8, H8, 
   bad_sq = 100,
 };
-
-// Number of squares that would be skipped
-// if moved in a particular direction. Relies 
-// on LERF mapping (enum Square)
-// https://www.chessprogramming.org/Square_Mapping_Consideration
 enum class Direction : int8_t 
 {
   north = 8,  south = -8, 
@@ -79,9 +70,5 @@ inline bool is_ok(const Square sq)
 {
   return sq >= Square::A1 && sq <= Square::H8;
 }
-
-// Verify that a square is valid (useful for parsing fen)
 bool is_valid_sq(std::string_view);
-
-// print out a square label, example `a1`
 std::ostream& operator<<(std::ostream&, const Square);

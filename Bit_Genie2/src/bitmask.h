@@ -13,10 +13,6 @@ namespace BitMask
   constexpr uint64_t file_h = file_g << 1;
   constexpr uint64_t not_file_h = ~file_h;
   constexpr uint64_t not_file_a = ~file_a;
-  constexpr uint64_t not_file_gh = ~(file_g | file_h);
-  constexpr uint64_t not_file_ab = ~(file_a | file_b);
-  constexpr uint64_t not_file_af = ~(file_a | file_f);
-  constexpr uint64_t not_file_ah = ~(file_a | file_h);
 
   constexpr uint64_t rank1 = 0xff;
   constexpr uint64_t rank2 = rank1 << 8;

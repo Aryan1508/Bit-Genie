@@ -7,8 +7,6 @@
 class PositionHistory
 {
 public:
-  // All the info that is expensive to re-calculate 
-  // while reverting a move 
   struct Undo
   {
     int          half_moves = 0;

@@ -6,7 +6,7 @@ std::ostream& operator<<(std::ostream& o, PieceType type)
   {
     'p', 'n', 'b', 'r', 'q', 'k', '.'
   };
-  return o << labels[to_int(type)];
+  return o << labels[type];
 }
 
 std::ostream& operator<<(std::ostream& o, Color color)
@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& o, Color color)
     'w', 'b', '\0'
   };
 
-  return o << labels[to_int(color)];
+  return o << labels[color];
 }
 
 std::ostream& operator<<(std::ostream& o, Piece piece)
@@ -26,5 +26,5 @@ std::ostream& operator<<(std::ostream& o, Piece piece)
     'P', 'N', 'B', 'R', 'Q', 'K', 
     'p', 'n', 'b', 'r', 'q', 'k', '.'
   };
-  return o << labels[to_int(piece)];
+  return o << labels[piece];
 }

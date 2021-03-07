@@ -10,7 +10,7 @@ constexpr uint64_t shift(uint64_t bits)
   return dir == Direction::north ? bits << 8
     :    dir == Direction::south ? bits >> 8
     :    dir == Direction::east  ? (bits << 1) & BitMask::not_file_a
-    :    /* west */ (bits >> 1) & BitMask::not_file_h;
+    : (bits >> 1) & BitMask::not_file_h;
 }
 
 inline uint64_t shift(uint64_t bits, Direction dir)
@@ -18,7 +18,7 @@ inline uint64_t shift(uint64_t bits, Direction dir)
   return dir == Direction::north ? bits << 8
     : dir == Direction::south ? bits >> 8
     : dir == Direction::east ? (bits << 1) & BitMask::not_file_a
-    :    /* west */ (bits >> 1) & BitMask::not_file_h;
+    : (bits >> 1) & BitMask::not_file_h;
 }
 
 #if defined (_MSC_VER)
@@ -35,7 +35,7 @@ inline Square get_lsb(uint64_t bb)
   assert(bb);
   return static_cast<Square>(__builtin_ctzll(bb));
 }
-#endif // 
+#endif
 
 
 inline Square pop_lsb(uint64_t& bb)

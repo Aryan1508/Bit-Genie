@@ -20,10 +20,6 @@ namespace
     return valid_files.find(file) != std::string::npos;
   }
 }
-
-// A string square always has 2 characters ex. `e4`
-// The first character is always a file (a, b, c..., h)
-// The second character is always a rank(1, 2, 3..., 8)
 bool is_valid_sq(std::string_view sq) 
 {
   return verify_sq_size(sq)

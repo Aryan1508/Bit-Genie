@@ -24,19 +24,16 @@ namespace Attacks
 
   inline uint64_t bishop(Square sq, uint64_t occ)
   {
-    assert(is_ok(sq));
     return Bmagic(sq, occ);
   }
 
   inline uint64_t rook(Square sq, uint64_t occ)
   {
-    assert(is_ok(sq));
     return Rmagic(sq, occ);
   }
 
   inline uint64_t queen(Square sq, uint64_t occ)
   {
-    assert(is_ok(sq));
     return Qmagic(sq, occ);
   }
 
@@ -65,11 +62,6 @@ namespace Attacks
 
   inline bool square_attacked(Position const& position, Square sq, Color enemy)
   {
-    auto const& pieces = position.pieces;
-    uint64_t us = pieces.get_occupancy(!enemy);
-    uint64_t them = pieces.get_occupancy(enemy);
-    uint64_t occupancy = us | them;
-    
-    return square_attacked(position, sq, enemy, occupancy);
+    return square_attacked(position, sq, enemy, position.total_occupancy());
   }
 }

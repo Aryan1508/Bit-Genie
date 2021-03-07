@@ -21,7 +21,6 @@ uint64_t CastleRights::get_rooks(Color color) const
 
 bool CastleRights::castle_path_is_clear(const Square rook, const uint64_t occupancy)
 {
-  assert(is_ok(rook));
   switch (rook)
   {
   case Square::C1:
@@ -35,9 +34,6 @@ bool CastleRights::castle_path_is_clear(const Square rook, const uint64_t occupa
 
   case Square::G8:
     return !(occupancy & 0x6000000000000000);
-  default:
-    assert(false);
-    return false;
   }
 }
 
@@ -56,18 +52,7 @@ uint64_t CastleRights::get_castle_path(Square rook)
 
   case Square::G8:
     return 0x2000000000000000;
-  default:
-    assert(false);
-    return false;
   }
-
-  /*
-  
-  0x20
-  0x8
-  0x2000000000000000
-  0x800000000000000
-  */
 }
 
 
@@ -91,8 +76,8 @@ void CastleRights::update(uint16_t move)
     RC8, ~0ull, ~0ull, ~0ull, KE8, ~0ull, ~0ull, RG8,
   };
 
-  rooks &= mask[to_int(move_from(move))];
-  rooks &= mask[to_int(move_to(move))];
+  rooks &= mask[move_from(move)];
+  rooks &= mask[move_to(move)];
 }
 
 bool CastleRights::set(const char right) 
@@ -106,10 +91,6 @@ bool CastleRights::set(const char right)
   return true;
 }
 
-//  k -> black can castle short
-//  q -> black can castle long
-//  K -> white can castle short
-//  Q -> white can castle long
 bool CastleRights::parse_fen(std::string_view rights)
 {
   reset();
