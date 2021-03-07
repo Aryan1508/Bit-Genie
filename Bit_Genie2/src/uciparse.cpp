@@ -67,28 +67,35 @@ UciParser::parse_position_command() const
   std::string fen;
   std::vector<std::string> moves;
 
-  auto options = split_string(command);
-  
-  for (auto it = options.begin(); it != options.end(); it++)
-  {
-    if (std::next(it) == options.end())
-      break;
-    
-    std::string_view name = *it;
-    std::string_view value = *(it + 1);
+  std::stringstream stream(command);
+  std::string name;
 
-    if (value == "startpos")
+  while(stream >> name)
+  {
+    if (name == "startpos")
       fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     else if (name == "fen")
-      fen = value;
-    
+    {
+      auto last = command.find("moves");
+      if (last == std::string::npos)
+      {
+        fen = command.substr(command.find("fen ") + 4);
+      }
+      else
+      {
+        fen = command.substr(last);
+        break;
+      }
+    }
+
     else if (name == "moves")
     {
-      if (fen.size() == 0)
-        break;
-
-      moves = std::vector<std::string>(it + 1, options.end());
+      while (stream >> name)
+      {
+        moves.push_back(std::move(name));
+      }
+      break;
     }
   }
 

@@ -11,17 +11,17 @@ void uci_input_loop()
   {
     command.take_input();
 
-    if (command == UciCommands::quit)  return;
+    if (command == UciCommands::quit)  break;
     
     else if (command == UciCommands::isready)
-      std::cout << "readyok\n";
+      std::cout << "readyok" << std::endl;
     
 
     else if (command == UciCommands::uci)
     {
-      std::cout << "id name Bit Genie\n";
-      std::cout << "id author Aryan Parekh\n";
-      std::cout << "uciok\n";
+      std::cout << "id name Bit Genie" << std::endl;
+      std::cout << "id author Aryan Parekh" << std::endl;
+      std::cout << "uciok" << std::endl;
     }
 
     else if (command == UciCommands::position)
@@ -30,7 +30,8 @@ void uci_input_loop()
 
       if (!position.set_fen(fen))
       {
-        std::cout << "Invalid FEN string\n";
+        std::cout << fen << std::endl;
+        std::cout << "Invalid FEN string" << std::endl;
         continue;
       }
 
@@ -38,7 +39,7 @@ void uci_input_loop()
       {
         if (!position.apply_move(move))
         {
-          std::cout << "Invalid move in movelist\n";
+          std::cout << "Invalid move in movelist" << std::endl;
           continue;
         }
       }
@@ -52,10 +53,11 @@ void uci_input_loop()
       int depth = command.parse_perft();
       if (depth <= 0)
       {
-        std::cout << "Invalid perft depth\n";
+        std::cout << "Invalid perft depth" << std::endl;
         continue;
       }
-      std::cout << "nodes: " << position.perft(depth) << '\n';
+      uint64_t nodes = position.perft(depth);
+      std::cout << "nodes " << nodes << std::endl;
     }
   }
 }
