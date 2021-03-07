@@ -46,7 +46,7 @@ void uci_input_loop()
     }
 
     else if (command == UciCommands::print)
-      std::cout << position << '\n';
+      std::cout << position << std::endl;
 
     else if (command == UciCommands::perft)
     {
