@@ -35,6 +35,8 @@ public:
 
   void perft(int, uint64_t&, bool = true);
 
+  bool king_in_check() const;
+
   friend std::ostream& operator<<(std::ostream&, Position const&);
 public:
   PieceManager pieces;

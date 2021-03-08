@@ -608,3 +608,9 @@ bool Position::apply_move(std::string move)
   }
   return false;
 }
+
+bool Position::king_in_check() const
+{
+  uint64_t king = pieces.get_piece_bb<King>(side);
+  return Attacks::square_attacked(*this, get_lsb(king), !side);
+}

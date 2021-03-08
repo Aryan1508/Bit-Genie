@@ -11,6 +11,7 @@ namespace
   {
     MinEval = -std::numeric_limits<int>::max(),
     MaxEval = -MinEval,
+    MateEval = MaxEval - 1
   };
 
   struct SearchResult
@@ -34,6 +35,15 @@ namespace
 
     SearchResult result;
     MoveGenerator gen(position);
+
+    if (gen.movelist.size() == 0)
+    {
+      if (position.king_in_check())
+        return search.info.ply - MateEval;
+
+      else
+        return 0;
+    }
 
     for (auto move : gen.movelist)
     {
@@ -59,7 +69,6 @@ namespace
       {
         return result;
       }
-
     }
 
     return result;
