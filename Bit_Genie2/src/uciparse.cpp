@@ -59,6 +59,10 @@ bool UciParser::operator==(UciCommands type) const
     return command == "stop";
     break;
 
+  case UciCommands::go:
+    return starts_with(command, "go");
+    break;
+
   default:
     return false;
     break;
@@ -104,4 +108,21 @@ UciParser::parse_position_command() const
   }
 
   return std::pair{ fen, moves };
+}
+
+UciGo UciParser::parse_go() const
+{
+  UciGo options;
+
+  auto parts = split_string(command);
+
+  for(auto key = parts.begin();key != parts.end() - 1;key++)
+  {
+    std::string_view value = *(key + 1);
+
+    if (*key == "depth")
+      options.depth = std::stoi(value.data());
+   
+  }
+  return options;
 }

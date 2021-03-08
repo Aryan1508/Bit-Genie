@@ -152,6 +152,7 @@
     <ClCompile Include="src\move.cpp" />
     <ClCompile Include="src\piece.cpp" />
     <ClCompile Include="src\eval.cpp" />
+    <ClCompile Include="src\search.cpp" />
     <ClCompile Include="src\uci.cpp" />
     <ClCompile Include="src\uciparse.cpp" />
     <ClCompile Include="src\stringparse.cpp" />

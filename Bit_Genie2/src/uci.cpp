@@ -1,5 +1,6 @@
 #include "uci.h"
 #include "position.h"
+#include "search.h"
 #include "uciparse.h"
 #include <thread>
 #include <chrono>
@@ -75,6 +76,16 @@ void uci_input_loop()
       }
 
       benchmark_perft(position, depth);
+    }
+
+    else if (command == UciCommands::go)
+    {
+      UciGo options = command.parse_go();
+
+      Search search;
+      search.limits.max_depth = options.depth;
+      
+      search_position(position, search);
     }
   }
 }

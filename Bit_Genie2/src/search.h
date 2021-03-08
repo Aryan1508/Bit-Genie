@@ -9,5 +9,6 @@ struct Search
   SearchLimits limits;
 };
 
+extern std::atomic_bool SEARCH_ABORT_SIGNAL;
 
-std::atomic_bool SEARCH_ABORT_SIGNAL = false;
+void search_position(Position&, Search&);

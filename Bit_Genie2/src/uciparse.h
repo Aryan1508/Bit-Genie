@@ -8,11 +8,22 @@ enum class UciCommands
   quit,
   isready,
   position,
+  go,
   stop,
 
   // *debugging purpose commands*
   print,
   perft,
+};
+
+struct UciGo
+{
+  int depth     = -1;
+  int movestogo = -1;
+
+  int64_t btime    = -1;
+  int64_t wtime    = -1;
+  int64_t movetime = -1;
 };
 
 class UciParser
@@ -27,6 +38,7 @@ public:
     parse_position_command() const;
 
   int parse_perft() const;
+  UciGo parse_go() const;
 private:
   void clean_input();
 private:

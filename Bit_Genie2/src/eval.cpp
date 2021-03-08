@@ -39,5 +39,5 @@ int eval_position(Position const& position)
 {
   int score = 0;
   score += material_balance(position);
-  return score;
+  return position.side == White ? score : -score;
 }

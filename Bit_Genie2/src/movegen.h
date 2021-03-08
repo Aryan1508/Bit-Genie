@@ -13,6 +13,11 @@ template<bool checked = true, MoveGenType type = MoveGenType::normal>
 class MoveGenerator
 {
 public:
+  MoveGenerator(Position& position)
+  {
+    generate(position);
+  }
+
   void generate(Position& position)
   {
     uint64_t targets = get_targets(position);

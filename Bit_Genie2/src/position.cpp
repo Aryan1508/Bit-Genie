@@ -207,10 +207,7 @@ bool Position::move_was_legal() const
 
 static inline uint64_t legal_move_count(Position& position)
 {
-  MoveGenerator<true> gen;
-  gen.generate(position);
-
-  return gen.movelist.size();
+  return MoveGenerator<true>(position).movelist.size();
 }
 
 void Position::perft(int depth, uint64_t& nodes, bool root)
@@ -221,10 +218,7 @@ void Position::perft(int depth, uint64_t& nodes, bool root)
     return;
   }
   
-  MoveGenerator<true> gen;
-  gen.generate(*this);
-
-  for (auto m : gen.movelist)
+  for (auto m : MoveGenerator<true>(*this).movelist)
   {
     apply_move(m);
     perft(depth - 1, nodes, false);
@@ -599,8 +593,7 @@ void Position::revert_move()
 
 bool Position::apply_move(std::string move)
 {
-  MoveGenerator<true> gen;
-  gen.generate(*this);
+  MoveGenerator<true> gen(*this);
 
   auto check = [&](uint16_t comp) { return print_move(comp) == move; };
   auto& movelist = gen.movelist;
