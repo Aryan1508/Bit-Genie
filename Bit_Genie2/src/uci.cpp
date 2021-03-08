@@ -24,6 +24,7 @@ void uci_input_loop()
   std::cout << "Bit Genie by Aryan Parekh" << std::endl;
   UciParser command;
   Position position;
+  std::thread worker;
 
   while (true)
   {
@@ -77,14 +78,33 @@ void uci_input_loop()
       benchmark_perft(position, depth);
     }
 
+    else if (command == UciCommands::stop)
+    {
+      SEARCH_ABORT_SIGNAL = true;
+      worker.detach();
+    }
+
     else if (command == UciCommands::go)
     {
+      SEARCH_ABORT_SIGNAL = false;
       UciGo options = command.parse_go();
 
       Search search;
       search.limits.max_depth = options.depth;
-      
-      search_position(position, search);
+
+      if (options.movetime != -1)
+      {
+        search.limits.time_set = true;
+        search.limits.start_time = current_time();
+        search.limits.stop_time = search.limits.start_time + options.movetime;
+      }      
+      if (worker.joinable())
+      {
+        SEARCH_ABORT_SIGNAL = true;
+        worker.detach();
+      }
+
+      worker = std::thread(search_position, std::ref(position), std::ref(search));
     }
   }
 }

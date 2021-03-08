@@ -118,6 +118,8 @@ UciGo UciParser::parse_go() const
     if (*key == "depth")
       options.depth = std::stoi(value.data());
    
+    if (*key == "movetime")
+      options.movetime = std::stoi(value.data());
   }
   return options;
 }

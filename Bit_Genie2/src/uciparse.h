@@ -18,7 +18,7 @@ enum class UciCommands
 
 struct UciGo
 {
-  int depth     = -1;
+  int depth     = 64;
   int movestogo = -1;
 
   int64_t btime    = -1;

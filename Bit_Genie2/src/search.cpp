@@ -27,6 +27,8 @@ namespace
 
   SearchResult negamax(Position& position, Search& search, int depth, int alpha = MinEval, int beta = MaxEval)
   {
+    search.info.nodes++;
+    search.limits.update();
     if (depth <= 0)
       return eval_position(position);
 
@@ -39,6 +41,11 @@ namespace
       search.info.ply++;
 
       int score = -negamax(position, search, depth - 1, -beta, -alpha).score;
+      search.info.ply--;
+      position.revert_move();
+
+      if (search.limits.stopped)
+        return 0;
 
       if (score >= result.score)
       {
@@ -46,8 +53,13 @@ namespace
         result.score = score;
       }
 
-      position.revert_move(); 
-      search.info.ply--;
+      alpha = std::max(alpha, result.score);
+
+      if (alpha >= beta)
+      {
+        return result;
+      }
+
     }
 
     return result;
@@ -68,7 +80,13 @@ void search_position(Position& position, Search& search)
     depth <= search.limits.max_depth;
     depth++)
   {
+    search.info.ply = 0;
+    search.info.nodes = 0;
     auto result = negamax(position, search, depth);
+
+    if (search.limits.stopped)
+      break;
+
     print_info_string(result, search, depth);
     best_move = result.best_move;
   }
