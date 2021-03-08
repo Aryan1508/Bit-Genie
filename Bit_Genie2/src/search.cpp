@@ -11,7 +11,9 @@ namespace
   {
     MinEval = -std::numeric_limits<int>::max(),
     MaxEval = -MinEval,
-    MateEval = MaxEval - 1
+    MateEval = MaxEval - 1,
+    MaxPly = 64,
+    MinMateScore = MateEval - MaxPly,
   };
 
   struct SearchResult
@@ -73,11 +75,37 @@ namespace
 
     return result;
   }
+  
+  int mate_distance(int score)
+  {
+    if (score > 0)
+    {
+      return (MateEval - score) / 2 + 1;
+    }
+    else
+    {
+      return (MateEval + score) / 2 + 1;
+    }
+  }
+
+  std::string print_score(int score)
+  {
+    std::stringstream o;
+    if (score > MinMateScore || score < -MinMateScore)
+    {
+      o << "mate " << mate_distance(score);
+    }
+    else
+    {
+      o << "score cp " << score / get_score(wPawn);
+    }
+    return o.str();
+  }
 
   void print_info_string(SearchResult& result, Search& search, int depth)
   {
-    std::printf("info depth %d nodes %llu score %d pv %s\n",
-      depth, search.info.nodes, result.score, print_move(result.best_move).c_str());
+    std::printf("info depth %d nodes %llu score %s pv %s\n",
+      depth, search.info.nodes, print_score(result.score).c_str(), print_move(result.best_move).c_str());
     std::fflush(stdout);
   }
 }

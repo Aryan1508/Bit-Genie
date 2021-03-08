@@ -11,6 +11,9 @@ public:
   void hash_piece(const Square, const Piece);
   void hash_castle(const CastleRights, const CastleRights);
   void reset();
+
+  uint64_t data() const { return hash; }
+
   static void init();
 
   friend std::ostream& operator<<(std::ostream& o, const ZobristKey);
