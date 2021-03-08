@@ -31,8 +31,9 @@ namespace
       return eval_position(position);
 
     SearchResult result;
+    MoveGenerator gen(position);
 
-    for (auto move : MoveGenerator(position).movelist)
+    for (auto move : gen.movelist)
     {
       position.apply_move(move);
       search.info.ply++;
@@ -51,6 +52,13 @@ namespace
 
     return result;
   }
+
+  void print_info_string(SearchResult& result, Search& search, int depth)
+  {
+    std::printf("info depth %d nodes %llu score %d pv %s\n",
+      depth, search.info.nodes, result.score, print_move(result.best_move).c_str());
+    std::fflush(stdout);
+  }
 }
 
 void search_position(Position& position, Search& search)
@@ -61,11 +69,9 @@ void search_position(Position& position, Search& search)
     depth++)
   {
     auto result = negamax(position, search, depth);
-
-    std::cout << "score " << result.score;
-    std::cout << " move " << print_move(result.best_move);
+    print_info_string(result, search, depth);
     best_move = result.best_move;
-    std::cout << std::endl;
   }
+
   std::cout << "bestmove " << print_move(best_move) << std::endl;
 }

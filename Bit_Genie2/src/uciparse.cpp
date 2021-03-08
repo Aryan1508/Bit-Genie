@@ -6,12 +6,7 @@
 void UciParser::take_input()
 {
   std::getline(std::cin, command);
-  clean_input();
-}
-
-void UciParser::clean_input()
-{
-  command = remove_extra_whitespaces(command);
+  command = ltrim(command);
 }
 
 int UciParser::parse_perft() const

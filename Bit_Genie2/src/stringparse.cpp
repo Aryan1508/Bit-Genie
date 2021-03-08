@@ -1,6 +1,13 @@
 #include "stringparse.h"
 #include <sstream>
 #include <algorithm>
+#include <regex>
+
+std::string& ltrim(std::string& s, const char* t)
+{
+  s.erase(0, s.find_first_not_of(t));
+  return s;
+}
 
 bool string_is_number(std::string_view s)
 {
@@ -9,15 +16,20 @@ bool string_is_number(std::string_view s)
   return !s.empty() && it == s.end();
 }
 
-std::string remove_extra_whitespaces(std::string_view str)
+std::vector<std::string> split_string(std::string_view str)
 {
-  std::string out;
-  std::unique_copy(str.begin(), str.end(), std::back_insert_iterator<std::string>(out),
-                   [](char a, char b){ return std::isspace(a) && std::isspace(b); });
-  return out;
+  std::vector<std::string> parts;
+  std::stringstream stream(str.data());
+  std::string temp;
+  while (stream >> temp)
+  {
+    parts.push_back(std::move(temp));
+  }
+  return parts;
 }
 
-std::vector<std::string> split_string(std::string_view str, const char delim) 
+
+std::vector<std::string> split_string(std::string_view str, char delim) 
 {
   std::vector<std::string> parts;
   std::stringstream stream(str.data());

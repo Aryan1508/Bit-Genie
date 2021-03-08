@@ -34,7 +34,6 @@ void uci_input_loop()
     else if (command == UciCommands::isready)
       std::cout << "readyok" << std::endl;
 
-
     else if (command == UciCommands::uci)
     {
       std::cout << "id name Bit Genie" << std::endl;

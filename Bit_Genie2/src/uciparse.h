@@ -39,8 +39,7 @@ public:
 
   int parse_perft() const;
   UciGo parse_go() const;
-private:
-  void clean_input();
+
 private:
   std::string command;
 };
