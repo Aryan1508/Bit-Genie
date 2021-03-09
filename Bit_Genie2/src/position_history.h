@@ -14,7 +14,7 @@ public:
     CastleRights castle;
     ZobristKey   key;
     Piece        captured;
-    uint16_t     move;
+    Move     move;
   };
 
   PositionHistory()

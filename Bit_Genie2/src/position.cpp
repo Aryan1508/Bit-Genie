@@ -133,7 +133,7 @@ void Position::update_ep(Square from, Square to)
   }
 }
 
-Piece Position::apply_enpassant(uint16_t move)
+Piece Position::apply_enpassant(Move move)
 {
   reset_halfmoves();
 
@@ -161,7 +161,7 @@ Piece Position::apply_enpassant(uint16_t move)
   return captured;
 }
 
-void Position::revert_normal_move(uint16_t move, Piece captured)
+void Position::revert_normal_move(Move move, Piece captured)
 {
   Square from = move_from(move);
   Square to = move_to(move);
@@ -180,7 +180,7 @@ void Position::revert_normal_move(uint16_t move, Piece captured)
   pieces.squares[to] = captured;
 }
 
-void Position::revert_enpassant(uint16_t move, Piece captured)
+void Position::revert_enpassant(Move move, Piece captured)
 {
   Square from = move_from(move);
   Square to = move_to(move);
@@ -227,7 +227,7 @@ void Position::perft(int depth, uint64_t& nodes, bool root)
   }
 }
 
-bool Position::move_is_legal(uint16_t move)
+bool Position::move_is_legal(Move move)
 {
   Square from = move_from(move);
   Square to = move_to(move);
@@ -308,7 +308,7 @@ bool Position::move_is_legal(uint16_t move)
   return true;
 }
 
-Piece Position::apply_castle(uint16_t move)
+Piece Position::apply_castle(Move move)
 {
   auto old_castle = castle_rights;
   Square from = move_from(move);
@@ -371,7 +371,7 @@ Piece Position::apply_castle(uint16_t move)
   return Empty;
 }
 
-void Position::revert_castle(uint16_t move)
+void Position::revert_castle(Move move)
 {
   Square from = move_from(move);
   Square to = move_to(move);
@@ -423,7 +423,7 @@ void Position::revert_castle(uint16_t move)
   pieces.squares[rook_to] = Empty;
 }
 
-Piece Position::apply_normal_move(uint16_t move)
+Piece Position::apply_normal_move(Move move)
 {
   CastleRights old_castle = castle_rights;
   Square from = move_from(move);
@@ -467,7 +467,7 @@ Piece Position::apply_normal_move(uint16_t move)
   return captured;
 }
 
-Piece Position::apply_promotion(uint16_t move)
+Piece Position::apply_promotion(Move move)
 {
   reset_halfmoves();
 
@@ -506,7 +506,7 @@ Piece Position::apply_promotion(uint16_t move)
   return captured;
 }
 
-void Position::revert_promotion(uint16_t move, Piece captured)
+void Position::revert_promotion(Move move, Piece captured)
 {
   Square from = move_from(move);
   Square to = move_to(move);
@@ -528,7 +528,7 @@ void Position::revert_promotion(uint16_t move, Piece captured)
   pieces.squares[to] = captured;
 }
 
-void Position::apply_move(uint16_t move)
+void Position::apply_move(Move move)
 {
   auto& undo = history.current();
   
@@ -612,7 +612,7 @@ bool Position::king_in_check() const
   return Attacks::square_attacked(*this, get_lsb(king), !side);
 }
 
-bool Position::move_exists(uint16_t move)
+bool Position::move_exists(Move move)
 {
   auto const& movelist = MoveGenerator<true>(*this).movelist;
   return std::find(movelist.moves.begin(), movelist.moves.end(), move) != movelist.moves.end();

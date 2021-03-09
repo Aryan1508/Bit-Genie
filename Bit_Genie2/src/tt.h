@@ -1,11 +1,12 @@
 #pragma once
 #include "misc.h"
+#include "move.h"
 #include <vector>
 
 struct TEntry
 {
   uint64_t hash = 0;
-  uint16_t move = 0;
+  Move     move = NullMove;
 };
 
 class TTable
@@ -16,7 +17,7 @@ public:
   TTable(int mb) { resize(mb); }
 
   void resize(int);
-  void add(Position const&, uint16_t);
+  void add(Position const&, Move);
   TEntry& retrieve(Position const&);
 
 private:

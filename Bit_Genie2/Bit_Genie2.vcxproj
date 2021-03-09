@@ -154,6 +154,7 @@
     <ClCompile Include="src\eval.cpp" />
     <ClCompile Include="src\search.cpp" />
     <ClCompile Include="src\searchlimits.cpp" />
+    <ClCompile Include="src\moveorder.cpp" />
     <ClCompile Include="src\tt.cpp" />
     <ClCompile Include="src\uci.cpp" />
     <ClCompile Include="src\uciparse.cpp" />

@@ -17,7 +17,7 @@ void TTable::resize(int mb)
   printf("Hash table initialized with %d Mb\n", mb);
 }
 
-void TTable::add(Position const& position, uint16_t move)
+void TTable::add(Position const& position, Move move)
 {
   uint64_t hash = position.key.data();
   uint64_t index = hash % entries.size();

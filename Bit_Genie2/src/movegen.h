@@ -56,13 +56,13 @@ private:
       Square to = pop_lsb(attacks);
       if constexpr (is_promo)
       {
-        movelist.add<checked>(pos, Move(from, to, gen_type, Knight));
-        movelist.add<checked>(pos, Move(from, to, gen_type, Bishop));
-        movelist.add<checked>(pos, Move(from, to, gen_type, Rook));
-        movelist.add<checked>(pos, Move(from, to, gen_type, Queen));
+        movelist.add<checked>(pos, CreateMove(from, to, gen_type, Knight));
+        movelist.add<checked>(pos, CreateMove(from, to, gen_type, Bishop));
+        movelist.add<checked>(pos, CreateMove(from, to, gen_type, Rook));
+        movelist.add<checked>(pos, CreateMove(from, to, gen_type, Queen));
 
       }
-      movelist.add<checked>(pos, Move(from, to, gen_type, Knight));
+      movelist.add<checked>(pos, CreateMove(from, to, gen_type, Knight));
     }
   }
 
@@ -86,15 +86,15 @@ private:
       Square sq = pop_lsb(attacks);
       if constexpr (is_promo)
       {
-        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, Knight));
-        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, Bishop));
-        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, Rook));
-        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, Queen));
+        movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Knight));
+        movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Bishop));
+        movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Rook));
+        movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Queen));
 
       }
       else
       {
-        movelist.add<checked>(pos, Move(sq - delta, sq, gen_type, Knight));
+        movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Knight));
       }
     }
   }
@@ -185,7 +185,7 @@ private:
       if (castle_path_is_attacked(position, rook, !position.side))
         continue;
 
-      movelist.add<checked>(position, Move(king_sq, rook, MoveFlag::castle, 1));
+      movelist.add<checked>(position, CreateMove(king_sq, rook, MoveFlag::castle, 1));
     }
   }
 };

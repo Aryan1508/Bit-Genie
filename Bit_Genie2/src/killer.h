@@ -7,21 +7,21 @@ class Killers
 public:
   Killers() = default;
 
-  uint16_t first(int ply)
+  Move first(int ply)
   {
     return moves[ply][0];
   }
 
-  uint16_t second(int ply)
+  Move second(int ply)
   {
     return moves[ply][1];
   }
 
-  void add(int ply, uint16_t move)
+  void add(int ply, Move move)
   {
     moves[ply][1] = moves[ply][0];
     moves[ply][0] = move;
   }
 private:
-  uint16_t moves[64][2] = { 0 };
+  Move moves[64][2] = { 0 };
 };

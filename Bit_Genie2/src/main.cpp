@@ -8,6 +8,7 @@
 #include "movegen.h"
 #include "uci.h"
 #include "zobrist.h"
+#include <queue>
 
 int main()
 {  

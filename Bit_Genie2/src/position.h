@@ -23,15 +23,15 @@ public:
 
   uint64_t total_occupancy() const;
 
-  void apply_move(uint16_t);
+  void apply_move(Move);
 
   void revert_move();
 
   bool move_was_legal() const;
 
-  bool move_is_legal(uint16_t);
+  bool move_is_legal(Move);
 
-  bool move_exists(uint16_t);
+  bool move_exists(Move);
 
   bool apply_move(std::string);
 
@@ -67,20 +67,20 @@ private:
     side = !side;
   }
 
-  Piece apply_normal_move(uint16_t);
+  Piece apply_normal_move(Move);
   
-  Piece apply_enpassant(uint16_t);
+  Piece apply_enpassant(Move);
 
-  Piece apply_castle(uint16_t);
+  Piece apply_castle(Move);
 
-  Piece apply_promotion(uint16_t);
-  void revert_normal_move(uint16_t, Piece);
+  Piece apply_promotion(Move);
+  void revert_normal_move(Move, Piece);
 
-  void revert_enpassant(uint16_t, Piece);
+  void revert_enpassant(Move, Piece);
 
-  void revert_castle(uint16_t);
+  void revert_castle(Move);
 
-  void revert_promotion(uint16_t, Piece);
+  void revert_promotion(Move, Piece);
 
   void update_ep(Square from, Square to);
 public:

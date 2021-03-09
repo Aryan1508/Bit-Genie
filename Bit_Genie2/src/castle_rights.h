@@ -14,7 +14,7 @@ public:
 
   uint64_t get_rooks(Color) const;
 
-  void update(uint16_t);
+  void update(Move);
 
   uint64_t data() const { return rooks; }
 

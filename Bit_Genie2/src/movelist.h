@@ -28,10 +28,10 @@ public:
     return cap;
   }
 
-  uint16_t& operator[](size_t pos) { return moves[pos]; }
+  Move& operator[](size_t pos) { return moves[pos]; }
   
   template<bool check = false>
-  void add(Position& position, uint16_t&& move)
+  void add(Position& position, Move&& move)
   {
     if constexpr (check) 
     {
@@ -41,7 +41,7 @@ public:
     moves[cap++] = std::move(move);
   }
 
-  std::array<uint16_t, 256> moves;
+  std::array<Move, 256> moves;
 private:
   int cap;
 };

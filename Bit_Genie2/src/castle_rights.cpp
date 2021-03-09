@@ -64,7 +64,7 @@ uint64_t CastleRights::get_castle_path(Square rook)
 }
 
 
-void CastleRights::update(uint16_t move)
+void CastleRights::update(Move move)
 {
   static constexpr uint64_t RC1 = 0xfffffffffffffffb;
   static constexpr uint64_t RG1 = 0xffffffffffffffbf;

@@ -21,7 +21,7 @@ namespace
 
   struct SearchResult
   {
-    uint16_t best_move = 0;
+    Move best_move = NullMove;
     int      score     = MinEval;
 
     SearchResult() = default;
@@ -52,15 +52,7 @@ namespace
     }
 
     int original = alpha;
-
-    evaluate_movelist(position, gen, tt, search);
-    sort_movelist(gen);
-    
-    for (auto const elem : gen.scores)
-    {
-      std::cout << elem << ' ';
-    }
-    std::cin.get();
+    sort_movelist(gen.movelist, position, search);
 
     for (auto move : gen.movelist)
     {
@@ -126,9 +118,9 @@ namespace
     return o.str();
   }
 
-  std::vector<uint16_t> get_pv(Position& position, TTable& tt, int depth)
+  std::vector<Move> get_pv(Position& position, TTable& tt, int depth)
   {
-    std::vector<uint16_t> pv;
+    std::vector<Move> pv;
     int count = 0;
 
     TEntry* entry = &tt.retrieve(position);
@@ -172,7 +164,7 @@ void search_position(Position& position, Search& search)
 {
   static TTable tt(2);
 
-  uint16_t best_move = 0;
+  Move best_move = NullMove;
   for (int depth = 1; 
     depth <= search.limits.max_depth;
     depth++)

@@ -2,12 +2,12 @@
 #include "position.h"
 #include <sstream>
 
-bool move_is_capture(Position const& position, uint16_t move)
+bool move_is_capture(Position const& position, Move move)
 {
   return position.pieces.get_piece(move_to(move)) != Empty;
 }
 
-std::string print_move(uint16_t move)
+std::string print_move(Move move)
 {
   std::stringstream o;
   o << move_from(move) << move_to(move);
