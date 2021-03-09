@@ -229,12 +229,10 @@ void Position::perft(int depth, uint64_t& nodes, bool root)
 
 bool Position::move_is_legal(uint16_t move)
 {
-  Color us = side;
   Square from = move_from(move);
   Square to = move_to(move);
 
   uint64_t occupancy = total_occupancy();
-
 
   if (move_flag(move) == MoveFlag::normal)
   {
@@ -268,7 +266,6 @@ bool Position::move_is_legal(uint16_t move)
 
   else if (move_flag(move) == MoveFlag::enpassant)
   {
-    uint64_t occupancy = total_occupancy();
     Square ep = Square(to ^ 8);
 
     occupancy ^= (1ull << from) ^ (1ull << to) ^ (1ull << (to_int(ep)));
@@ -317,7 +314,7 @@ Piece Position::apply_castle(uint16_t move)
   Square from = move_from(move);
   Square to = move_to(move);
   Square rook_from = bad_sq, rook_to = bad_sq;
-  Color col;
+  Color col = White;
 
   switch (to)
   {
@@ -379,7 +376,7 @@ void Position::revert_castle(uint16_t move)
   Square from = move_from(move);
   Square to = move_to(move);
   Square rook_from = bad_sq, rook_to = bad_sq;
-  Color col;
+  Color col = White;
 
   switch (to)
   {
@@ -596,8 +593,6 @@ void Position::revert_move()
 bool Position::apply_move(std::string move)
 {
   MoveGenerator<true> gen(*this);
-
-  auto check = [&](uint16_t comp) { return print_move(comp) == move; };
   auto& movelist = gen.movelist;
 
   for (auto m : movelist)

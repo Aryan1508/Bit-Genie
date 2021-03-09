@@ -34,6 +34,10 @@ bool CastleRights::castle_path_is_clear(const Square rook, const uint64_t occupa
 
   case Square::G8:
     return !(occupancy & 0x6000000000000000);
+
+  default:
+    assert(false);
+    break;
   }
 }
 
@@ -52,6 +56,10 @@ uint64_t CastleRights::get_castle_path(Square rook)
 
   case Square::G8:
     return 0x2000000000000000;
+
+  default:
+    assert(false);
+    break;
   }
 }
 

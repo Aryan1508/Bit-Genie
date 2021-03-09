@@ -30,7 +30,7 @@ inline Piece make_piece(PieceType type, Color color)
 
 inline Color color_of(Piece piece)
 {
-  return Color(bool(((piece) + 2 & 0x8)));
+  return Color(bool(((piece + 2) & 0x8)));
 }
 
 inline PieceType type_of(Piece piece)

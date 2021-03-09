@@ -107,9 +107,7 @@ private:
   }
 
   void generate_pawn_moves(Position& position, uint64_t targets)
-  {
-    constexpr bool gen_ep = type == MoveGenType::noisy || type == MoveGenType::normal;
-
+  { 
     uint64_t pawn_st_rank = position.side == White ? BitMask::rank4 : BitMask::rank5;
     uint64_t promotion_rank = position.side == White ? BitMask::rank7 : BitMask::rank2;
     uint64_t ep_rank = position.side == White ? BitMask::rank6 : BitMask::rank3;

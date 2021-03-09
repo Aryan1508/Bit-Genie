@@ -5,7 +5,7 @@ SOURCES = $(wildcard src/*.cpp)
 OBJECTS = $(SOURCES:%.cpp=%.o)
 DEPENDS = $(SOURCES:%.cpp=%.d)
 
-CXXFLAGS += -Wall -Wno-enum-compare -Wcast-qual -Wshadow -std=c++17 -O2
+CXXFLAGS += -Wall -Wno-enum-compare -Wno-switch -Wcast-qual -Wshadow -std=c++17 -O2
 CPPFLAGS += -MMD 
 
 all: $(EXE)
