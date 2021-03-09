@@ -505,6 +505,7 @@ Piece Position::apply_promotion(uint16_t move)
   key.hash_piece(from, from_pce);
   key.hash_piece(to, make_piece(prom_pce, from_pce_c));
   key.hash_castle(old_castle, castle_rights);
+
   return captured;
 }
 

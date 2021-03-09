@@ -116,6 +116,9 @@ UciGo UciParser::parse_go() const
   {
     std::string_view value = *(key + 1);
 
+    if (*key == "infinite")
+      break;
+
     if (*key == "depth")
       options.depth = std::stoi(value.data());
    

@@ -3,6 +3,7 @@
 #include "position.h"
 #include "eval.h"
 #include "tt.h"
+#include <sstream>
 
 std::atomic_bool SEARCH_ABORT_SIGNAL = false;
 
@@ -69,10 +70,11 @@ namespace
         result.score = score;
       }
 
-      alpha = std::max(alpha, result.score);
+      alpha = std::max(alpha, score);
 
       if (alpha >= beta)
       {
+        tt.add(position, move);
         return result;
       }
     }
@@ -118,7 +120,7 @@ namespace
 
     TEntry* entry = &tt.retrieve(position);
 
-    while (entry->hash == position.key.data() && depth)
+    while (entry->move && depth)
     {
       if (position.move_exists(entry->move))
       {
