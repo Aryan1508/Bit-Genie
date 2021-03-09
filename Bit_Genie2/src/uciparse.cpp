@@ -65,6 +65,7 @@ bool UciParser::operator==(UciCommands type) const
 }
 
 std::pair<std::string, std::vector<std::string>> 
+
 UciParser::parse_position_command() const
 {
   std::string fen;
@@ -87,8 +88,8 @@ UciParser::parse_position_command() const
       }
       else
       {
-        fen = command.substr(last);
-        break;
+        fen = command.substr(command.find("fen ") + 4, last);
+        continue;
       }
     }
 

@@ -31,6 +31,8 @@ public:
 
   bool move_is_legal(uint16_t);
 
+  bool move_exists(uint16_t);
+
   bool apply_move(std::string);
 
   void perft(int, uint64_t&, bool = true);

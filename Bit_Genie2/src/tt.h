@@ -13,10 +13,11 @@ class TTable
 public:
   TTable();
 
+  TTable(int mb) { resize(mb); }
+
+  void resize(int);
   void add(Position const&, uint16_t);
   TEntry& retrieve(Position const&);
-private:
-  void resize(int);
 
 private:
   std::vector<TEntry> entries;

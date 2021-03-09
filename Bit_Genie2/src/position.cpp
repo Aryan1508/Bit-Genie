@@ -129,6 +129,7 @@ void Position::update_ep(Square from, Square to)
   if (potential & enemy_pawns)
   {
     ep_sq = to_sq(to ^ 8);
+    key.hash_ep(to_sq(to ^ 8));
   }
 }
 
@@ -613,4 +614,10 @@ bool Position::king_in_check() const
 {
   uint64_t king = pieces.get_piece_bb<King>(side);
   return Attacks::square_attacked(*this, get_lsb(king), !side);
+}
+
+bool Position::move_exists(uint16_t move)
+{
+  auto const& movelist = MoveGenerator<true>(*this).movelist;
+  return std::find(movelist.moves.begin(), movelist.moves.end(), move) != movelist.moves.end();
 }

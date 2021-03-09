@@ -2,6 +2,7 @@
 #include "movegen.h"
 #include "position.h"
 #include "eval.h"
+#include "tt.h"
 
 std::atomic_bool SEARCH_ABORT_SIGNAL = false;
 
@@ -28,7 +29,8 @@ namespace
     {}
   };
 
-  SearchResult negamax(Position& position, Search& search, int depth, int alpha = MinEval, int beta = MaxEval)
+  SearchResult negamax(Position& position, Search& search, TTable& tt,
+    int depth, int alpha = MinEval, int beta = MaxEval)
   {
     search.info.nodes++;
     search.limits.update();
@@ -47,12 +49,14 @@ namespace
         return 0;
     }
 
+    int original = alpha;
+    
     for (auto move : gen.movelist)
     {
       position.apply_move(move);
       search.info.ply++;
 
-      int score = -negamax(position, search, depth - 1, -beta, -alpha).score;
+      int score = -negamax(position, search, tt, depth - 1, -beta, -alpha).score;
       search.info.ply--;
       position.revert_move();
 
@@ -71,6 +75,11 @@ namespace
       {
         return result;
       }
+    }
+
+    if (original != alpha)
+    {
+      tt.add(position, result.best_move);
     }
 
     return result;
@@ -102,16 +111,52 @@ namespace
     return o.str();
   }
 
-  void print_info_string(SearchResult& result, Search& search, int depth)
+  std::vector<uint16_t> get_pv(Position& position, TTable& tt, int depth)
   {
-    std::printf("info depth %d nodes %llu score %s pv %s\n",
-      depth, search.info.nodes, print_score(result.score).c_str(), print_move(result.best_move).c_str());
-    std::fflush(stdout);
+    std::vector<uint16_t> pv;
+    int count = 0;
+
+    TEntry* entry = &tt.retrieve(position);
+
+    while (entry->hash == position.key.data() && depth)
+    {
+      if (position.move_exists(entry->move))
+      {
+        position.apply_move(entry->move);
+        pv.push_back(entry->move);
+        depth--;
+        count++;
+      }
+      else
+        break;
+
+      entry = &tt.retrieve(position);
+    }
+
+    while (count--)
+      position.revert_move();
+
+    return pv;
+  }
+
+  void print_info_string(Position& position, SearchResult& result, TTable& tt, Search& search, int depth)
+  {
+    std::printf("info depth %d nodes %llu score %s pv ",
+      depth, search.info.nodes, print_score(result.score).c_str());
+
+    for (auto m : get_pv(position, tt, depth))
+    {
+      std::cout << print_move(m) << ' ';
+    }
+
+    std::cout << std::endl;
   }
 }
 
 void search_position(Position& position, Search& search)
 {
+  static TTable tt(2);
+
   uint16_t best_move = 0;
   for (int depth = 1; 
     depth <= search.limits.max_depth;
@@ -119,12 +164,12 @@ void search_position(Position& position, Search& search)
   {
     search.info.ply = 0;
     search.info.nodes = 0;
-    auto result = negamax(position, search, depth);
+    auto result = negamax(position, search, tt, depth);
 
     if (search.limits.stopped)
       break;
 
-    print_info_string(result, search, depth);
+    print_info_string(position, result, tt, search, depth);
     best_move = result.best_move;
   }
 
