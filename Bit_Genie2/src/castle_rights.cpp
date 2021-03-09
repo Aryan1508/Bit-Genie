@@ -37,7 +37,7 @@ bool CastleRights::castle_path_is_clear(const Square rook, const uint64_t occupa
 
   default:
     assert(false);
-    break;
+    return 0;
   }
 }
 
@@ -59,7 +59,7 @@ uint64_t CastleRights::get_castle_path(Square rook)
 
   default:
     assert(false);
-    break;
+    return 0;
   }
 }
 
