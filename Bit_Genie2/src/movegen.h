@@ -38,18 +38,11 @@ public:
 
 public:
   Movelist movelist;
+  int16_t scores[256] = { 0 };
 
 private:
   uint64_t get_targets(Position const& position)
   {
-    //    Normal moves include both noisy and quiet, so all squares
-    //    except those occupied by the current player are targets
-    //  
-    //    Noisy moves are only captures so the targets are 
-    //    only squares occupied by the enemy 
-    // 
-    //    Quiet moves are non-captures so all squares
-    //    that areN'T occupied by the current player, nor the enemy
     return type == MoveGenType::normal ? ~position.friend_bb() :
       type == MoveGenType::noisy ? position.enemy_bb() : ~position.total_occupancy();
   }

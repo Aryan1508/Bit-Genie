@@ -27,6 +27,8 @@ public:
   {
     return cap;
   }
+
+  uint16_t& operator[](size_t pos) { return moves[pos]; }
   
   template<bool check = false>
   void add(Position& position, uint16_t&& move)

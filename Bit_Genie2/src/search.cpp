@@ -2,6 +2,7 @@
 #include "movegen.h"
 #include "position.h"
 #include "eval.h"
+#include "moveorder.h"
 #include "tt.h"
 #include <sstream>
 
@@ -51,7 +52,16 @@ namespace
     }
 
     int original = alpha;
+
+    evaluate_movelist(position, gen, tt, search);
+    sort_movelist(gen);
     
+    for (auto const elem : gen.scores)
+    {
+      std::cout << elem << ' ';
+    }
+    std::cin.get();
+
     for (auto move : gen.movelist)
     {
       position.apply_move(move);
@@ -74,6 +84,9 @@ namespace
 
       if (alpha >= beta)
       {
+        if (!move_is_capture(position, move))
+          search.killers.add(search.info.ply, move);
+
         tt.add(position, move);
         return result;
       }

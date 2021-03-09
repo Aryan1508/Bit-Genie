@@ -140,5 +140,11 @@
     <ClInclude Include="src\tt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\moveorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\killer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

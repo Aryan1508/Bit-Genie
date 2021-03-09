@@ -23,15 +23,17 @@ enum PieceType : uint8_t;
 enum Color : uint8_t;
 
 class CastleRights;
-class Move;
+class Killers;
 class Movelist;
 class PieceManager;
 class Position;
 class PositionHistory;
+class SHistory;
 class ZobristKey;
 
 struct SearchInfo;
 struct SearchLimits;
+struct Search;
 
 template <typename E>
 constexpr typename std::underlying_type<E>::type to_int(E e)
