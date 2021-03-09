@@ -149,5 +149,8 @@
     <ClInclude Include="src\killer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\shistory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

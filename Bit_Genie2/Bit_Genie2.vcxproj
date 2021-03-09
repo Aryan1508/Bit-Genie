@@ -167,6 +167,7 @@
     <ClInclude Include="src\castle_rights.h" />
     <ClInclude Include="src\attacks.h" />
     <ClInclude Include="src\eval.h" />
+    <ClInclude Include="src\shistory.h" />
     <ClInclude Include="src\killer.h" />
     <ClInclude Include="src\moveorder.h" />
     <ClInclude Include="src\tt.h" />

@@ -21,13 +21,13 @@ namespace
 
   struct SearchResult
   {
+    int      score = MinEval;
     Move best_move = NullMove;
-    int      score     = MinEval;
 
     SearchResult() = default;
 
-    SearchResult(int best_score)
-      : score(best_score)
+    SearchResult(int best_score, Move best = NullMove)
+      : score(best_score), best_move(best)
     {}
   };
 
@@ -76,11 +76,15 @@ namespace
 
       if (alpha >= beta)
       {
+        search.history.add(position, move, depth);
+
         if (!move_is_capture(position, move))
+        {
           search.killers.add(search.info.ply, move);
+        }
 
         tt.add(position, move);
-        return result;
+        return { beta, result.best_move};
       }
     }
 

@@ -23,13 +23,18 @@ static int16_t mvv_lva(Move move, Position& position)
   return scores[victim] - scores[attacker] / 100;
 }
 
+static uint16_t history_bonus(Move move, Position& position, Search& search)
+{
+  return search.history.get(position, move);
+}
+
 static int16_t killer_bonus(Move move, Search& search)
 {
   int16_t score = 0;
 
   score += (search.killers.first(search.info.ply) == move) * FirstKiller;
   score += (search.killers.second(search.info.ply) == move) * SecondKiller;
-
+ 
   return score;
 }
 
@@ -37,8 +42,13 @@ static int16_t evaluate_move(Move move, Position& position, Search& search)
 {
   int16_t score = 0;
 
-  score += (move_is_capture(position, move)) * CaptureBonus;
-  score += mvv_lva(move, position);
+  if (move_is_capture(position, move))
+  {
+    score += CaptureBonus;
+    score += mvv_lva(move, position);
+  }
+  
+  score += history_bonus(move, position, search);
   score += killer_bonus(move, search);
 
   return score;

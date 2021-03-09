@@ -3,12 +3,14 @@
 #include "searchinfo.h"
 #include "searchlimits.h"
 #include "killer.h"
+#include "shistory.h"
 
 struct Search
 {
   SearchInfo   info;
   SearchLimits limits;
-  Killers      killers;
+  Killers  killers;
+  SHistory history;
 };
 
 extern std::atomic_bool SEARCH_ABORT_SIGNAL;
