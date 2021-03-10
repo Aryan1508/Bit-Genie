@@ -39,11 +39,15 @@ static int16_t killer_bonus(Move move, Search& search)
   return score;
 }
 
+template<bool quiescent>
 static int16_t evaluate_move(Move move, Position& position, Search& search, TTable& tt)
 {
   Move pv = tt.retrieve(position).move;
   Move killer1 = search.killers.first(search.info.ply);
   Move killer2 = search.killers.second(search.info.ply);
+
+  if constexpr (quiescent)
+    return mvv_lva(move, position);
 
   if (pv == move)
   {
@@ -71,19 +75,25 @@ static int16_t evaluate_move(Move move, Position& position, Search& search, TTab
   }
 }
 
-
+template<bool quiescent>
 static void evaluate_movelist(Movelist& movelist, Position& position, Search& search, TTable& tt)
 {
   for (auto& m : movelist)
   {
-    set_move_score(m, evaluate_move(m, position, search, tt));
+    set_move_score(m, evaluate_move<quiescent>(m, position, search, tt));
   }
 }
 
 void sort_movelist(Movelist& movelist, Position& position, Search& search, TTable& tt)
 {
- 
-  evaluate_movelist(movelist, position, search, tt);
+  evaluate_movelist<false>(movelist, position, search, tt);
+  std::sort(movelist.begin(), movelist.end(),
+    [](Move l, Move r) { return l > r; });
+}
+
+void sort_qmovelist(Movelist& movelist, Position& position, Search& search, TTable& tt)
+{
+  evaluate_movelist<true>(movelist, position, search, tt);
   std::sort(movelist.begin(), movelist.end(),
     [](Move l, Move r) { return l > r; });
 }

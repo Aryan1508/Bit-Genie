@@ -31,6 +31,44 @@ namespace
     {}
   };
 
+  int qsearch(Position& position, Search& search, TTable& tt, int alpha, int beta)
+  {
+    search.info.nodes++;
+    search.limits.update();
+    search.info.update_seldepth();
+
+    if (search.info.ply >= MaxPly)
+      return eval_position(position);
+
+    int stand_pat = eval_position(position);
+
+    if (stand_pat >= beta)
+      return beta;
+
+    alpha = std::max(alpha, stand_pat);
+
+    SearchResult result;
+    MoveGenerator<true, MoveGenType::noisy> gen(position);
+
+    sort_qmovelist(gen.movelist, position, search, tt);
+
+    for (auto move : gen.movelist)
+    {
+      position.apply_move(move);
+      search.info.ply++;
+      int score = -qsearch(position, search, tt, -beta, -alpha);
+      search.info.ply--;
+      position.revert_move();
+
+      alpha = std::max(alpha, score);
+
+      if (alpha >= beta)
+        return beta;
+    }
+
+    return alpha;
+  }
+
   SearchResult negamax(Position& position, Search& search, TTable& tt,
     int depth, int alpha = MinEval, int beta = MaxEval)
   {
@@ -39,7 +77,7 @@ namespace
     search.info.update_seldepth();
 
     if (depth <= 0)
-      return eval_position(position);
+      return qsearch(position, search, tt, alpha, beta);
 
     SearchResult result;
     MoveGenerator gen(position);

@@ -5,3 +5,4 @@
 #include "position.h"
 
 void sort_movelist(Movelist&, Position&, Search&, TTable&);
+void sort_qmovelist(Movelist&, Position&, Search&, TTable&);
