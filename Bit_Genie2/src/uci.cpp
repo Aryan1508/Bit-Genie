@@ -2,6 +2,7 @@
 #include "position.h"
 #include "search.h"
 #include "uciparse.h"
+#include "tt.h"
 #include <thread>
 #include <chrono>
 
@@ -24,8 +25,7 @@ void uci_input_loop()
   std::cout << "Bit Genie by Aryan Parekh" << std::endl;
   UciParser command;
   Position position;
-  position.set_fen("r1bqk1nr/ppp2ppp/3p4/n1b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 1 6");
-  std::thread worker;
+  TTable table(2);
 
   while (true)
   {
@@ -79,21 +79,8 @@ void uci_input_loop()
       benchmark_perft(position, depth);
     }
 
-    else if (command == UciCommands::stop)
-    {
-      if (!worker.joinable())
-        continue;
-
-      SEARCH_ABORT_SIGNAL = true;
-      worker.join();
-    }
-
     else if (command == UciCommands::go)
     {
-      if (worker.joinable())
-        worker.join();
-
-      SEARCH_ABORT_SIGNAL = false;
       UciGo options = command.parse_go();
 
       Search search;
@@ -105,8 +92,7 @@ void uci_input_loop()
         search.limits.start_time = current_time();
         search.limits.stop_time = search.limits.start_time + options.movetime;
       } 
-
-      worker = std::thread(search_position, std::ref(position), std::ref(search));
+      search_position(position, search, table);
     }
   }
 }

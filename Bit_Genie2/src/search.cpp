@@ -203,10 +203,8 @@ namespace
   }
 }
 
-void search_position(Position& position, Search& search)
+void search_position(Position& position, Search& search, TTable& tt)
 {
-  static TTable tt(2);
-
   tt.reset();
 
   Move best_move = NullMove;

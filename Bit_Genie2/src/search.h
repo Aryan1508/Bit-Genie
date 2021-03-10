@@ -15,4 +15,4 @@ struct Search
 
 extern std::atomic_bool SEARCH_ABORT_SIGNAL;
 
-void search_position(Position&, Search&);
+void search_position(Position&, Search&, TTable& tt);

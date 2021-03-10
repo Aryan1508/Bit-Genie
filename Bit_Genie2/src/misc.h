@@ -30,11 +30,13 @@ class PieceManager;
 class Position;
 class PositionHistory;
 class SHistory;
+class TTable;
 class ZobristKey;
 
 struct SearchInfo;
 struct SearchLimits;
 struct Search;
+struct TEntry;
 
 template <typename E>
 constexpr typename std::underlying_type<E>::type to_int(E e)
