@@ -46,7 +46,9 @@ static int16_t evaluate_move(Move move, Position& position, Search& search, TTab
   Move killer2 = search.killers.second(search.info.ply);
 
   if (pv == move)
+  {
     return PrincipleMove;
+  }
 
   if (killer1 == move)
     return FirstKiller;
@@ -61,9 +63,8 @@ static int16_t evaluate_move(Move move, Position& position, Search& search, TTab
   }
 
   if (move_is_capture(position, move))
-  {
     return CaptureBonus + mvv_lva(move, position);
-  }
+  
   else
   {
     return search.history.get(position, move);

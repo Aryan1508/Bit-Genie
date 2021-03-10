@@ -167,7 +167,7 @@ namespace
 
 void search_position(Position& position, Search& search)
 {
-  static TTable tt(2);
+  static TTable tt(32);
 
   Move best_move = NullMove;
   for (int depth = 1; 
