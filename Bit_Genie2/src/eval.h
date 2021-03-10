@@ -6,11 +6,11 @@
 
 inline int get_score(Piece piece)
 {
-  constexpr int pawn   = 100;
-  constexpr int knight = 300;
-  constexpr int bishop = 325;
-  constexpr int rook   = 520;
-  constexpr int queen  = 950;
+  constexpr int pawn   = S(100,100);
+  constexpr int knight = S(300,300);
+  constexpr int bishop = S(325,325);
+  constexpr int rook   = S(520,520);
+  constexpr int queen  = S(950,950);
 
   static constexpr int scores[13]
   {
