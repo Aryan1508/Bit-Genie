@@ -67,6 +67,11 @@ inline void set_bit(Square sq, uint64_t& bb)
   bb |= (1ull << sq);
 }
 
+inline bool is_several(uint64_t bb)
+{
+  return bb & (bb - 1);
+}
+
 inline void print_uint64_t(uint64_t bb)
 {
   for (Square sq = Square::A1; sq <= Square::H8; sq++)
