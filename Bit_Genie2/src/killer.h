@@ -1,11 +1,15 @@
 #pragma once
 #include "misc.h"
 #include <array>
+#include <cstring>
 
 class Killers
 {
 public:
-  Killers() = default;
+  Killers()
+  {
+    std::memset(&moves[0][0], 0, sizeof(moves));
+  }
 
   Move first(int ply)
   {
@@ -23,5 +27,5 @@ public:
     moves[ply][0] = move;
   }
 private:
-  Move moves[64][2] = { 0 };
+  Move moves[64][2];
 };

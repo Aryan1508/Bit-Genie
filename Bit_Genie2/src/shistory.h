@@ -2,7 +2,7 @@
 #include "move.h"
 #include "position.h"
 #include <array>
-
+#include <cstring>
 
 class SHistory
 {

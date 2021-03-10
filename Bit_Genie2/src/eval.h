@@ -6,25 +6,16 @@
 
 inline int get_score(Piece piece)
 {
-  enum
-  {
-    PawnMG   = 101,  PawnEG   = 160,
-    KnightMG = 399,  KnightEG = 486,
-    BishopMG = 408,  BishopEG = 499,
-    RookMG   = 567,  RookEG   = 875,
-    QueenMG  = 1386, QueenEG  = 1588,
-  };
-
-  constexpr int pawn   = S(PawnMG, PawnEG);
-  constexpr int knight = S(KnightMG, KnightEG);
-  constexpr int bishop = S(BishopMG, BishopEG);
-  constexpr int rook   = S(RookMG, RookEG);
-  constexpr int queen  = S(QueenMG, QueenEG);
+  constexpr int pawn   = 100;
+  constexpr int knight = 300;
+  constexpr int bishop = 325;
+  constexpr int rook   = 520;
+  constexpr int queen  = 950;
 
   static constexpr int scores[13]
   {
     pawn, knight, bishop, rook, queen, 0
-    - pawn, -knight, -bishop, -rook, -queen, 0, 0
+    -pawn, -knight, -bishop, -rook, -queen, 0, 0
   };
 
   return scores[piece];

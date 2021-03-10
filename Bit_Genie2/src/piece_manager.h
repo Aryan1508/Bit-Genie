@@ -18,7 +18,7 @@ public:
   template<PieceType type>
   inline uint64_t get_piece_bb(Color color) const
   {
-    return bitboards[to_int(type)] & colors[to_int(color)];
+    return bitboards[type] & colors[color];
   }
 
   friend std::ostream& operator<<(std::ostream&, PieceManager const&);

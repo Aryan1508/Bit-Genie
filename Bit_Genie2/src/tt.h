@@ -18,6 +18,11 @@ public:
 
   void resize(int);
   void add(Position const&, Move);
+  void reset()
+  {
+    std::fill(entries.begin(), entries.end(), TEntry());
+  }
+
   TEntry& retrieve(Position const&);
 
 private:

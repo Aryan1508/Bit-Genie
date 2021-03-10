@@ -68,13 +68,13 @@ namespace
       if (search.limits.stopped)
         return 0; 
 
-      if (score >= result.score)
+      if (score > result.score)
       {
         result.best_move = move;
         result.score = score;
-
-        alpha = std::max(alpha, score);
       }
+
+      alpha = std::max(alpha, score);
 
       if (alpha >= beta)
       {
@@ -93,7 +93,7 @@ namespace
       tt.add(position, result.best_move);
     }
 
-    return result;
+    return { alpha, result.best_move };
   }
   
   int mate_distance(int score)
@@ -117,7 +117,7 @@ namespace
     }
     else
     {
-      o << "score cp " << score / get_score(wPawn);
+      o << "cp " << score / get_score(wPawn);
     }
     return o.str();
   }
@@ -167,7 +167,9 @@ namespace
 
 void search_position(Position& position, Search& search)
 {
-  static TTable tt(32);
+  static TTable tt(2);
+
+  tt.reset();
 
   Move best_move = NullMove;
   for (int depth = 1; 

@@ -81,12 +81,18 @@ void uci_input_loop()
 
     else if (command == UciCommands::stop)
     {
+      if (!worker.joinable())
+        continue;
+
       SEARCH_ABORT_SIGNAL = true;
-      worker.detach();
+      worker.join();
     }
 
     else if (command == UciCommands::go)
     {
+      if (worker.joinable())
+        worker.join();
+
       SEARCH_ABORT_SIGNAL = false;
       UciGo options = command.parse_go();
 
@@ -98,12 +104,7 @@ void uci_input_loop()
         search.limits.time_set = true;
         search.limits.start_time = current_time();
         search.limits.stop_time = search.limits.start_time + options.movetime;
-      }      
-      if (worker.joinable())
-      {
-        SEARCH_ABORT_SIGNAL = true;
-        worker.detach();
-      }
+      } 
 
       worker = std::thread(search_position, std::ref(position), std::ref(search));
     }
