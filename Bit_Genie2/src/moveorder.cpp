@@ -6,8 +6,9 @@
 enum
 {
   CaptureBonus = 2000,
-  FirstKiller = 3000,
-  SecondKiller = 5000,
+  FirstKiller = 15000,
+  SecondKiller = 10000,
+  PrincipleMove = 20000,
 };
 
 static int16_t mvv_lva(Move move, Position& position)
@@ -38,35 +39,50 @@ static int16_t killer_bonus(Move move, Search& search)
   return score;
 }
 
-static int16_t evaluate_move(Move move, Position& position, Search& search)
+static int16_t evaluate_move(Move move, Position& position, Search& search, TTable& tt)
 {
-  int16_t score = 0;
+  Move pv = tt.retrieve(position).move;
+  Move killer1 = search.killers.first(search.info.ply);
+  Move killer2 = search.killers.second(search.info.ply);
+
+  if (pv == move)
+    return PrincipleMove;
+
+  if (killer1 == move)
+    return FirstKiller;
+
+  if (killer2 == move)
+    return SecondKiller;
+
+  if (move_flag(move) == MoveFlag::promotion)
+  {
+    constexpr int promotion_scores[]{ 0, 6000, 6000, 8000, 9000 };
+    return promotion_scores[move_promoted(move)];
+  }
 
   if (move_is_capture(position, move))
   {
-    score += CaptureBonus;
-    score += mvv_lva(move, position);
+    return CaptureBonus + mvv_lva(move, position);
   }
-  
-  score += history_bonus(move, position, search);
-  score += killer_bonus(move, search);
-
-  return score;
+  else
+  {
+    return search.history.get(position, move);
+  }
 }
 
 
-static void evaluate_movelist(Movelist& movelist, Position& position, Search& search)
+static void evaluate_movelist(Movelist& movelist, Position& position, Search& search, TTable& tt)
 {
   for (auto& m : movelist)
   {
-    set_move_score(m, evaluate_move(m, position, search));
+    set_move_score(m, evaluate_move(m, position, search, tt));
   }
 }
 
-void sort_movelist(Movelist& movelist, Position& position, Search& search)
+void sort_movelist(Movelist& movelist, Position& position, Search& search, TTable& tt)
 {
  
-  evaluate_movelist(movelist, position, search);
+  evaluate_movelist(movelist, position, search, tt);
   std::sort(movelist.begin(), movelist.end(),
     [](Move l, Move r) { return l > r; });
 }

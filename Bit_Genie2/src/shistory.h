@@ -1,21 +1,27 @@
 #pragma once
 #include "move.h"
-#include <array>
 #include "position.h"
+#include <array>
+
 
 class SHistory
 {
 public:
+  SHistory()
+  {
+    std::memset(&history[0][0][0], 0, sizeof(history));
+  }
+
   uint16_t& get(Position& position, Move move)
   {
-    return history[move & 0xFFFF];
+    return history[position.side][move_from(move)][move_to(move)];
   }
 
   void add(Position& position, Move move, int depth)
   {
-    get(position, move) = depth * depth;
+    history[position.side][move_from(move)][move_to(move)] += depth;
   }
 
 private:
-  uint16_t history[0xFFFF] = { 0 };
+  uint16_t history[2][64][64];
 };

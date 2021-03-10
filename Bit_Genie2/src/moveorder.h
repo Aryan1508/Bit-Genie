@@ -4,4 +4,4 @@
 #include "killer.h"
 #include "position.h"
 
-void sort_movelist(Movelist&, Position&, Search&);
+void sort_movelist(Movelist&, Position&, Search&, TTable&);

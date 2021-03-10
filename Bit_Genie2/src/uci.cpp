@@ -24,6 +24,7 @@ void uci_input_loop()
   std::cout << "Bit Genie by Aryan Parekh" << std::endl;
   UciParser command;
   Position position;
+  position.set_fen("r1bqk1nr/ppp2ppp/3p4/n1b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 1 6");
   std::thread worker;
 
   while (true)

@@ -36,6 +36,8 @@ namespace
   {
     search.info.nodes++;
     search.limits.update();
+    search.info.update_seldepth();
+
     if (depth <= 0)
       return eval_position(position);
 
@@ -52,7 +54,7 @@ namespace
     }
 
     int original = alpha;
-    sort_movelist(gen.movelist, position, search);
+    sort_movelist(gen.movelist, position, search, tt);
 
     for (auto move : gen.movelist)
     {
@@ -64,27 +66,25 @@ namespace
       position.revert_move();
 
       if (search.limits.stopped)
-        return 0;
+        return 0; 
 
       if (score >= result.score)
       {
         result.best_move = move;
         result.score = score;
-      }
 
-      alpha = std::max(alpha, score);
+        alpha = std::max(alpha, score);
+      }
 
       if (alpha >= beta)
       {
-        search.history.add(position, move, depth);
-
         if (!move_is_capture(position, move))
         {
+          search.history.add(position, move, depth);
           search.killers.add(search.info.ply, move);
         }
 
-        tt.add(position, move);
-        return { beta, result.best_move};
+        return { beta, result.best_move };
       }
     }
 
@@ -152,8 +152,9 @@ namespace
 
   void print_info_string(Position& position, SearchResult& result, TTable& tt, Search& search, int depth)
   {
-    std::printf("info depth %d nodes %llu score %s pv ",
-      depth, search.info.nodes, print_score(result.score).c_str());
+    std::printf("info depth %d seldepth %d nodes %llu score %s pv ",
+      depth, search.info.seldepth, search.info.nodes, 
+      print_score(result.score).c_str());
 
     for (auto m : get_pv(position, tt, depth))
     {

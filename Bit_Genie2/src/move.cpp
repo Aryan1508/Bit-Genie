@@ -4,7 +4,7 @@
 
 bool move_is_capture(Position const& position, Move move)
 {
-  return position.pieces.get_piece(move_to(move)) != Empty;
+  return position.pieces.squares[move_to(move)] != Empty;
 }
 
 std::string print_move(Move move)
