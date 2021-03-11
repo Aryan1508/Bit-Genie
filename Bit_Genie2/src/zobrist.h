@@ -16,6 +16,11 @@ public:
 
   static void init();
 
+  bool operator==(ZobristKey other) const
+  {
+    return hash == other.hash;
+  }
+
   friend std::ostream& operator<<(std::ostream& o, const ZobristKey);
 private:
   void hash_pieces(Position const&);

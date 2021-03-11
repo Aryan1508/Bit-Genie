@@ -31,12 +31,18 @@ namespace
 
   int qsearch(Position& position, Search& search, TTable& tt, int alpha, int beta)
   {
+    if (search.limits.stopped)
+      return 0;
+
     search.info.nodes++;
-    search.limits.update();
+    search.limits.update(search.info);
     search.info.update_seldepth();
 
     if (search.info.ply >= MaxPly)
       return eval_position(position);
+
+    if (position.history.is_drawn(position.key))
+      return 0;
 
     int stand_pat = eval_position(position);
 
@@ -73,12 +79,16 @@ namespace
   SearchResult negamax(Position& position, Search& search, TTable& tt,
     int depth, int alpha = MinEval, int beta = MaxEval)
   {
+
     search.info.nodes++;
-    search.limits.update();
+    search.limits.update(search.info);
     search.info.update_seldepth();
 
     if (depth <= 0)
       return qsearch(position, search, tt, alpha, beta);
+
+    if (position.history.is_drawn(position.key) && search.info.ply)
+      return 0;
 
     SearchResult result;
     MoveGenerator gen(position);
@@ -110,7 +120,7 @@ namespace
       if (score > result.score)
       {
         result.best_move = move;
-        result.score = score;
+        result.score     = score;
       }
 
       alpha = std::max(alpha, score);
@@ -161,30 +171,25 @@ namespace
     return o.str();
   }
 
-  std::vector<Move> get_pv(Position& position, TTable& tt, int depth)
+  std::vector<Move> get_pv(Position position, TTable& tt, int depth)
   {
     std::vector<Move> pv;
-    int count = 0;
 
     TEntry* entry = &tt.retrieve(position);
 
-    while (entry->move && depth)
+    while (entry->hash == position.key.data() && depth)
     {
       if (position.move_exists(entry->move))
       {
         position.apply_move(entry->move);
         pv.push_back(entry->move);
         depth--;
-        count++;
       }
       else
         break;
 
       entry = &tt.retrieve(position);
     }
-
-    while (count--)
-      position.revert_move();
 
     return pv;
   }
@@ -215,13 +220,18 @@ void search_position(Position& position, Search& search, TTable& tt)
   {
     search.info.ply = 0;
     search.info.nodes = 0;
+
     auto result = negamax(position, search, tt, depth);
 
     if (search.limits.stopped)
+    {
+      if (depth == 1)
+        std::cout << "stopped at depth 1\n";
       break;
+    }
 
     print_info_string(position, result, tt, search, depth);
-    best_move = result.best_move;
+    best_move = tt.retrieve(position).move;
   }
 
   std::cout << "bestmove " << print_move(best_move) << std::endl;

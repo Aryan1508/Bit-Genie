@@ -86,11 +86,12 @@ void uci_input_loop()
       Search search;
       search.limits.max_depth = std::min(options.depth, 64);
       search.limits.start_time = current_time();
+      search.limits.stopped = false;
 
       if (options.movetime != -1)
       {
         search.limits.time_set = true;
-        search.limits.stop_time = search.limits.start_time + options.movetime;
+        search.limits.stop_time = search.limits.start_time + std::chrono::milliseconds(options.movetime);
       } 
 
       search_position(position, search, table);

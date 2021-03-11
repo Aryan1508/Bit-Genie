@@ -10,6 +10,7 @@ constexpr int total_colors = 2;
 constexpr int total_squares = 64;
 constexpr int total_files = 8;
 constexpr int total_castle_types = 2;
+constexpr int total_ranks = 8;
 
 enum class Direction : int8_t;
 enum class File : uint8_t;
@@ -44,8 +45,8 @@ constexpr typename std::underlying_type<E>::type to_int(E e)
   return static_cast<typename std::underlying_type<E>::type>(e);
 }
 
-inline long long current_time()
+inline auto current_time()
 {
   using namespace std::chrono;
-  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  return steady_clock::now();
 }

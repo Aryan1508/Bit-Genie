@@ -14,7 +14,7 @@ TTable::TTable()
 void TTable::resize(int mb)
 {
   entries.resize(mb_to_b(mb), TEntry());
-  printf("Hash table initialized with %d Mb\n", mb);
+  printf("Hash table initialized with %d Mb ( %llu entries )\n", mb, entries.size());
 }
 
 void TTable::add(Position const& position, Move move)

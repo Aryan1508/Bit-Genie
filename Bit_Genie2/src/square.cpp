@@ -34,5 +34,5 @@ std::ostream& operator<<(std::ostream& o, const Square sq)
     return o << '-';
   }
   assert(is_ok(sq));
-  return o << get_square_file(sq) << get_square_rank(sq);
+  return o << file_of(sq) << rank_of(sq);
 }
