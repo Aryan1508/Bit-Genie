@@ -60,6 +60,9 @@ namespace
       search.info.ply--;
       position.revert_move();
 
+      if (search.limits.stopped)
+        return 0;
+
       alpha = std::max(alpha, score);
 
       if (alpha >= beta)
