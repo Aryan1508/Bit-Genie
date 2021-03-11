@@ -84,14 +84,15 @@ void uci_input_loop()
       UciGo options = command.parse_go();
 
       Search search;
-      search.limits.max_depth = options.depth;
+      search.limits.max_depth = std::min(options.depth, 64);
+      search.limits.start_time = current_time();
 
       if (options.movetime != -1)
       {
         search.limits.time_set = true;
-        search.limits.start_time = current_time();
         search.limits.stop_time = search.limits.start_time + options.movetime;
       } 
+
       search_position(position, search, table);
     }
   }

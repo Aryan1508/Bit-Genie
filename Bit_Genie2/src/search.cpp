@@ -6,8 +6,6 @@
 #include "tt.h"
 #include <sstream>
 
-std::atomic_bool SEARCH_ABORT_SIGNAL = false;
-
 namespace
 {
   enum
@@ -102,7 +100,7 @@ namespace
       position.apply_move(move);
       search.info.ply++;
 
-      int score = -negamax(position, search, tt, depth - 1, -beta, -alpha).score;
+      int score = -negamax(position, search, tt, depth - 1, -beta , -alpha).score;
       search.info.ply--;
       position.revert_move();
 
@@ -193,9 +191,9 @@ namespace
 
   void print_info_string(Position& position, SearchResult& result, TTable& tt, Search& search, int depth)
   {
-    std::printf("info depth %d seldepth %d nodes %llu score %s pv ",
+    std::printf("info depth %d seldepth %d nodes %llu score %s time %lld pv ",
       depth, search.info.seldepth, search.info.nodes, 
-      print_score(result.score).c_str());
+      print_score(result.score).c_str(), search.limits.time_elapsed());
 
     for (auto m : get_pv(position, tt, depth))
     {

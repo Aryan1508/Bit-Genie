@@ -1,4 +1,5 @@
 #pragma once
+#include "misc.h"
 
 struct SearchLimits
 {
@@ -9,4 +10,9 @@ struct SearchLimits
   bool stopped = false;
 
   void update();
+
+  long long time_elapsed() const
+  {
+    return current_time() - start_time;
+  }
 };
