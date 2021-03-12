@@ -87,6 +87,9 @@ namespace
     if (depth <= 0)
       return qsearch(position, search, tt, alpha, beta);
 
+    if (search.info.ply >= MaxPly)
+      return eval_position(position);
+
     if (position.history.is_drawn(position.key) && search.info.ply)
       return 0;
 
@@ -233,6 +236,5 @@ void search_position(Position& position, Search& search, TTable& tt)
     print_info_string(position, result, tt, search, depth);
     best_move = tt.retrieve(position).move;
   }
-
   std::cout << "bestmove " << print_move(best_move) << std::endl;
 }

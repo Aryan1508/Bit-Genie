@@ -11,7 +11,7 @@
 
 namespace
 {
-  uint64_t piece_keys[total_pieces][total_colors][total_squares];
+  uint64_t piece_keys[total_pieces * total_colors][total_squares];
   uint64_t enpassant_keys[total_files];
   uint64_t castle_keys[total_squares];
 
@@ -29,7 +29,7 @@ void ZobristKey::hash_side()
 
 void ZobristKey::hash_piece(Square sq, Piece piece)
 {
-  hash ^= piece_keys[to_int(type_of(piece))][to_int(color_of(piece))][sq];
+  hash ^= piece_keys[piece][sq];
 }
 
 void ZobristKey::hash_castle(const CastleRights old_rooks, const CastleRights new_rooks)
@@ -57,13 +57,13 @@ void ZobristKey::init()
   for (int i = 0; i < total_files; i++)
     enpassant_keys[i] = dist(gen);
 
-  for (int i = 0; i < total_pieces; i++) 
+  for (int i = 0; i < 12; i++) 
   {
     for (int j = 0; j < total_squares; j++)
     {
       castle_keys[j] = dist(gen);
-      piece_keys[i][White][j] = dist(gen);
-      piece_keys[i][Black][j] = dist(gen);
+      piece_keys[i][j] = dist(gen);
+      piece_keys[i][j] = dist(gen);
     }
   }
 }

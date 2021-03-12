@@ -40,6 +40,6 @@ public:
   int parse_perft() const;
   UciGo parse_go() const;
 
-private:
+public:
   std::string command;
 };

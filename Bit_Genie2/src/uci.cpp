@@ -5,6 +5,7 @@
 #include "tt.h"
 #include <thread>
 #include <chrono>
+#include <fstream>
 
 static void benchmark_perft(Position position, int depth)
 {
@@ -20,6 +21,12 @@ static void benchmark_perft(Position position, int depth)
   std::cout << "time : " << time_taken.count() << " ms" << std::endl;
 }
 
+std::vector<const char*> test_game{
+  "e2e4", "e7e5", "g1f3", "g8f6", "f1c4", "d7d6",
+  "e1g1", "b8c6", "d2d3", "f8e7", "c1g5", "e8g8",
+  "b1c3", "a7a6", "c4b3", "b7b5", 
+};
+
 void uci_input_loop()
 {
   std::cout << "Bit Genie by Aryan Parekh" << std::endl;
@@ -27,9 +34,38 @@ void uci_input_loop()
   Position position;
   TTable table(2);
 
+  int move_counter = 0;
+  
+  std::ifstream input("src//out.txt");
+
+  std::vector<std::string> position_commands;
+  
+  for (std::string line; std::getline(input, line);)
+  {
+    position_commands.push_back(line);
+  }
+
+  int counter = 0;
+  bool should_go = false;
+
   while (true)
   {
-    command.take_input();
+   /* if (should_go)
+    {
+      command.command = "go movetime 1000";
+      std::cout << command.command << std::endl;
+      should_go = false;
+    }
+
+    else if (counter != position_commands.size())
+    {
+      command.command = position_commands[counter];
+      std::cout << command.command << std::endl;
+      counter++;
+      should_go = true;
+    }
+    else*/
+      command.take_input();
 
     if (command == UciCommands::quit)  break;
 
@@ -81,6 +117,8 @@ void uci_input_loop()
 
     else if (command == UciCommands::go)
     {
+      std::cout << position << std::endl;
+
       UciGo options = command.parse_go();
 
       Search search;
@@ -93,7 +131,7 @@ void uci_input_loop()
         search.limits.time_set = true;
         search.limits.stop_time = search.limits.start_time + std::chrono::milliseconds(options.movetime);
       } 
-
+      printf("Starting search at %d max depth\n",  search.limits.max_depth);
       search_position(position, search, table);
     }
   }

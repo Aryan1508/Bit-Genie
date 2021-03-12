@@ -48,5 +48,5 @@ constexpr typename std::underlying_type<E>::type to_int(E e)
 inline auto current_time()
 {
   using namespace std::chrono;
-  return steady_clock::now();
+  return high_resolution_clock::now();
 }

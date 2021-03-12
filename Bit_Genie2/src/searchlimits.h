@@ -4,7 +4,7 @@
 
 struct SearchLimits
 {
-  using time_point = std::chrono::time_point<std::chrono::steady_clock>;
+  using time_point = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
   time_point start_time;
   time_point stop_time;
