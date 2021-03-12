@@ -35,7 +35,10 @@ namespace
       return 0;
 
     search.info.nodes++;
-    search.limits.update(search.info);
+
+    if ((search.info.nodes & 2047) == 0)
+     search.limits.update();
+
     search.info.update_seldepth();
 
     if (search.info.ply >= MaxPly)
@@ -81,7 +84,10 @@ namespace
   {
 
     search.info.nodes++;
-    search.limits.update(search.info);
+
+    if ((search.info.nodes & 2047) == 0)
+      search.limits.update();
+
     search.info.update_seldepth();
 
     if (depth <= 0)
@@ -201,7 +207,7 @@ namespace
   {
     std::printf("info depth %d seldepth %d nodes %llu score %s time %lld pv ",
       depth, search.info.seldepth, search.info.nodes, 
-      print_score(result.score).c_str(), search.limits.time_elapsed());
+      print_score(result.score).c_str(), search.limits.stopwatch.elapsed_time().count());
 
     for (auto m : get_pv(position, tt, depth))
     {

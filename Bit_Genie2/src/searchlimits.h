@@ -1,23 +1,18 @@
 #pragma once
 #include "misc.h"
+#include "stopwatch.h"
 #include <chrono>
 
 struct SearchLimits
 {
-  using time_point = std::chrono::time_point<std::chrono::high_resolution_clock>;
+  StopWatch<std::chrono::milliseconds> stopwatch;
+  int64_t movetime = -1;
+  bool    time_set = false;
+  bool    stopped = false;
+  int     max_depth = 1;
 
-  time_point start_time;
-  time_point stop_time;
-  volatile bool time_set = false;
-  volatile bool stopped = false;
-
-  int  max_depth = 1;
-
-  void update(SearchInfo const&);
-  void start_timer();
-  auto time_elapsed()
+  void update()
   {
-    using namespace std::chrono;
-    return duration_cast<milliseconds>(current_time() - start_time).count();
+    stopped = stopwatch.elapsed_time().count() >= movetime;
   }
 };

@@ -45,8 +45,8 @@ constexpr typename std::underlying_type<E>::type to_int(E e)
   return static_cast<typename std::underlying_type<E>::type>(e);
 }
 
-inline auto current_time()
+inline int64_t current_time()
 {
   using namespace std::chrono;
-  return high_resolution_clock::now();
+  return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 }

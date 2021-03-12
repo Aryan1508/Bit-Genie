@@ -50,5 +50,5 @@ public:
 
   int total = 0;
 private:
-  std::array<Undo, 256> history;
+  std::array<Undo, 2048> history;
 };

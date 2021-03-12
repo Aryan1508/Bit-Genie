@@ -34,38 +34,9 @@ void uci_input_loop()
   Position position;
   TTable table(2);
 
-  int move_counter = 0;
-  
-  std::ifstream input("src//out.txt");
-
-  std::vector<std::string> position_commands;
-  
-  for (std::string line; std::getline(input, line);)
-  {
-    position_commands.push_back(line);
-  }
-
-  int counter = 0;
-  bool should_go = false;
-
   while (true)
   {
-   /* if (should_go)
-    {
-      command.command = "go movetime 1000";
-      std::cout << command.command << std::endl;
-      should_go = false;
-    }
-
-    else if (counter != position_commands.size())
-    {
-      command.command = position_commands[counter];
-      std::cout << command.command << std::endl;
-      counter++;
-      should_go = true;
-    }
-    else*/
-      command.take_input();
+    command.take_input();
 
     if (command == UciCommands::quit)  break;
 
@@ -123,15 +94,16 @@ void uci_input_loop()
 
       Search search;
       search.limits.max_depth = std::min(options.depth, 64);
-      search.limits.start_time = current_time();
+      search.limits.stopwatch.go();
       search.limits.stopped = false;
+      search.limits.time_set = false;
 
       if (options.movetime != -1)
       {
+        search.limits.movetime = options.movetime;
         search.limits.time_set = true;
-        search.limits.stop_time = search.limits.start_time + std::chrono::milliseconds(options.movetime);
       } 
-      printf("Starting search at %d max depth\n",  search.limits.max_depth);
+
       search_position(position, search, table);
     }
   }
