@@ -14,7 +14,7 @@ File file_of(Square sq)
 
 Rank rank_of(Square sq, Color color)
 {
-  return color == White ? rank_of(flip_square(sq)) : rank_of(sq);
+  return color == Black ? rank_of(flip_square(sq)) : rank_of(sq);
 }
 
 std::ostream& operator<<(std::ostream& o, File file)
