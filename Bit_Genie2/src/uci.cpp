@@ -21,18 +21,14 @@ static void benchmark_perft(Position position, int depth)
   std::cout << "time : " << time_taken.count() << " ms" << std::endl;
 }
 
-std::vector<const char*> test_game{
-  "e2e4", "e7e5", "g1f3", "g8f6", "f1c4", "d7d6",
-  "e1g1", "b8c6", "d2d3", "f8e7", "c1g5", "e8g8",
-  "b1c3", "a7a6", "c4b3", "b7b5", 
-};
-
 void uci_input_loop()
 {
   std::cout << "Bit Genie by Aryan Parekh" << std::endl;
   UciParser command;
   Position position;
   TTable table(2);
+
+  int gen_rand_count = 50;
 
   while (true)
   {
@@ -61,14 +57,19 @@ void uci_input_loop()
         continue;
       }
 
+      Position temp = position;
+
+      temp.history.total = 0;
       for (std::string move : moves)
       {
-        if (!position.apply_move(move))
+        if (!temp.apply_move(move))
         {
           std::cout << "Invalid move in movelist" << std::endl;
           continue;
         }
       }
+
+      position = temp;
     }
 
     else if (command == UciCommands::print)
@@ -88,8 +89,7 @@ void uci_input_loop()
 
     else if (command == UciCommands::go)
     {
-      std::cout << position << std::endl;
-
+      std::cout << position;
       UciGo options = command.parse_go();
 
       Search search;
@@ -102,7 +102,9 @@ void uci_input_loop()
       {
         search.limits.movetime = options.movetime;
         search.limits.time_set = true;
-      } 
+      }
+      else
+        search.limits.movetime = std::numeric_limits<int64_t>::max();
 
       search_position(position, search, table);
     }

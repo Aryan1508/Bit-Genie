@@ -13,7 +13,7 @@ public:
   }
 
   uint16_t& get(Position& position, Move move)
-  {
+  { 
     return history[position.side][move_from(move)][move_to(move)];
   }
 

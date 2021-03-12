@@ -113,7 +113,8 @@ std::ostream& operator<<(std::ostream& o, Position const& position)
   o << "\nen-passant sq: " << position.ep_sq;
   o << "\nhalf-moves   : " << position.half_moves;
   o << "\nzobrist-key  : " << position.key;
-  return o;
+  o << "\nhistory-ply  : " << position.history.total;
+  return o << '\n';
 }
 
 static inline bool is_double_push(Square from, Square to, PieceType moving)

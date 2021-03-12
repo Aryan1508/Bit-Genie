@@ -82,7 +82,6 @@ namespace
   SearchResult negamax(Position& position, Search& search, TTable& tt,
     int depth, int alpha = MinEval, int beta = MaxEval)
   {
-
     search.info.nodes++;
 
     if ((search.info.nodes & 2047) == 0)
