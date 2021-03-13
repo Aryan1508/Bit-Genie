@@ -223,8 +223,12 @@ void Position::perft(int depth, uint64_t& nodes, bool root)
   for (auto m : MoveGenerator<true>(*this).movelist)
   {
     apply_move(m);
+    uint64_t old = nodes;
     perft(depth - 1, nodes, false);
     revert_move();
+
+    if (root)
+      std::cout << print_move(m) << ": " << nodes - old << std::endl;
   }
 }
 
@@ -233,77 +237,71 @@ bool Position::move_is_legal(Move move)
   Square from = move_from(move);
   Square to = move_to(move);
 
-  uint64_t occupancy = total_occupancy();
-
-  if (move_flag(move) == MoveFlag::normal)
+  if (move_flag(move) == MoveFlag::normal || move_flag(move) == MoveFlag::promotion)
   {
-    if (type_of(pieces.squares[from]) == King)
+    if (pieces.squares[from] == wKing || pieces.squares[from] == bKing) // Normal king moves
     {
-      occupancy ^= (1ull << from);
+      uint64_t occupancy = total_occupancy() ^ (1ull << from);
       return !Attacks::square_attacked(*this, to, !side, occupancy);
     }
 
-    else
+    else // Normal non-king moves
     {
-      
-      occupancy ^= (1ull << from) ^ (1ull << to);
+      uint64_t occupancy = total_occupancy() ^ (1ull << from) ^ (1ull << to);
+      uint64_t enemy = enemy_bb();
 
       Piece captured = pieces.squares[to];
-      uint64_t old = pieces.bitboards[to_int(type_of(captured))];
 
       if (captured != Empty)
       {
         occupancy ^= (1ull << to);
-        pieces.bitboards[to_int(type_of(captured))] ^= (1ull << to);
+        enemy     ^= (1ull << to);
       }
 
-      uint64_t king = pieces.bitboards[King] & pieces.colors[to_int(side)];
-      bool is_legal = !Attacks::square_attacked(*this, get_lsb(king), !side, occupancy);
-     
-      pieces.bitboards[to_int(type_of(captured))] = old;
-      return is_legal;
+      uint64_t pawns   = pieces.bitboards[Pawn]   & enemy;
+      uint64_t knights = pieces.bitboards[Knight] & enemy;
+      uint64_t bishops = pieces.bitboards[Bishop] & enemy;
+      uint64_t rooks   = pieces.bitboards[Rook]   & enemy;
+      uint64_t queens  = pieces.bitboards[Queen]  & enemy;
+
+      Square king = get_lsb(pieces.bitboards[King]   & friend_bb());
+
+      bishops |= queens;
+      rooks   |= queens;
+
+      return !((BitMask::pawn_attacks[side][king] & pawns)
+        || (Attacks::bishop(king, occupancy) & bishops)
+        || (Attacks::rook(king, occupancy) & rooks)
+        || (Attacks::knight(king) & knights));
     }
-  }
-
-  else if (move_flag(move) == MoveFlag::enpassant)
-  {
-    Square ep = Square(to ^ 8);
-
-    occupancy ^= (1ull << from) ^ (1ull << to) ^ (1ull << (to_int(ep)));
-    Piece captured = pieces.squares[to];
-    uint64_t old = pieces.bitboards[to_int(type_of(captured))];
-
-    pieces.bitboards[to_int(type_of(captured))] ^= (1ull << (to_int(ep)));
-    uint64_t king = pieces.bitboards[to_int(King)] & pieces.colors[to_int(side)];
-    bool is_legal = !Attacks::square_attacked(*this, get_lsb(king), !side, occupancy);
-
-
-    pieces.bitboards[to_int(type_of(captured))] = old;
-    return is_legal;
   }
 
   else if (move_flag(move) == MoveFlag::castle)
   {
-    return !Attacks::square_attacked(*this, to, !side, occupancy);
+    return !Attacks::square_attacked(*this, to, !side);
   }
-  else
+
+  else 
   {
-    occupancy ^= (1ull << from) ^ (1ull << to);
+    Square ep = to_sq(to ^ 8);
+    uint64_t occupancy = total_occupancy() ^ (1ull << from) ^ (1ull << to) ^ (1ull << ep);
+    uint64_t enemy     = enemy_bb() ^ (1ull << ep);
 
-    Piece captured = pieces.squares[to];
-    uint64_t old = pieces.bitboards[type_of(captured)];
+    uint64_t pawns   = pieces.bitboards[Pawn]   & enemy;
+    uint64_t knights = pieces.bitboards[Knight] & enemy;
+    uint64_t bishops = pieces.bitboards[Bishop] & enemy;
+    uint64_t rooks   = pieces.bitboards[Rook]   & enemy;
+    uint64_t queens  = pieces.bitboards[Queen]  & enemy;
 
-    if (captured != Empty)
-    {
-      occupancy ^= (1ull << to);
-      pieces.bitboards[type_of(captured)] ^= (1ull << to);
-    }
+    Square king = get_lsb(pieces.bitboards[King] & friend_bb());
 
-    uint64_t king = pieces.bitboards[King] & pieces.colors[side];
-    bool is_legal = !Attacks::square_attacked(*this, get_lsb(king), !side, occupancy);
+    bishops |= queens;
+    rooks   |= queens;
 
-    pieces.bitboards[type_of(captured)] = old;
-    return is_legal;
+    return !((BitMask::pawn_attacks[side][king] & pawns)
+      || (Attacks::bishop(king, occupancy) & bishops)
+      || (Attacks::rook(king, occupancy) & rooks)
+      || (Attacks::knight(king) & knights));
   }
 
   return true;

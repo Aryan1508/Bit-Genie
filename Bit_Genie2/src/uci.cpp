@@ -26,9 +26,8 @@ void uci_input_loop()
   std::cout << "Bit Genie by Aryan Parekh" << std::endl;
   UciParser command;
   Position position;
+  position.set_fen("n1n5/PPPk4/8/8/8/4K3/5p1p/5NqN w - - 0 2");
   TTable table(2);
-
-  int gen_rand_count = 50;
 
   while (true)
   {
