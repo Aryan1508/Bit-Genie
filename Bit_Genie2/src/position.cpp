@@ -259,20 +259,18 @@ bool Position::move_is_legal(Move move)
       }
 
       uint64_t pawns   = pieces.bitboards[Pawn]   & enemy;
-      uint64_t knights = pieces.bitboards[Knight] & enemy;
       uint64_t bishops = pieces.bitboards[Bishop] & enemy;
       uint64_t rooks   = pieces.bitboards[Rook]   & enemy;
       uint64_t queens  = pieces.bitboards[Queen]  & enemy;
 
-      Square king = get_lsb(pieces.bitboards[King]   & friend_bb());
+      Square king = get_lsb(pieces.bitboards[King] & friend_bb());
 
       bishops |= queens;
       rooks   |= queens;
 
       return !((BitMask::pawn_attacks[side][king] & pawns)
         || (Attacks::bishop(king, occupancy) & bishops)
-        || (Attacks::rook(king, occupancy) & rooks)
-        || (Attacks::knight(king) & knights));
+        || (Attacks::rook(king, occupancy) & rooks));
     }
   }
 
@@ -300,8 +298,7 @@ bool Position::move_is_legal(Move move)
 
     return !((BitMask::pawn_attacks[side][king] & pawns)
       || (Attacks::bishop(king, occupancy) & bishops)
-      || (Attacks::rook(king, occupancy) & rooks)
-      || (Attacks::knight(king) & knights));
+      || (Attacks::rook(king, occupancy) & rooks));
   }
 
   return true;
