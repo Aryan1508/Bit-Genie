@@ -61,7 +61,7 @@ namespace
 
     for (auto move : gen.movelist)
     {
-      if (move_score(move) <= 0)
+      if (move_score(move) < 0)
         continue;
 
       position.apply_move(move);
