@@ -53,6 +53,11 @@ constexpr PieceType move_promoted(Move move)
   return static_cast<PieceType>(((move >> 14) & 0x3) + 1);
 }
 
+inline int16_t move_score(Move move)
+{
+  return static_cast<int16_t>(move >> 16);
+}
+
 inline void set_move_score(Move& move, int16_t score)
 {
   move = static_cast<Move>(move | (score << 16));

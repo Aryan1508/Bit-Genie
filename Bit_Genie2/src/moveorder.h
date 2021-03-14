@@ -6,3 +6,4 @@
 
 void sort_movelist(Movelist&, Position&, Search&, TTable&);
 void sort_qmovelist(Movelist&, Position&, Search&, TTable&);
+int16_t see(Position&, Move);

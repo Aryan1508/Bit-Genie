@@ -61,6 +61,9 @@ namespace
 
     for (auto move : gen.movelist)
     {
+      if (move_score(move) <= 0)
+        continue;
+
       position.apply_move(move);
       search.info.ply++;
       int score = -qsearch(position, search, tt, -beta, -alpha);

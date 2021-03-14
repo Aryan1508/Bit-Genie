@@ -7,6 +7,7 @@
 #include "move.h"
 #include "movegen.h"
 #include "uci.h"
+#include "moveorder.h"
 #include "zobrist.h"
 #include <queue>
 

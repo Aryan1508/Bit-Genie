@@ -56,6 +56,21 @@ namespace Attacks
       || (king(sq) & kings);
   }
 
+  inline uint64_t attackers_to_sq(Position const& position, Square sq)
+  {
+    uint64_t occ       = position.total_occupancy();
+    uint64_t pawn_mask = BitMask::pawn_attacks[White][sq] | BitMask::pawn_attacks[Black][sq];
+    uint64_t bishops   = position.pieces.bitboards[Bishop] | position.pieces.bitboards[Queen];
+    uint64_t rooks     = position.pieces.bitboards[Rook] | position.pieces.bitboards[Queen];
+
+
+    return (pawn_mask  & position.pieces.bitboards[Pawn])
+      |    (knight(sq) & position.pieces.bitboards[Knight])
+      |    (king(sq)   & position.pieces.bitboards[King])
+      |    (bishop(sq, occ) & bishops)
+      |    (rook(sq, occ) & rooks);
+  }
+
   inline bool square_attacked(Position const& position, Square sq, Color enemy)
   {
     return square_attacked(position, sq, enemy, position.total_occupancy());
