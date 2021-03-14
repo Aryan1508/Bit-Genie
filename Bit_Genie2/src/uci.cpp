@@ -62,7 +62,7 @@ void uci_input_loop()
       {
         if (!temp.apply_move(move))
         {
-          std::cout << "Invalid move in movelist" << std::endl;
+          std::cout << "Invalid move in movelist: " << move << std::endl;
           continue;
         }
       }
@@ -87,13 +87,12 @@ void uci_input_loop()
 
     else if (command == UciCommands::go)
     {
-      std::cout << position;
       UciGo options = command.parse_go();
 
       Search search;
-      search.limits.max_depth = std::min(options.depth, 64);
       search.limits.stopwatch.go();
-      search.limits.stopped = false;
+      search.limits.max_depth = std::min(options.depth, 64);
+      search.limits.stopped  = false;
       search.limits.time_set = false;
 
       if (options.movetime != -1)

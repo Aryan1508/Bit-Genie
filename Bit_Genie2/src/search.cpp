@@ -62,7 +62,10 @@ namespace
     for (auto move : gen.movelist)
     {
       if (move_score(move) < 0)
-        continue;
+        break;
+
+      if (stand_pat + move_score(move) + 500 < alpha)
+        break;
 
       position.apply_move(move);
       search.info.ply++;
@@ -85,6 +88,9 @@ namespace
   SearchResult negamax(Position& position, Search& search, TTable& tt,
     int depth, int alpha = MinEval, int beta = MaxEval)
   {
+    if (search.limits.stopped)
+        return 0;
+
     search.info.nodes++;
 
     if ((search.info.nodes & 2047) == 0)
@@ -113,6 +119,7 @@ namespace
         return 0;
     }
 
+    bool is_first = true;
     int original = alpha;
     sort_movelist(gen.movelist, position, search, tt);
 
@@ -121,7 +128,20 @@ namespace
       position.apply_move(move);
       search.info.ply++;
 
-      int score = -negamax(position, search, tt, depth - 1, -beta , -alpha).score;
+      int score = 0;
+      if (is_first)
+      {
+        is_first = false;
+        score = -negamax(position, search, tt, depth - 1, -beta, -alpha).score;
+      }
+      else
+      {
+        score = -negamax(position, search, tt, depth - 1, -alpha - 1, -alpha).score;
+
+        if (alpha < score && score < beta)
+          score = -negamax(position, search, tt, depth - 1, -beta, -score).score;
+      }
+
       search.info.ply--;
       position.revert_move();
 
@@ -207,9 +227,13 @@ namespace
 
   void print_info_string(Position& position, SearchResult& result, TTable& tt, Search& search, int depth)
   {
+    using namespace std::chrono;
     std::printf("info depth %d seldepth %d nodes %llu score %s time %lld pv ",
-      depth, search.info.seldepth, search.info.nodes, 
-      print_score(result.score).c_str(), search.limits.stopwatch.elapsed_time().count());
+      depth, 
+      search.info.seldepth,
+      search.info.nodes, 
+      print_score(result.score).c_str(), 
+      duration_cast<milliseconds>(search.limits.stopwatch.elapsed_time()).count());
 
     for (auto m : get_pv(position, tt, depth))
     {
