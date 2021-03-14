@@ -123,6 +123,9 @@ namespace
     int original = alpha;
     sort_movelist(gen.movelist, position, search, tt);
 
+    if (search.limits.stopped)
+      return 0;
+
     for (auto move : gen.movelist)
     {
       position.apply_move(move);

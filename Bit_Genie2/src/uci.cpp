@@ -97,7 +97,7 @@ void uci_input_loop()
 
       if (options.movetime != -1)
       {
-        search.limits.movetime = options.movetime;
+        search.limits.movetime = options.movetime - 50;
         search.limits.time_set = true;
       }
       else
