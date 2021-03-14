@@ -14,6 +14,7 @@ enum class UciCommands
   // *debugging purpose commands*
   print,
   perft,
+  static_eval,
 };
 
 struct UciGo

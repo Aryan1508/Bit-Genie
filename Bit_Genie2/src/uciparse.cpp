@@ -28,35 +28,31 @@ bool UciParser::operator==(UciCommands type) const
   {
   case UciCommands::uci:
     return command == "uci";
-    break;
 
   case UciCommands::isready:
     return command == "isready";
-    break;
 
   case UciCommands::position:
     return starts_with(command, "position");
-    break;
 
   case UciCommands::quit:
     return command == "quit";
-    break;
 
   case UciCommands::print:
     return command == "print";
-    break;
 
   case UciCommands::perft:
     return starts_with(command, "perft");
-    break;
 
   case UciCommands::stop:
     return command == "stop";
-    break;
 
   case UciCommands::go:
     return starts_with(command, "go");
-    break;
+    
+  case UciCommands::static_eval:
+    return command == "eval";
+
 
   default:
     return false;

@@ -3,9 +3,7 @@
 #include "search.h"
 #include "uciparse.h"
 #include "tt.h"
-#include <thread>
-#include <chrono>
-#include <fstream>
+#include "eval.h"
 
 static void benchmark_perft(Position position, int depth)
 {
@@ -104,6 +102,11 @@ void uci_input_loop()
         search.limits.movetime = std::numeric_limits<int64_t>::max();
 
       search_position(position, search, table);
+    }
+
+    else if (command == UciCommands::static_eval)
+    {
+      std::cout << "eval: " << eval_position(position) << std::endl;
     }
   }
 }
