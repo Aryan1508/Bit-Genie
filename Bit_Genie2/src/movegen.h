@@ -29,11 +29,11 @@ public:
     generate_normal_moves(position, Bishop, targets, Attacks::bishop, occupancy);
     generate_normal_moves(position, Rook, targets, Attacks::rook, occupancy);
     generate_normal_moves(position, Queen, targets, Attacks::queen, occupancy);
+    generate_pawn_moves(position);
 
-    generate_pawn_moves(position, targets);
-
-    if (!Attacks::square_attacked(position, get_lsb(king), !position.side, occupancy))
-      generate_castle(position);
+    if constexpr(type != MoveGenType::quiet)
+      if (!Attacks::square_attacked(position, get_lsb(king), !position.side, occupancy))
+          generate_castle(position);
   }
 
 public:
@@ -99,7 +99,7 @@ private:
     }
   }
 
-  void generate_pawn_moves(Position& position, uint64_t targets)
+  void generate_pawn_moves(Position& position)
   { 
     uint64_t pawn_st_rank = position.side == White ? BitMask::rank4 : BitMask::rank5;
     uint64_t promotion_rank = position.side == White ? BitMask::rank7 : BitMask::rank2;
