@@ -10,10 +10,10 @@ namespace
 {
   enum
   {
-    MinEval = -std::numeric_limits<int>::max(),
-    MaxEval = -MinEval,
+    MinEval  = -std::numeric_limits<int>::max(),
+    MaxEval  = -MinEval,
     MateEval = MaxEval - 1,
-    MaxPly = 64,
+    MaxPly   = 64,
     MinMateScore = MateEval - MaxPly,
   };
 

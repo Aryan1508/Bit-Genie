@@ -60,7 +60,7 @@ static uint64_t least_valuable_attacker(Position& position,
     uint64_t pieces = position.pieces.bitboards[i] & position.pieces.colors[side] & attackers;
 
     if (pieces)
-      return 1ull << (get_lsb(pieces));
+      return pieces & ~pieces + 1;
   }
   return 0;
 }
@@ -132,7 +132,9 @@ static int16_t evaluate_move(Move move, Position& position, Search& search, TTab
     return see(position, move);
 
   if (pv == move)
+  {
     return PrincipleMove;
+  }
   
   if (killer1 == move)
     return FirstKiller;
