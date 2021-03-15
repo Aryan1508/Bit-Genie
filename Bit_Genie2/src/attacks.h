@@ -49,7 +49,7 @@ namespace Attacks
     bishops |= queens;
     rooks   |= queens;
 
-    return (BitMask::pawn_attacks[to_int(!enemy)][sq] & pawns)
+    return (BitMask::pawn_attacks[!enemy][sq] & pawns)
       || (bishop(sq, occupancy) & bishops)
       || (rook(sq, occupancy) & rooks)
       || (knight(sq) & knights)
@@ -59,12 +59,14 @@ namespace Attacks
   inline uint64_t attackers_to_sq(Position const& position, Square sq)
   {
     uint64_t occ       = position.total_occupancy();
-    uint64_t pawn_mask = BitMask::pawn_attacks[White][sq] | BitMask::pawn_attacks[Black][sq];
+    uint64_t pawn_mask = (BitMask::pawn_attacks[White][sq] & position.pieces.bitboards[Pawn] & position.pieces.colors[Black]);
+    pawn_mask |= (BitMask::pawn_attacks[Black][sq] & position.pieces.bitboards[Pawn] & position.pieces.colors[White]);
+   
     uint64_t bishops   = position.pieces.bitboards[Bishop] | position.pieces.bitboards[Queen];
     uint64_t rooks     = position.pieces.bitboards[Rook] | position.pieces.bitboards[Queen];
 
 
-    return (pawn_mask  & position.pieces.bitboards[Pawn])
+    return (pawn_mask)
       |    (knight(sq) & position.pieces.bitboards[Knight])
       |    (king(sq)   & position.pieces.bitboards[King])
       |    (bishop(sq, occ) & bishops)

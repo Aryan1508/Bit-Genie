@@ -77,7 +77,7 @@ int16_t see(Position& position, Move move)
     100, 300, 325, 500, 900, 1000, 0
   };
 
-  int16_t scores[16] = { 0 };
+  int16_t scores[32] = { 0 };
   int index = 0;
 
   Square from = move_from(move);
@@ -113,9 +113,8 @@ int16_t see(Position& position, Move move)
     from_set = least_valuable_attacker(position, attack_def, attacker, capturing);
   } while (from_set);
 
-  while (index) 
+  while (--index) 
   {
-    index--;
     scores[index - 1] = -(-scores[index - 1] > scores[index] ? -scores[index - 1] : scores[index]);
   }
 
