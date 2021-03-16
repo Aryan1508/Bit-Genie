@@ -13,12 +13,15 @@ class MovePicker
 	};
 
 public:
-	MovePicker() = default;
 	MovePicker(Position&, Search&, TTable&, bool quiescent = false);
 	
 	bool next(Move&);
 
 private:
+	Position* position;
+	Search*   search;
+	TTable*   table;
+
 	Stage stage = Stage::HashMove;
 	MoveGenerator<true> gen;
 	bool  is_quiescent;

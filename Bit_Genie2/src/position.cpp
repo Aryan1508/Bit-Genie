@@ -623,3 +623,63 @@ bool Position::move_exists(Move move)
 	gen.generate(*this);
 	return std::find(gen.movelist.begin(), gen.movelist.end(), move) != gen.movelist.end();
 }
+
+bool Position::move_is_pseudolegal(Move move)
+{
+	if (!move)
+		return false;
+
+	Square from    = move_from(move);
+	Square to      = move_to(move);
+	MoveFlag flag  = move_flag(move);
+	Piece moving   = pieces.squares[from];
+	Piece captured = pieces.squares[to];
+
+	// Make sure from and to squares are valid
+	if (!is_ok(from) || !is_ok(to))
+		return false;
+
+	// Moving piece can't be empty
+	if (moving == Empty)
+		return false;
+
+	// Color of the piece has to be the current 
+	// side to play
+	if (color_of(moving) != side)
+		return false;
+
+	// Cannot capture our own piece
+	if (color_of(captured) == side)
+		return false;
+
+	// Validating pawn moves
+	if (moving == wPawn || moving == bPawn)
+	{
+		// Pawns aren't involved in castling
+		if (flag == MoveFlag::castle)
+			return false;
+
+		Rank       start_rank = side == White ? Rank::two : Rank::seven;
+	    Direction  forward = side == White ? Direction::north : Direction::south;
+		Square     forward_sq = from + forward;
+		
+		// Normal pawn moves (no promotion/enpassant)
+		if (flag == MoveFlag::normal)
+		{
+			// Pushes
+			if (pieces.squares[to] == Empty)
+			{
+				Direction double_push = forward + forward;
+				Square    double_push_sq = from + double_push;
+
+				// Single push
+				if (to == forward_sq)
+					return true;
+
+				// Double pushes
+				if (to == double_push_sq && pieces.squares[forward_sq] == Empty && rank_of(from) == start_rank)
+					return true;
+			}
+		}
+	}
+}

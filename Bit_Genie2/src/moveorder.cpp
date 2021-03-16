@@ -72,23 +72,11 @@ static int16_t see(Position& position, Move move)
 	return scores[0];
 }
 
-MovePicker::MovePicker(Position& position, Search& search, TTable&, bool quiescent = false)
+MovePicker::MovePicker(Position& p, Search& s, TTable& tt, bool quiescent = false)
+	: position(&p), search(&s), table(&tt)
+{}
+
+bool MovePicker::next(Move& move)
 {
-	switch (stage)
-	{
-		case MovePicker::Stage::HashMove:
-			break;
-
-		case MovePicker::Stage::Killer1:
-			break;
-
-		case MovePicker::Stage::Killer2:
-			break;
-
-		case MovePicker::Stage::GenNoisy:
-			break;
-
-		default:
-			break;
-	}
+	
 }
