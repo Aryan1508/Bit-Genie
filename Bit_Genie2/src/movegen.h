@@ -30,9 +30,30 @@ public:
 		generate_normal_moves(position, Queen, targets, Attacks::queen, occupancy);
 		generate_pawn_moves<type>(position);
 
-		if constexpr (type != MoveGenType::quiet)
+		if constexpr (type == MoveGenType::quiet || type == MoveGenType::normal)
 			if (!Attacks::square_attacked(position, get_lsb(king), !position.side, occupancy))
 				generate_castle(position);
+	}
+
+	void generate_castle(Position& position)
+	{
+		uint64_t occupancy = position.total_occupancy();
+		bool is_white = position.side == White;
+		Square king_sq = is_white ? Square::E1 : Square::E8;
+
+		uint64_t rooks = position.castle_rights.get_rooks(position.side);
+		while (rooks)
+		{
+			Square rook = pop_lsb(rooks);
+
+			if (!(CastleRights::castle_path_is_clear(rook, occupancy)))
+				continue;
+
+			if (castle_path_is_attacked(position, rook, !position.side))
+				continue;
+
+			movelist.add<checked>(position, CreateMove(king_sq, rook, MoveFlag::castle, 1));
+		}
 	}
 
 public:
@@ -166,26 +187,5 @@ private:
 				return true;
 		}
 		return false;
-	}
-
-	void generate_castle(Position& position)
-	{
-		uint64_t occupancy = position.total_occupancy();
-		bool is_white = position.side == White;
-		Square king_sq = is_white ? Square::E1 : Square::E8;
-
-		uint64_t rooks = position.castle_rights.get_rooks(position.side);
-		while (rooks)
-		{
-			Square rook = pop_lsb(rooks);
-
-			if (!(CastleRights::castle_path_is_clear(rook, occupancy)))
-				continue;
-
-			if (castle_path_is_attacked(position, rook, !position.side))
-				continue;
-
-			movelist.add<checked>(position, CreateMove(king_sq, rook, MoveFlag::castle, 1));
-		}
 	}
 };

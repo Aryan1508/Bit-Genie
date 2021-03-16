@@ -16,6 +16,11 @@ public:
 		: cap(0)
 	{}
 
+	void clear()
+	{
+		cap = 0;
+	}
+
 	iterator begin()
 	{
 		return moves.begin();
@@ -26,11 +31,6 @@ public:
 		return moves.begin();
 	}
 
-	const_iterator cbegin() const
-	{
-		return moves.cbegin();
-	}
-
 	iterator end()
 	{
 		return moves.begin() + cap;
@@ -39,11 +39,6 @@ public:
 	const_iterator end() const
 	{
 		return moves.begin() + cap;
-	}
-
-	const_iterator cend() const
-	{
-		return moves.cbegin() + cap;
 	}
 
 	int size() const
@@ -67,5 +62,5 @@ public:
 
 private:
 	movelist_type moves;
-	int cap;
+	std::ptrdiff_t cap;
 };

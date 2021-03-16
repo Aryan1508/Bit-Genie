@@ -7,10 +7,10 @@
 
 struct Search
 {
-  SearchInfo   info;
-  SearchLimits limits;
-  Killers  killers;
-  SHistory history;
+	SearchInfo   info;
+	SearchLimits limits;
+	Killers  killers;
+	SHistory history;
 };
 
 void search_position(Position&, Search&, TTable& tt);

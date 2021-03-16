@@ -649,22 +649,26 @@ bool Position::move_is_pseudolegal(Move move)
 		return false;
 
 	// Cannot capture our own piece
-	if (color_of(captured) == side)
+	if (captured != Empty && color_of(captured) == side)
 		return false;
+
+	if (flag == MoveFlag::castle)
+	{
+		MoveGenerator<false> gen;
+		gen.generate_castle(*this);
+		return std::find(gen.movelist.begin(), gen.movelist.end(), move) != gen.movelist.end();
+	}
 
 	// Validating pawn moves
 	if (moving == wPawn || moving == bPawn)
 	{
-		// Pawns aren't involved in castling
-		if (flag == MoveFlag::castle)
-			return false;
-
+		Rank       promo_rank = side == White ? Rank::seven : Rank::two;
 		Rank       start_rank = side == White ? Rank::two : Rank::seven;
 	    Direction  forward = side == White ? Direction::north : Direction::south;
 		Square     forward_sq = from + forward;
 		
-		// Normal pawn moves (no promotion/enpassant)
-		if (flag == MoveFlag::normal)
+		// Normal and promotions
+		if (flag == MoveFlag::normal || flag == MoveFlag::promotion)
 		{
 			// Pushes
 			if (pieces.squares[to] == Empty)
@@ -676,10 +680,44 @@ bool Position::move_is_pseudolegal(Move move)
 				if (to == forward_sq)
 					return true;
 
-				// Double pushes
-				if (to == double_push_sq && pieces.squares[forward_sq] == Empty && rank_of(from) == start_rank)
-					return true;
+				// Double pushes 
+				return (to == double_push_sq && pieces.squares[forward_sq] == Empty && rank_of(from) == start_rank);
+			}
+			// Pawn captures
+			// Already confirmed that captured piece isn't ours
+			else
+			{
+				Square cap_right = Square(from + forward + Direction::east);
+				Square cap_left  = Square(from + forward + Direction::west);
+
+				return (to == cap_right || to == cap_left);
 			}
 		}
+
+		// Enpassant moves
+		else
+		{
+			if (to != ep_sq)
+				return false;
+
+			Piece captured = pieces.squares[to ^ 8];
+
+			if (captured == Empty || color_of(captured) == side)
+				return false;
+
+			Square down_right = to - forward + Direction::east;
+			Square down_left  = to - forward + Direction::west;
+
+			return (from == down_left || from == down_right);
+		}
 	}
+
+	// Validating knights, kings and sliding pieces
+	else 
+	{
+		uint64_t attacks = Attacks::generate(type_of(moving), from, total_occupancy());
+		return test_bit(to, attacks);
+	}
+
+	return false;
 }

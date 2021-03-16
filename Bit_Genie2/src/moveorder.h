@@ -8,21 +8,22 @@ class MovePicker
 {
 	enum class Stage
 	{
-		HashMove, Killer1, Killer2,
-		GenNoisy, 
+		HashMove, 
+		GenNoisy, GiveNoisy,
+		Killer1, Killer2, GenQuiet, GiveQuiet
 	};
 
 public:
-	MovePicker(Position&, Search&, TTable&, bool quiescent = false);
+	MovePicker(Position&, Search&, TTable&);
 	
 	bool next(Move&);
 
+	MoveGenerator<true> gen;
 private:
 	Position* position;
 	Search*   search;
 	TTable*   table;
 
 	Stage stage = Stage::HashMove;
-	MoveGenerator<true> gen;
-	bool  is_quiescent;
+	Movelist::iterator current;
 };

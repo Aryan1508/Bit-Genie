@@ -72,11 +72,138 @@ static int16_t see(Position& position, Move move)
 	return scores[0];
 }
 
-MovePicker::MovePicker(Position& p, Search& s, TTable& tt, bool quiescent = false)
+static Move get_hash_move(Position& position, TTable& tt)
+{
+	return tt.retrieve(position).move;
+}
+
+static constexpr int16_t mvv_lva_scores[13][13]{
+	{ 205, 305, 505, 605, 105, 605, 205, 305, 505, 605, 105, 605, 0,  }, // pawn
+	{ 204, 304, 504, 604, 104, 604, 204, 304, 504, 604, 104, 604, 0,  }, // knight
+	{ 203, 303, 503, 603, 103, 603, 203, 303, 503, 603, 103, 603, 0,  }, // bishop
+	{ 202, 302, 502, 602, 102, 602, 202, 302, 502, 602, 102, 602, 0,  }, // rook
+	{ 201, 301, 501, 601, 101, 601, 201, 301, 501, 601, 101, 601, 0,  }, // queen
+	{ 204, 304, 504, 604, 104, 604, 204, 304, 504, 604, 104, 604, 0,  }, // king
+
+	{ 205, 305, 505, 605, 105, 605, 205, 305, 505, 605, 105, 605, 0,  }, // pawn
+	{ 204, 304, 504, 604, 104, 604, 204, 304, 504, 604, 104, 604, 0,  }, // knight
+	{ 203, 303, 503, 603, 103, 603, 203, 303, 503, 603, 103, 603, 0,  }, // bishop
+	{ 202, 302, 502, 602, 102, 602, 202, 302, 502, 602, 102, 602, 0,  }, // rook
+	{ 201, 301, 501, 601, 101, 601, 201, 301, 501, 601, 101, 601, 0,  }, // queen
+	{ 204, 304, 504, 604, 104, 604, 204, 304, 504, 604, 104, 604, 0,  }, // king
+
+	{ 0,0,0,0,0,0,0,0,0,0,0,0,0  },
+};
+
+template<bool quiet = false>
+static void order_normal_movelist(Position& position, Movelist& movelist, Search& search)
+{
+	static constexpr int capture_bonus = 3000;
+
+	for (auto& move : movelist)
+	{
+		if constexpr (quiet)
+		{
+			Piece victim   = position.pieces.squares[move_to(move)];
+			Piece attacker = position.pieces.squares[move_from(move)];
+			set_move_score(move, capture_bonus + mvv_lva_scores[attacker][victim]);
+		}
+		else
+			set_move_score(move, search.history.get(position, move));
+		
+	}
+	std::sort(movelist.begin(), movelist.end(),
+			  [](Move rhs, Move lhs) { return move_score(rhs) > move_score(lhs); });
+}
+
+MovePicker::MovePicker(Position& p, Search& s, TTable& tt)
 	: position(&p), search(&s), table(&tt)
-{}
+{
+	stage = Stage::HashMove;
+}
 
 bool MovePicker::next(Move& move)
 {
-	
+	auto can_move = [=](Move m) {
+		return position->move_is_legal(m) && position->move_is_pseudolegal(m);
+	};
+
+	if (stage == Stage::HashMove)
+	{
+		stage = Stage::GenNoisy;
+		Move hash_move = get_hash_move(*position, *table);
+
+		MoveGenerator<false> generator;
+		generator.generate<MoveGenType::normal>(*position);
+
+		if (can_move(hash_move))
+		{
+			move = hash_move;
+			return true;
+		}
+	}
+
+	if (stage == Stage::GenNoisy)
+	{
+		gen.generate<MoveGenType::noisy>(*position);
+		order_normal_movelist(*position, gen.movelist, *search);
+		
+		current = gen.movelist.begin();
+		stage = Stage::GiveNoisy;
+	}
+
+	if (stage == Stage::GiveNoisy)
+	{
+		if (current != gen.movelist.end())
+		{
+			move = *current++;
+			return true;
+		}
+		stage = Stage::Killer1;
+	}
+
+	if (stage == Stage::Killer1)
+	{
+		stage = Stage::Killer2;
+		Move killer = search->killers.first(search->info.ply);
+
+		if (can_move(killer))
+		{
+			move = killer;
+			return true;
+		}
+	}
+
+	if (stage == Stage::Killer2)
+	{
+		stage = Stage::GenQuiet;
+		Move killer = search->killers.second(search->info.ply);
+
+		if (can_move(killer))
+		{
+			move = killer;
+			return true;
+		}
+	}
+	if (stage == Stage::GenQuiet)
+	{
+		gen.movelist.clear();
+		gen.generate<MoveGenType::quiet>(*position);
+		order_normal_movelist<true>(*position, gen.movelist, *search);
+		current = gen.movelist.begin();
+		stage = Stage::GiveQuiet;
+	}
+
+	if (stage == Stage::GiveQuiet)
+	{
+		if (current != gen.movelist.end())
+		{
+			move = *current++;
+			return true;
+		}
+		return false;
+	}
+
+
+	return false;
 }
