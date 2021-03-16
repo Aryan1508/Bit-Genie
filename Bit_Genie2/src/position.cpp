@@ -613,6 +613,6 @@ bool Position::king_in_check() const
 
 bool Position::move_exists(Move move)
 {
-  auto const& movelist = MoveGenerator<true>(*this).movelist;
-  return std::find(movelist.moves.begin(), movelist.moves.end(), move) != movelist.moves.end();
+  MoveGenerator<true> gen(*this);
+  return std::find(gen.movelist.begin(), gen.movelist.end(), move) != gen.movelist.end();
 }

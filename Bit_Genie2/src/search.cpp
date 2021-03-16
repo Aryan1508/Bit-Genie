@@ -64,9 +64,6 @@ namespace
       if (move_score(move) < 0)
         break;
 
-      if (stand_pat + move_score(move) + 500 < alpha)
-        break;
-
       position.apply_move(move);
       search.info.ply++;
       int score = -qsearch(position, search, tt, -beta, -alpha);
@@ -104,7 +101,7 @@ namespace
     if (search.info.ply >= MaxPly)
       return eval_position(position);
 
-    if (position.history.is_drawn(position.key) && search.info.ply)
+    if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
       return 0;
 
     SearchResult result;
@@ -147,6 +144,7 @@ namespace
 
       search.info.ply--;
       position.revert_move();
+      
 
       if (search.limits.stopped)
         return 0; 

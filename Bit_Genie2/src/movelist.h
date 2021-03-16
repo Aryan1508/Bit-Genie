@@ -41,7 +41,8 @@ public:
     moves[cap++] = std::move(move);
   }
 
-  std::array<Move, 256> moves;
+ 
 private:
+  std::array<Move, 256> moves;
   int cap;
 };
