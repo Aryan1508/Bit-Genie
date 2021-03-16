@@ -12,8 +12,8 @@
 #include <queue>
 
 int main()
-{  
-  Attacks::init(); 
-  ZobristKey::init();
-  uci_input_loop();
+{
+	Attacks::init();
+	ZobristKey::init();
+	uci_input_loop();
 }

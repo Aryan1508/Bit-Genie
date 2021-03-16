@@ -55,7 +55,8 @@ namespace
     alpha = std::max(alpha, stand_pat);
 
     SearchResult result;
-    MoveGenerator<true, MoveGenType::noisy> gen(position);
+    MoveGenerator<true> gen;
+    gen.generate<MoveGenType::noisy>(position);
 
     sort_qmovelist(gen.movelist, position, search, tt);
 
@@ -105,7 +106,8 @@ namespace
       return 0;
 
     SearchResult result;
-    MoveGenerator gen(position);
+    MoveGenerator gen;
+    gen.generate(position);
 
     if (gen.movelist.size() == 0)
     {

@@ -8,41 +8,64 @@
 class Movelist
 {
 public:
-  Movelist()
-  {
-    cap = 0;
-  }
+	using movelist_type  = std::array<Move, 256>;
+	using iterator	     = movelist_type::iterator;
+	using const_iterator = movelist_type::const_iterator;
 
-  auto begin()
-  {
-    return moves.begin();
-  }
+	Movelist()
+		: cap(0)
+	{}
 
-  auto end()
-  {
-    return moves.begin() + cap;
-  }
+	iterator begin()
+	{
+		return moves.begin();
+	}
 
-  int size() const
-  {
-    return cap;
-  }
+	const_iterator begin() const
+	{
+		return moves.begin();
+	}
 
-  Move& operator[](size_t pos) { return moves[pos]; }
-  
-  template<bool check = false>
-  void add(Position& position, Move&& move)
-  {
-    if constexpr (check) 
-    {
-      if (!position.move_is_legal(move))
-        return;
-    }
-    moves[cap++] = std::move(move);
-  }
+	const_iterator cbegin() const
+	{
+		return moves.cbegin();
+	}
 
- 
+	iterator end()
+	{
+		return moves.begin() + cap;
+	}
+
+	const_iterator end() const
+	{
+		return moves.begin() + cap;
+	}
+
+	const_iterator cend() const
+	{
+		return moves.cbegin() + cap;
+	}
+
+	int size() const
+	{
+		return cap;
+	}
+
+	Move& operator[](size_t pos) { return moves[pos]; }
+
+	template<bool check = false>
+	void add(Position& position, Move&& move)
+	{
+		if constexpr (check)
+		{
+			if (!position.move_is_legal(move))
+				return;
+		}
+		moves[cap++] = std::move(move);
+	}
+
+
 private:
-  std::array<Move, 256> moves;
-  int cap;
+	movelist_type moves;
+	int cap;
 };

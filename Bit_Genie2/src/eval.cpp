@@ -5,8 +5,8 @@
 #include "board.h"
 
 enum {
-  PawnDoubled = S(-10, -10),
-  PawnIsolated = S(-15, -15)
+	PawnDoubled = S(-10, -10),
+	PawnIsolated = S(-15, -15)
 };
 
 // evaluation scores are taken from weiss 
@@ -91,145 +91,145 @@ static constexpr int mobility_scores[4][28]
 template<PieceType type, typename Callable, typename... Args>
 static constexpr int mobility_score(Callable F, Args... args)
 {
-  return mobility_scores[type - 1][popcount64(F(args...))];
+	return mobility_scores[type - 1][popcount64(F(args...))];
 }
 
 static constexpr int passed_pawn_scores[total_ranks] = {
-    S(0,  0) , S(-16, 22), S(-16, 25), S(-7, 56),
-    S(26, 80), S(60,139) , S(136,196), S(0,  0),
+	S(0,  0) , S(-16, 22), S(-16, 25), S(-7, 56),
+	S(26, 80), S(60,139) , S(136,196), S(0,  0),
 };
 
 static bool pawn_doubled(uint64_t friend_pawns, Square sq)
 {
-  uint64_t file = BitMask::files[sq];
-  return is_several(file & friend_pawns);
+	uint64_t file = BitMask::files[sq];
+	return is_several(file & friend_pawns);
 }
 
 static bool pawn_passed(uint64_t enemy_pawns, Color us, Square sq)
 {
-  return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
+	return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
 }
 
 static bool pawn_isolated(uint64_t friend_pawns, Square sq)
 {
-  return !(friend_pawns & BitMask::neighbor_files[sq]);
+	return !(friend_pawns & BitMask::neighbor_files[sq]);
 }
 
 static inline Square psqt_sq(Square sq, Color color)
 {
-  return color == White ? flip_square(sq) : sq;
+	return color == White ? flip_square(sq) : sq;
 }
 
 static int evaluate_pawn(Position const& position, Square sq, Color us)
 {
-  int score = 0;
-  uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
-  uint64_t enemy_pawns  = position.pieces.get_piece_bb<Pawn>(!us);
+	int score = 0;
+	uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
+	uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
 
-  score += pawn_doubled(friend_pawns, sq)   * PawnDoubled;
-  score += pawn_isolated(friend_pawns, sq)  * PawnIsolated;
-  score += pawn_passed(enemy_pawns, us, sq) * passed_pawn_scores[to_int(rank_of(sq, us))];
-  score += -pawn_psqt[psqt_sq(sq, us)];
+	score += pawn_doubled(friend_pawns, sq) * PawnDoubled;
+	score += pawn_isolated(friend_pawns, sq) * PawnIsolated;
+	score += pawn_passed(enemy_pawns, us, sq) * passed_pawn_scores[to_int(rank_of(sq, us))];
+	score += -pawn_psqt[psqt_sq(sq, us)];
 
-  return score;
+	return score;
 }
 
 static int evaluate_knight(Position const& position, Square sq, Color us)
 {
-  int score = 0;
+	int score = 0;
 
-  score += knight_psqt[psqt_sq(sq, us)];
-  score += mobility_score<Knight>(Attacks::knight, sq);
+	score += knight_psqt[psqt_sq(sq, us)];
+	score += mobility_score<Knight>(Attacks::knight, sq);
 
-  return score;
+	return score;
 }
 
 static int evaluate_rook(Position const& position, Square sq, Color us)
 {
-  int score = 0;
+	int score = 0;
 
-  score += rook_psqt[psqt_sq(sq, us)];
-  score += mobility_score<Rook>(Attacks::rook, sq, position.total_occupancy());
+	score += rook_psqt[psqt_sq(sq, us)];
+	score += mobility_score<Rook>(Attacks::rook, sq, position.total_occupancy());
 
-  return score;
+	return score;
 }
 
 static int evaluate_queen(Position const& position, Square sq, Color us)
 {
-  int score = 0;
+	int score = 0;
 
-  score += queen_psqt[psqt_sq(sq, us)];
-  score += mobility_score<Queen>(Attacks::queen, sq, position.total_occupancy());
-  return score;
+	score += queen_psqt[psqt_sq(sq, us)];
+	score += mobility_score<Queen>(Attacks::queen, sq, position.total_occupancy());
+	return score;
 }
 
 static int evaluate_bishop(Position const& position, Square sq, Color us)
 {
-  int score = 0;
+	int score = 0;
 
-  score += bishop_psqt[psqt_sq(sq, us)];
-  score += mobility_score<Bishop>(Attacks::bishop, sq, position.total_occupancy());
+	score += bishop_psqt[psqt_sq(sq, us)];
+	score += mobility_score<Bishop>(Attacks::bishop, sq, position.total_occupancy());
 
-  return score;
+	return score;
 }
 
 template<typename Callable>
 static int evaluate_piece(Position const& position, Callable F, uint64_t pieces, Color us)
 {
-  int score = 0;
-  while (pieces)
-  {
-    Square sq = pop_lsb(pieces);
-    score += F(position, sq, us);
-  }
-  return score;
+	int score = 0;
+	while (pieces)
+	{
+		Square sq = pop_lsb(pieces);
+		score += F(position, sq, us);
+	}
+	return score;
 }
 
 template<PieceType type, typename Callable>
 static int evaluate_piece(Position const& position, Callable F)
 {
-  int score = 0;
+	int score = 0;
 
-  uint64_t white = position.pieces.bitboards[type] & position.pieces.colors[White];
-  uint64_t black = position.pieces.bitboards[type] & position.pieces.colors[Black];
+	uint64_t white = position.pieces.bitboards[type] & position.pieces.colors[White];
+	uint64_t black = position.pieces.bitboards[type] & position.pieces.colors[Black];
 
-  score += evaluate_piece(position, F, white, Color::White);
-  score -= evaluate_piece(position, F, black, Color::Black);
-  return score;
-}  
+	score += evaluate_piece(position, F, white, Color::White);
+	score -= evaluate_piece(position, F, black, Color::Black);
+	return score;
+}
 
 static int material_balance(uint64_t pieces, PieceType piece)
 {
-  return popcount64(pieces) * get_score(Piece(piece));
+	return popcount64(pieces) * get_score(Piece(piece));
 }
 
 static int material_balance(Position const& position)
 {
-  auto& pieces = position.pieces;
-  int score = 0;
+	auto& pieces = position.pieces;
+	int score = 0;
 
-  for (int i = 0; i < total_pieces; i++)
-  {
-    PieceType type = PieceType(i);
-    uint64_t white = pieces.bitboards[i] & pieces.colors[White];
-    uint64_t black = pieces.bitboards[i] & pieces.colors[Black];
+	for (int i = 0; i < total_pieces; i++)
+	{
+		PieceType type = PieceType(i);
+		uint64_t white = pieces.bitboards[i] & pieces.colors[White];
+		uint64_t black = pieces.bitboards[i] & pieces.colors[Black];
 
-    score += material_balance(white, type);
-    score -= material_balance(black, type);
-  }
-  return score;
+		score += material_balance(white, type);
+		score -= material_balance(black, type);
+	}
+	return score;
 }
 
 int eval_position(Position const& position)
 {
-  int score = 0;
+	int score = 0;
 
-  score += material_balance(position);
-  score += evaluate_piece<Pawn>(position, evaluate_pawn);
-  score += evaluate_piece<Knight>(position, evaluate_knight);
-  score += evaluate_piece<Rook>(position, evaluate_rook);
-  score += evaluate_piece<Bishop>(position, evaluate_bishop);
-  score += evaluate_piece<Queen>(position, evaluate_queen);
+	score += material_balance(position);
+	score += evaluate_piece<Pawn>(position, evaluate_pawn);
+	score += evaluate_piece<Knight>(position, evaluate_knight);
+	score += evaluate_piece<Rook>(position, evaluate_rook);
+	score += evaluate_piece<Bishop>(position, evaluate_bishop);
+	score += evaluate_piece<Queen>(position, evaluate_queen);
 
-  return position.side == White ? score : -score;
+	return position.side == White ? score : -score;
 }
