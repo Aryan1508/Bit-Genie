@@ -6,61 +6,56 @@
 
 enum class MoveFlag : uint8_t
 {
-  normal, enpassant, castle, promotion
+	normal, enpassant, castle, promotion
 };
 
 enum Move : uint32_t {
-  NullMove 
+	NullMove
 };
 
-inline bool operator==(Move rhs, Move lhs)
+inline int16_t move_score(Move move)
 {
-  return (rhs & 0xFFFF) == (lhs & 0xFFFF  );
+	return static_cast<int16_t>(move >> 16);
 }
 
-inline bool operator!=(Move rhs, Move lhs)
+constexpr Move move_without_score(Move m)
 {
-  return (rhs & 0xFFFF) != (lhs & 0xFFFF);
+	return Move(m & 0xFFFF);
 }
 
 inline bool operator<(Move rhs, Move lhs)
 {
-  return (rhs & 0xFFFF0000) < (lhs & 0xFFFF0000);
+	return move_score(rhs) < move_score(lhs);
 }
 
 inline bool operator>(Move rhs, Move lhs)
 {
-  return (rhs & 0xFFFF0000) > (lhs & 0xFFFF0000);
+	return move_score(rhs) > move_score(lhs);
 }
 
 constexpr Square move_from(Move move)
 {
-  return static_cast<Square>(move & 0x3f);
+	return static_cast<Square>(move & 0x3f);
 }
 
 constexpr Square move_to(Move move)
 {
-  return static_cast<Square>((move >> 6) & 0x3f);
+	return static_cast<Square>((move >> 6) & 0x3f);
 }
 
 constexpr MoveFlag move_flag(Move move)
 {
-  return static_cast<MoveFlag>((move >> 12) & 0x3);
+	return static_cast<MoveFlag>((move >> 12) & 0x3);
 }
 
 constexpr PieceType move_promoted(Move move)
 {
-  return static_cast<PieceType>(((move >> 14) & 0x3) + 1);
-}
-
-inline int16_t move_score(Move move)
-{
-  return static_cast<int16_t>(move >> 16);
+	return static_cast<PieceType>(((move >> 14) & 0x3) + 1);
 }
 
 inline void set_move_score(Move& move, int16_t score)
 {
-  move = static_cast<Move>(move | (score << 16));
+	move = static_cast<Move>(move | (score << 16));
 }
 
 bool move_is_capture(Position const& positio, Move);

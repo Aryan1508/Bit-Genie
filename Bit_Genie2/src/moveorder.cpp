@@ -124,7 +124,22 @@ MovePicker::MovePicker(Position& p, Search& s, TTable& tt)
 
 bool MovePicker::next(Move& move)
 {
-	auto can_move = [=](Move m) {
+	auto can_move = [&](Move m) {
+		MoveGenerator<false> g;
+		g.generate(*position);
+		
+		bool is = g.movelist.find(m);
+		bool is2 = position->move_is_pseudolegal(m);
+
+		if (is != is2)
+		{
+			std::cout << *position;
+			std::cout << "Move: " << std::hex << (m) << std::endl;
+			std::cout << "\nNew: " << is2;
+			std::cout << "\nOld: " << g.movelist.find(m) << std::endl;
+			std::cin.get();
+		}
+
 		return position->move_is_legal(m) && position->move_is_pseudolegal(m);
 	};
 
@@ -132,9 +147,6 @@ bool MovePicker::next(Move& move)
 	{
 		stage = Stage::GenNoisy;
 		Move hash_move = get_hash_move(*position, *table);
-
-		MoveGenerator<false> generator;
-		generator.generate<MoveGenType::normal>(*position);
 
 		if (can_move(hash_move))
 		{
@@ -189,6 +201,7 @@ bool MovePicker::next(Move& move)
 	{
 		gen.movelist.clear();
 		gen.generate<MoveGenType::quiet>(*position);
+
 		order_normal_movelist<true>(*position, gen.movelist, *search);
 		current = gen.movelist.begin();
 		stage = Stage::GiveQuiet;
@@ -203,7 +216,5 @@ bool MovePicker::next(Move& move)
 		}
 		return false;
 	}
-
-
 	return false;
 }

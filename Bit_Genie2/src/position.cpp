@@ -210,7 +210,7 @@ bool Position::move_was_legal() const
 static inline uint64_t legal_move_count(Position& position)
 {
 	MoveGenerator gen;
-	gen.generate<MoveGenType::normal>(position);
+	gen.generate(position);
 	return gen.movelist.size();
 }
 
@@ -621,7 +621,7 @@ bool Position::move_exists(Move move)
 {
 	MoveGenerator gen;
 	gen.generate(*this);
-	return std::find(gen.movelist.begin(), gen.movelist.end(), move) != gen.movelist.end();
+	return gen.movelist.find(move);
 }
 
 bool Position::move_is_pseudolegal(Move move)
@@ -656,7 +656,7 @@ bool Position::move_is_pseudolegal(Move move)
 	{
 		MoveGenerator<false> gen;
 		gen.generate_castle(*this);
-		return std::find(gen.movelist.begin(), gen.movelist.end(), move) != gen.movelist.end();
+		return gen.movelist.find(move);
 	}
 
 	// Validating pawn moves

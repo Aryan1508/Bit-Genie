@@ -41,9 +41,9 @@ public:
 		return moves.begin() + cap;
 	}
 
-	int size() const
+	size_t size() const
 	{
-		return cap;
+		return static_cast<size_t>(cap);
 	}
 
 	Move& operator[](size_t pos) { return moves[pos]; }
@@ -59,6 +59,15 @@ public:
 		moves[cap++] = std::move(move);
 	}
 
+	bool find(Move move)
+	{
+		for (auto m : *this)
+		{
+			if (move_without_score(m) == move_without_score(move))
+				return true;
+		}
+		return false;
+	}
 
 private:
 	movelist_type moves;

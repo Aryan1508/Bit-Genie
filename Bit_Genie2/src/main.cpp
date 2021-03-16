@@ -39,8 +39,15 @@ int main()
 	ZobristKey::init();
     uci_input_loop();
 	Position position;
+	position.set_fen("rnb1kbnr/ppp1pppp/8/3Q4/4p3/8/PPPP1qPP/RNBK1BNR w kq - 0 1");
 
-	Move move = CreateMove(E2, E4, MoveFlag::normal, 1);
+	MoveGenerator<false> gen;
+	gen.generate(position);
 
+	for (auto m : gen.movelist)
+		std::cout << print_move(m) << std::endl;
+
+	Move move = CreateMove(D5, E6, MoveFlag::normal, 1);
+	
 	std::cout << "Move is pseudo-legal: " << position.move_is_pseudolegal(move) << std::endl;
 }
