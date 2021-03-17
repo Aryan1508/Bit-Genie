@@ -9,8 +9,9 @@ class MovePicker
 	enum class Stage
 	{
 		HashMove, 
-		GenNoisy, GiveNoisy,
-		Killer1, Killer2, GenQuiet, GiveQuiet
+		GenNoisy, GiveGoodNoisy,
+		Killer1, Killer2, 
+		GiveBadNoisy, GenQuiet, GiveQuiet
 	};
 
 public:

@@ -5,9 +5,14 @@
 #include "moveorder.h"
 #include "tt.h"
 #include <sstream>
+#include <unordered_map>
+
+
 
 namespace
 {
+	std::unordered_map<int, int> cutoff_table;
+
 	enum
 	{
 		MinEval = -std::numeric_limits<int>::max(),
@@ -89,6 +94,7 @@ namespace
 		if (search.limits.stopped)
 			return 0;
 
+		search.info.total_nodes++;
 		search.info.nodes++;
 
 		if ((search.info.nodes & 2047) == 0)
@@ -107,7 +113,7 @@ namespace
 
 		SearchResult result;
 	
-		bool is_first = true;
+		int move_num = 0;
 		int original = alpha;
 
 		if (search.limits.stopped)
@@ -117,15 +123,13 @@ namespace
 
 		for (Move move; picker.next(move);)
 		{
+			move_num++;
 			position.apply_move(move);
 			search.info.ply++;
 
 			int score = 0;
-			if (is_first)
-			{
-				is_first = false;
+			if (move_num == 1)
 				score = -negamax(position, search, tt, depth - 1, -beta, -alpha).score;
-			}
 			else
 			{
 				score = -negamax(position, search, tt, depth - 1, -alpha - 1, -alpha).score;
@@ -151,6 +155,8 @@ namespace
 
 			if (alpha >= beta)
 			{
+				search.info.total_cutoffs++;
+				cutoff_table[move_num]++;
 				if (!move_is_capture(position, move))
 				{
 					search.history.add(position, move, depth);
@@ -161,7 +167,7 @@ namespace
 			}
 		}
 
-		if (is_first)
+		if (move_num == 0)
 		{
 			if (position.king_in_check())
 				return search.info.ply - MateEval;
@@ -244,6 +250,16 @@ namespace
 
 		std::cout << std::endl;
 	}
+}
+
+void print_cutoffs(Search& search)
+{
+	for (int i = 1; i < 11; i++)
+	{
+		int total = cutoff_table[i];
+		std::cout << "Move " << i << ": " << std::fixed << (float(total) / search.info.total_cutoffs) * 100 << std::endl;
+	}
+	std::cout << '\n';
 }
 
 void search_position(Position& position, Search& search, TTable& tt)

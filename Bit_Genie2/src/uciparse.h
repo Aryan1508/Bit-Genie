@@ -15,6 +15,7 @@ enum class UciCommands
   print,
   perft,
   static_eval,
+  printcutoffs,
 };
 
 struct UciGo

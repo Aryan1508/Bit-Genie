@@ -715,6 +715,11 @@ bool Position::move_is_pseudolegal(Move move)
 	// Validating knights, kings and sliding pieces
 	else 
 	{
+		// Other pieces don't have special moves
+		// except for king castles, but we already checked that
+		if (flag != MoveFlag::normal)
+			return false; 
+
 		uint64_t attacks = Attacks::generate(type_of(moving), from, total_occupancy());
 		return test_bit(to, attacks);
 	}

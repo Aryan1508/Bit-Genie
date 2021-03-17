@@ -102,11 +102,9 @@ static void order_normal_movelist(Position& position, Movelist& movelist, Search
 
 	for (auto& move : movelist)
 	{
-		if constexpr (quiet)
+		if constexpr (!quiet)
 		{
-			Piece victim   = position.pieces.squares[move_to(move)];
-			Piece attacker = position.pieces.squares[move_from(move)];
-			set_move_score(move, capture_bonus + mvv_lva_scores[attacker][victim]);
+			set_move_score(move, see(position, move));
 		}
 		else
 			set_move_score(move, search.history.get(position, move));
@@ -125,21 +123,6 @@ MovePicker::MovePicker(Position& p, Search& s, TTable& tt)
 bool MovePicker::next(Move& move)
 {
 	auto can_move = [&](Move m) {
-		MoveGenerator<false> g;
-		g.generate(*position);
-		
-		bool is = g.movelist.find(m);
-		bool is2 = position->move_is_pseudolegal(m);
-
-		if (is != is2)
-		{
-			std::cout << *position;
-			std::cout << "Move: " << std::hex << (m) << std::endl;
-			std::cout << "\nNew: " << is2;
-			std::cout << "\nOld: " << g.movelist.find(m) << std::endl;
-			std::cin.get();
-		}
-
 		return position->move_is_legal(m) && position->move_is_pseudolegal(m);
 	};
 
@@ -161,12 +144,12 @@ bool MovePicker::next(Move& move)
 		order_normal_movelist(*position, gen.movelist, *search);
 		
 		current = gen.movelist.begin();
-		stage = Stage::GiveNoisy;
+		stage = Stage::GiveGoodNoisy;
 	}
 
-	if (stage == Stage::GiveNoisy)
+	if (stage == Stage::GiveGoodNoisy)
 	{
-		if (current != gen.movelist.end())
+		if (current != gen.movelist.end() && move_score(*current) > 0)
 		{
 			move = *current++;
 			return true;
@@ -188,7 +171,7 @@ bool MovePicker::next(Move& move)
 
 	if (stage == Stage::Killer2)
 	{
-		stage = Stage::GenQuiet;
+		stage = Stage::GiveBadNoisy;
 		Move killer = search->killers.second(search->info.ply);
 
 		if (can_move(killer))
@@ -197,6 +180,17 @@ bool MovePicker::next(Move& move)
 			return true;
 		}
 	}
+
+	if (stage == Stage::GiveBadNoisy)
+	{
+		if (current != gen.movelist.end())
+		{
+			move = *current++;
+			return true;
+		}
+		stage = Stage::GenQuiet;
+	}
+
 	if (stage == Stage::GenQuiet)
 	{
 		gen.movelist.clear();

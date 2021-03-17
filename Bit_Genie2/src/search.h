@@ -13,4 +13,5 @@ struct Search
 	SHistory history;
 };
 
+void print_cutoffs(Search&);
 void search_position(Position&, Search&, TTable& tt);
