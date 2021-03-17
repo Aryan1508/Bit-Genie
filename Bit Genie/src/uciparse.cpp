@@ -56,6 +56,9 @@ bool UciParser::operator==(UciCommands type) const
 		case UciCommands::printcutoffs:
 			return command == "cutoff";
 
+		case UciCommands::setoption:
+			return starts_with(command, "setoption");
+
 		default:
 			return false;
 			break;
@@ -124,4 +127,36 @@ UciGo UciParser::parse_go() const
 			options.movetime = std::stoi(value.data());
 	}
 	return options;
+}
+
+std::pair<std::string, std::string>
+	UciParser::parse_setoption() const
+{
+	std::stringstream stream(command);
+	std::string name, value;
+
+	for (std::string token; stream >> token;)
+	{
+		if (token == "name")
+		{
+			stream >> token;
+
+			if (tolower(token) == "clear")
+			{
+				name = std::move(token);
+				stream >> token;
+				name += " " + std::move(tolower(token));
+			}
+			else
+				name = std::move(token);
+		}
+
+		if (token == "value")
+		{
+			stream >> token;
+			value = std::move(tolower(token));
+			break;
+		}
+	}
+	return { name, value };
 }

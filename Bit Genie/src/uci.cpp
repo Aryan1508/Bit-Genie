@@ -4,6 +4,7 @@
 #include "uciparse.h"
 #include "tt.h"
 #include "eval.h"
+#include "stringparse.h"
 
 static void benchmark_perft(Position position, int depth)
 {
@@ -39,6 +40,8 @@ void uci_input_loop()
 		{
 			std::cout << "id name Bit Genie" << std::endl;
 			std::cout << "id author Aryan Parekh" << std::endl;
+			std::cout << "option name Hash type spin default 2 min 2 max 3000" << std::endl;
+			std::cout << "option name Clear Hash type button" << std::endl;
 			std::cout << "uciok" << std::endl;
 		}
 
@@ -102,6 +105,23 @@ void uci_input_loop()
 				search.limits.movetime = std::numeric_limits<int64_t>::max();
 
 			search_position(position, search, table);
+		}
+
+		else if (command == UciCommands::setoption)
+		{
+			auto [name, value] = command.parse_setoption();
+
+			if (name == "hash")
+			{
+				if (!string_is_number(value))
+					continue;
+				table.resize(std::stoi(value));
+			}
+
+			else if (name == "clear hash")
+			{
+				table.reset();
+			}
 		}
 
 		else if (command == UciCommands::static_eval)
