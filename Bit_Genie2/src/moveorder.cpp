@@ -114,6 +114,11 @@ static void order_normal_movelist(Position& position, Movelist& movelist, Search
 			  [](Move rhs, Move lhs) { return move_score(rhs) > move_score(lhs); });
 }
 
+void sort_qmovelist(Movelist& movelist, Position& position, Search& search)
+{
+	order_normal_movelist<true>(position, movelist, search);
+}
+
 MovePicker::MovePicker(Position& p, Search& s, TTable& tt)
 	: position(&p), search(&s), table(&tt)
 {

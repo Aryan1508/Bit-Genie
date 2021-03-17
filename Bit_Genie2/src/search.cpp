@@ -63,7 +63,7 @@ namespace
 		MoveGenerator<true> gen;
 		gen.generate<MoveGenType::noisy>(position);
 
-		//sort_qmovelist(gen.movelist, position, search, tt);
+		sort_qmovelist(gen.movelist, position, search);
 
 		for (auto move : gen.movelist)
 		{
@@ -106,7 +106,7 @@ namespace
 			return eval_position(position);
 
 		if (search.info.ply >= MaxPly)
-			return eval_position(position);
+			return qsearch(position, search, tt, alpha, beta);
 
 		if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
 			return 0;

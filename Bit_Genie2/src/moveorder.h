@@ -28,3 +28,5 @@ private:
 	Stage stage = Stage::HashMove;
 	Movelist::iterator current;
 };
+
+void sort_qmovelist(Movelist&, Position&, Search& search);
