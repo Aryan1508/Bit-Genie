@@ -103,10 +103,10 @@ namespace
 		search.info.update_seldepth();
 
 		if (depth <= 0)
-			return eval_position(position);
+			return qsearch(position, search, tt, alpha, beta);
 
 		if (search.info.ply >= MaxPly)
-			return qsearch(position, search, tt, alpha, beta);
+			return eval_position(position);
 
 		if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
 			return 0;
