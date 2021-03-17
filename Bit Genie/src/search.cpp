@@ -264,6 +264,7 @@ void print_cutoffs(Search& search)
 
 void search_position(Position& position, Search& search, TTable& tt)
 {
+	cutoff_table.clear();
 	tt.reset();
 
 	Move best_move = NullMove;

@@ -4,12 +4,12 @@
 
 Rank rank_of(Square sq)
 {
-	return static_cast<Rank>(sq / to_int(File::total));
+	return static_cast<Rank>(sq >> 3);
 }
 
 File file_of(Square sq)
 {
-	return static_cast<File>(sq % to_int(Rank::total));
+	return static_cast<File>(sq & 7);
 }
 
 Rank rank_of(Square sq, Color color)

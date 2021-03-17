@@ -10,7 +10,6 @@ enum {
 };
 
 // evaluation scores are taken from weiss 
-
 static constexpr int pawn_psqt[]
 { 
   S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0),
@@ -126,8 +125,8 @@ static int evaluate_pawn(Position const& position, Square sq, Color us)
 	uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
 	uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
 
-	score += pawn_doubled(friend_pawns, sq) * PawnDoubled;
-	score += pawn_isolated(friend_pawns, sq) * PawnIsolated;
+	score += pawn_doubled(friend_pawns, sq)   * PawnDoubled;
+	score += pawn_isolated(friend_pawns, sq)  * PawnIsolated;
 	score += pawn_passed(enemy_pawns, us, sq) * passed_pawn_scores[to_int(rank_of(sq, us))];
 	score += -pawn_psqt[psqt_sq(sq, us)];
 
