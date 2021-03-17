@@ -24,7 +24,7 @@
     <ProjectGuid>{f34fecf3-3264-4ab4-a94d-df2127359cbc}</ProjectGuid>
     <RootNamespace>BitGenie2</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Bit Genie Dev</ProjectName>
+    <ProjectName>Bit Genie</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
