@@ -7,8 +7,6 @@
 #include <sstream>
 #include <unordered_map>
 
-
-
 namespace
 {
 	std::unordered_map<int, int> cutoff_table;
@@ -88,7 +86,7 @@ namespace
 		return alpha;
 	}
 
-	SearchResult negamax(Position& position, Search& search, TTable& tt,
+	SearchResult pvs(Position& position, Search& search, TTable& tt,
 						 int depth, int alpha = MinEval, int beta = MaxEval)
 	{
 		if (search.limits.stopped)
@@ -129,13 +127,13 @@ namespace
 
 			int score = 0;
 			if (move_num == 1)
-				score = -negamax(position, search, tt, depth - 1, -beta, -alpha).score;
+				score = -pvs(position, search, tt, depth - 1, -beta, -alpha).score;
 			else
 			{
-				score = -negamax(position, search, tt, depth - 1, -alpha - 1, -alpha).score;
+				score = -pvs(position, search, tt, depth - 1, -alpha - 1, -alpha).score;
 
 				if (alpha < score && score < beta)
-					score = -negamax(position, search, tt, depth - 1, -beta, -score).score;
+					score = -pvs(position, search, tt, depth - 1, -beta, -score).score;
 			}
 
 			search.info.ply--;
@@ -275,7 +273,7 @@ void search_position(Position& position, Search& search, TTable& tt)
 		search.info.ply = 0;
 		search.info.nodes = 0;
 
-		auto result = negamax(position, search, tt, depth);
+		auto result = pvs(position, search, tt, depth);
 
 		if (search.limits.stopped)
 		{
