@@ -139,7 +139,7 @@ UciGo UciParser::parse_go(Color side) const
 		else if (*key == "winc" && side == White)
 			options.inc = std::stoi(value.data());
 
-		else if (*key == "binc" && side == White)
+		else if (*key == "binc" && side == Black)
 			options.inc = std::stoi(value.data());
 
 	}
