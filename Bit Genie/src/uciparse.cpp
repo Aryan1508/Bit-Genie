@@ -2,6 +2,7 @@
 #include "stringparse.h"
 #include <vector>
 #include <iostream>
+#include "piece.h"
 
 void UciParser::take_input()
 {
@@ -110,7 +111,7 @@ UciParser::parse_position_command() const
 	return std::pair{ fen, moves };
 }
 
-UciGo UciParser::parse_go() const
+UciGo UciParser::parse_go(Color side) const
 {
 	UciGo options;
 
@@ -126,8 +127,21 @@ UciGo UciParser::parse_go() const
 		if (*key == "depth")
 			options.depth = std::stoi(value.data());
 
-		if (*key == "movetime")
+		else if (*key == "movetime")
 			options.movetime = std::stoi(value.data());
+
+		else if (*key == "btime" && side == Black)
+			options.movetime = std::stoi(value.data());
+
+		else if (*key == "wtime" && side == White)
+			options.movetime = std::stoi(value.data());
+
+		else if (*key == "winc" && side == White)
+			options.inc = std::stoi(value.data());
+
+		else if (*key == "binc" && side == White)
+			options.inc = std::stoi(value.data());
+
 	}
 	return options;
 }

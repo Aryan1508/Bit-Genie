@@ -1,6 +1,7 @@
 #pragma once
 #include <sstream>
 #include <vector>
+#include "misc.h"
 
 enum class UciCommands
 {
@@ -29,6 +30,7 @@ struct UciGo
 	int64_t btime = -1;
 	int64_t wtime = -1;
 	int64_t movetime = -1;
+	int64_t inc = -1;
 };
 
 class UciParser
@@ -43,7 +45,7 @@ public:
 		parse_position_command() const;
 
 	int parse_perft() const;	
-	UciGo parse_go() const;
+	UciGo parse_go(Color) const;
 	std::pair<std::string, std::string>
 		parse_setoption() const;
 

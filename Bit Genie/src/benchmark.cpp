@@ -71,12 +71,15 @@ namespace BenchMark
 
 	void bench(Position position, TTable& tt) // copy on purpose
 	{
+		StopWatch<std::chrono::seconds> watch;
+		watch.go();
 		uint64_t nodes = 0;
 		for (auto const& fen : benchmark_fens)
 		{
 			position.set_fen(fen);
 			nodes += bench_search(position, tt);
 		}
-		std::cout << '\n' << nodes << std::endl;
+		watch.stop();
+		std::cout << nodes << " nodes " << int((nodes / watch.elapsed_time().count())) << " nps" << std::endl;
 	}
 }

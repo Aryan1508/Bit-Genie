@@ -75,7 +75,7 @@ void uci_input_loop()
 
 		else if (command == UciCommands::go)
 		{
-			UciGo options = command.parse_go();
+			UciGo options = command.parse_go(position.side);
 
 			Search search;
 			search.limits.stopwatch.go();
@@ -85,7 +85,7 @@ void uci_input_loop()
 
 			if (options.movetime != -1)
 			{
-				search.limits.movetime = options.movetime - 50;
+				search.limits.movetime = options.movetime + options.inc;
 				search.limits.time_set = true;
 			}
 			else
