@@ -215,7 +215,7 @@ static int evaluate_rook(Position const& position, Square sq, Color us)
 	uint64_t rook_file = BitMask::files[sq];
 	score += rook_psqt[psqt_sq(sq, us)];
 	score += mobility_score<Rook>(Attacks::rook, sq, position.total_occupancy());
-	score += is_on_open_file(position, sq) * open_file_scores[Rook - 3];
+	score += is_on_open_file(position, sq)     * open_file_scores[Rook - 3];
 	score += is_on_semiopen_file(position, sq) * semiopen_file_scores[Rook - 3];
 
 	return score;
@@ -227,6 +227,9 @@ static int evaluate_queen(Position const& position, Square sq, Color us)
 
 	score += queen_psqt[psqt_sq(sq, us)];
 	score += mobility_score<Queen>(Attacks::queen, sq, position.total_occupancy());
+	score += is_on_open_file(position, sq) * open_file_scores[Queen - 3];
+	score += is_on_semiopen_file(position, sq) * semiopen_file_scores[Queen - 3];
+
 	return score;
 }
 
