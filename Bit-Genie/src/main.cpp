@@ -11,9 +11,9 @@
 #include "zobrist.h"
 #include <queue>
 
-int main()
+int main(int argc, char** argv)
 {
 	Attacks::init();
 	ZobristKey::init();
-    uci_input_loop();
+    uci_input_loop(argc, argv);
 }

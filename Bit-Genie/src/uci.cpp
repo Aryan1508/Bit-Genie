@@ -7,12 +7,17 @@
 #include "stringparse.h"
 #include "benchmark.h"
 
-void uci_input_loop()
+void uci_input_loop(int argc, char** argv)
 {
 	std::cout << "Bit Genie by Aryan Parekh" << std::endl;
 	UciParser command;
 	Position position;
 	TTable table(2);
+
+	if (argc > 1 && !strncmp(argv[1], "bench", 5)) {
+		BenchMark::bench(position, table);
+		return;
+	}
 
 	while (true)
 	{
