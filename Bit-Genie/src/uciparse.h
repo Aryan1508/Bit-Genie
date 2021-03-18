@@ -25,12 +25,13 @@ enum class UciCommands
 struct UciGo
 {
 	int depth = 64;
-	int movestogo = -1;
+	int movestogo = 30;
 
 	int64_t btime = -1;
 	int64_t wtime = -1;
 	int64_t movetime = -1;
-	int64_t inc = -1;
+	int64_t binc = -1;
+	int64_t winc = -1;
 };
 
 class UciParser

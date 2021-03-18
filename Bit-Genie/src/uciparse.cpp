@@ -130,17 +130,20 @@ UciGo UciParser::parse_go(Color side) const
 		else if (*key == "movetime")
 			options.movetime = std::stoi(value.data());
 
+		else if (*key == "movestogo")
+			options.movestogo = std::stoi(value.data());
+
 		else if (*key == "btime" && side == Black)
-			options.movetime = std::stoi(value.data());
+			options.btime = std::stoi(value.data());
 
 		else if (*key == "wtime" && side == White)
-			options.movetime = std::stoi(value.data());
+			options.wtime = std::stoi(value.data());
 
 		else if (*key == "winc" && side == White)
-			options.inc = std::stoi(value.data());
+			options.winc = std::stoi(value.data());
 
 		else if (*key == "binc" && side == Black)
-			options.inc = std::stoi(value.data());
+			options.binc = std::stoi(value.data());
 
 	}
 	return options;

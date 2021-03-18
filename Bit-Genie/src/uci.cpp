@@ -90,7 +90,11 @@ void uci_input_loop(int argc, char** argv)
 
 			if (options.movetime != -1)
 			{
-				search.limits.movetime = options.movetime;
+				auto& t = position.side == White ? options.wtime : options.btime;
+				auto& inc = position.side == White ? options.winc : options.binc;
+
+
+				search.limits.movetime = t / options.movestogo + inc - 50;
 				search.limits.time_set = true;
 			}
 			else
