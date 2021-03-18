@@ -88,11 +88,10 @@ void uci_input_loop(int argc, char** argv)
 			search.limits.stopped = false;
 			search.limits.time_set = false;
 
-			if (options.movetime != -1)
+			if (options.movetime == -1)
 			{
 				auto& t = position.side == White ? options.wtime : options.btime;
 				auto& inc = position.side == White ? options.winc : options.binc;
-
 
 				search.limits.movetime = t / options.movestogo + inc - 50;
 				search.limits.time_set = true;
