@@ -155,6 +155,7 @@
     <ClCompile Include="src\eval.cpp" />
     <ClCompile Include="src\search.cpp" />
     <ClCompile Include="src\moveorder.cpp" />
+    <ClCompile Include="src\benchmark.cpp" />
     <ClCompile Include="src\tt.cpp" />
     <ClCompile Include="src\uci.cpp" />
     <ClCompile Include="src\uciparse.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="src\castle_rights.h" />
     <ClInclude Include="src\attacks.h" />
     <ClInclude Include="src\eval.h" />
+    <ClInclude Include="src\benchmark.h" />
     <ClInclude Include="src\shistory.h" />
     <ClInclude Include="src\killer.h" />
     <ClInclude Include="src\moveorder.h" />

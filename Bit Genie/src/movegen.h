@@ -21,7 +21,6 @@ public:
 	{
 		uint64_t targets   = get_targets<type>(position);
 		uint64_t occupancy = position.total_occupancy();
-		uint64_t king	   = position.pieces.get_piece_bb<King>(position.side);
 
 		generate_normal_moves(position, King, targets, Attacks::king);
 		generate_normal_moves(position, Knight, targets, Attacks::knight);
@@ -31,8 +30,11 @@ public:
 		generate_pawn_moves<type>(position);
 
 		if constexpr (type == MoveGenType::quiet || type == MoveGenType::normal)
+		{
+			uint64_t king = position.pieces.get_piece_bb<King>(position.side);
 			if (!Attacks::square_attacked(position, get_lsb(king), !position.side, occupancy))
 				generate_castle(position);
+		}
 	}
 
 	void generate_castle(Position& position)

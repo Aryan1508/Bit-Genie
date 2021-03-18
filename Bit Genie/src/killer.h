@@ -1,5 +1,6 @@
 #pragma once
 #include "misc.h"
+#include "move.h"
 #include <array>
 #include <cstring>
 
@@ -25,5 +26,5 @@ public:
 	}
 
 private:
-	Move moves[64][2] = { 0 };
+	Move moves[64][2] = { NullMove };
 };

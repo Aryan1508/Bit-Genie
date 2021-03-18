@@ -212,7 +212,6 @@ static int evaluate_rook(Position const& position, Square sq, Color us)
 {
 	int score = 0;
 
-	uint64_t rook_file = BitMask::files[sq];
 	score += rook_psqt[psqt_sq(sq, us)];
 	score += mobility_score<Rook>(Attacks::rook, sq, position.total_occupancy());
 	score += is_on_open_file(position, sq)     * open_file_scores[Rook - 3];

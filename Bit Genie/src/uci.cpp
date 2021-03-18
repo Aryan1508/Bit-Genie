@@ -5,20 +5,7 @@
 #include "tt.h"
 #include "eval.h"
 #include "stringparse.h"
-
-static void benchmark_perft(Position position, int depth)
-{
-	using namespace std::chrono;
-	uint64_t nodes = 0;
-
-	auto start = high_resolution_clock::now();
-	position.perft(depth, nodes);
-	auto stop = high_resolution_clock::now();
-	auto time_taken = duration_cast<milliseconds>(stop - start);
-
-	std::cout << "nodes: " << nodes << std::endl;
-	std::cout << "time : " << time_taken.count() << " ms" << std::endl;
-}
+#include "benchmark.h"
 
 void uci_input_loop()
 {
@@ -83,7 +70,7 @@ void uci_input_loop()
 				continue;
 			}
 
-			benchmark_perft(position, depth);
+			BenchMark::perft(position, depth);
 		}
 
 		else if (command == UciCommands::go)
@@ -122,6 +109,11 @@ void uci_input_loop()
 			{
 				table.reset();
 			}
+		}
+
+		else if (command == UciCommands::bench)
+		{
+			BenchMark::bench(position, table);
 		}
 
 		else if (command == UciCommands::static_eval)

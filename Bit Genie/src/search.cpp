@@ -38,7 +38,7 @@ namespace
 	{
 		if (search.limits.stopped)
 			return 0;
-
+		search.info.total_nodes++;
 		search.info.nodes++;
 
 		if ((search.info.nodes & 2047) == 0)

@@ -13,6 +13,6 @@ struct SearchLimits
 
 	void update()
 	{
-		stopped = std::chrono::duration_cast<std::chrono::milliseconds>(stopwatch.elapsed_time()).count() >= movetime;
+		stopped = time_set && std::chrono::duration_cast<std::chrono::milliseconds>(stopwatch.elapsed_time()).count() >= movetime;
 	}
 };

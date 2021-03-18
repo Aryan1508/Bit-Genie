@@ -21,7 +21,6 @@ public:
 	void reset()
 	{
 		std::fill(entries.begin(), entries.end(), TEntry{ 0, NullMove });
-		std::cout << "Cleared hash table\n";
 	}
 
 	TEntry& retrieve(Position const&);

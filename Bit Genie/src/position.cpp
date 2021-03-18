@@ -662,7 +662,6 @@ bool Position::move_is_pseudolegal(Move move)
 	// Validating pawn moves
 	if (moving == wPawn || moving == bPawn)
 	{
-		Rank       promo_rank = side == White ? Rank::seven : Rank::two;
 		Rank       start_rank = side == White ? Rank::two : Rank::seven;
 	    Direction  forward = side == White ? Direction::north : Direction::south;
 		Square     forward_sq = from + forward;
@@ -700,7 +699,7 @@ bool Position::move_is_pseudolegal(Move move)
 			if (to != ep_sq)
 				return false;
 
-			Piece captured = pieces.squares[to ^ 8];
+			captured = pieces.squares[to ^ 8];
 
 			if (captured == Empty || color_of(captured) == side)
 				return false;

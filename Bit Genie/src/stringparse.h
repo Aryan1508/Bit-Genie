@@ -4,6 +4,7 @@
 #include <vector>
 
 std::string& ltrim(std::string&, const char* t = " \t\n\r\f\v");
+void trim(std::string&);
 
 std::string& tolower(std::string&);
 

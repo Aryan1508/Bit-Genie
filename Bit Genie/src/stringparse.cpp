@@ -16,6 +16,22 @@ bool string_is_number(std::string_view s)
 	return !s.empty() && it == s.end();
 }
 
+void trim(std::string& str)
+{
+	if (str.length() == 0)
+		return;
+
+	std::stringstream stream(str);
+	std::string out;
+	std::string temp;
+
+	while (stream >> temp)
+		out += temp + ' ';
+
+	out.pop_back();
+	str = std::move(out);
+}
+
 std::string& tolower(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(),

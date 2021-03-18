@@ -13,11 +13,12 @@ enum class UciCommands
 	setoption,
 
 
-	// *debugging purpose commands*
+	// *debugging/other purpose commands*
 	print,
 	perft,
 	static_eval,
 	printcutoffs,
+	bench
 };
 
 struct UciGo

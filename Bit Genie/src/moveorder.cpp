@@ -11,7 +11,7 @@ static uint64_t least_valuable_attacker(Position& position, uint64_t attackers, 
 		uint64_t pieces = position.pieces.bitboards[i] & position.pieces.colors[side] & attackers;
 
 		if (pieces)
-			return pieces & ~pieces + 1;
+			return pieces & (~pieces + 1);
 	}
 	return 0;
 }
@@ -98,8 +98,6 @@ static constexpr int16_t mvv_lva_scores[13][13]{
 template<bool quiet = false>
 static void order_normal_movelist(Position& position, Movelist& movelist, Search& search)
 {
-	static constexpr int capture_bonus = 3000;
-
 	for (auto& move : movelist)
 	{
 		if constexpr (!quiet)

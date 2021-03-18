@@ -6,7 +6,7 @@
 void UciParser::take_input()
 {
 	std::getline(std::cin, command);
-	command = ltrim(command);
+	trim(command);
 }
 
 int UciParser::parse_perft() const
@@ -58,6 +58,9 @@ bool UciParser::operator==(UciCommands type) const
 
 		case UciCommands::setoption:
 			return starts_with(command, "setoption");
+
+		case UciCommands::bench:
+			return command == "bench";
 
 		default:
 			return false;
