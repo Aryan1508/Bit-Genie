@@ -10,6 +10,10 @@ enum {
 };
 
 // evaluation scores are taken from weiss 
+
+static constexpr int open_file_scores[2] = { S(28, 10), S(-9,  5) };
+static constexpr int semiopen_file_scores[2] = { S(9, 15), S(1,  5) };
+
 static constexpr int pawn_psqt[]
 { 
   S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0), S(  0,  0),
@@ -98,6 +102,52 @@ static constexpr int passed_pawn_scores[total_ranks] = {
 	S(26, 80), S(60,139) , S(136,196), S(0,  0),
 };
 
+static bool material_draw(Position const& position)
+{
+	auto single = [](uint64_t bb) { return bb && !is_several(bb); };
+
+	auto& pieces    = position.pieces;
+	auto& bitboards = position.pieces.bitboards;
+
+	if (bitboards[Pawn] || bitboards[Queen])
+		return false;
+
+	if (!bitboards[Rook])
+	{
+		if (!bitboards[Bishop])
+		{
+			uint64_t white = pieces.get_piece_bb<Knight>(White);
+			uint64_t black = pieces.get_piece_bb<Knight>(Black);
+
+			return popcount64(black) <= 2 && popcount64(white) <= 2;
+		}
+
+		if (!bitboards[Knight])
+		{
+			uint64_t white = pieces.get_piece_bb<Bishop>(White);
+			uint64_t black = pieces.get_piece_bb<Bishop>(Black);
+
+			return abs(popcount64(white) - popcount64(black)) <= 2;
+		}
+	}
+	else
+	{
+		// Rook vs 2 minors
+		if (single(bitboards[Rook]))
+		{
+			Color owner = pieces.get_piece_bb<Rook>(White) ? White : Black;
+
+			uint64_t minor = bitboards[Bishop] | bitboards[Knight];
+
+			return !(minor & pieces.colors[owner]) 
+				&& (popcount64(minor & pieces.colors[!owner]) == 1 
+					|| popcount64(minor & pieces.colors[!owner]) == 2);
+		}
+	}
+
+	return false;
+}
+
 static bool pawn_doubled(uint64_t friend_pawns, Square sq)
 {
 	uint64_t file = BitMask::files[sq];
@@ -143,12 +193,30 @@ static int evaluate_knight(Position const& position, Square sq, Color us)
 	return score;
 }
 
+static bool is_on_open_file(Position const& position, Square sq)
+{
+	uint64_t file = BitMask::files[sq];
+	return !(file & position.pieces.bitboards[Pawn]);
+}
+
+static bool is_on_semiopen_file(Position const& position, Square sq)
+{
+	uint64_t file = BitMask::files[sq];
+	uint64_t white = position.pieces.get_piece_bb<Pawn>(White);
+	uint64_t black = position.pieces.get_piece_bb<Pawn>(Black);
+
+	return !(file & white) || !(file & black);
+}
+
 static int evaluate_rook(Position const& position, Square sq, Color us)
 {
 	int score = 0;
 
+	uint64_t rook_file = BitMask::files[sq];
 	score += rook_psqt[psqt_sq(sq, us)];
 	score += mobility_score<Rook>(Attacks::rook, sq, position.total_occupancy());
+	score += is_on_open_file(position, sq) * open_file_scores[Rook - 3];
+	score += is_on_semiopen_file(position, sq) * semiopen_file_scores[Rook - 3];
 
 	return score;
 }
@@ -222,6 +290,9 @@ static int material_balance(Position const& position)
 int eval_position(Position const& position)
 {
 	int score = 0;
+
+	if (material_draw(position))
+		return 0;
 
 	score += material_balance(position);
 	score += evaluate_piece<Pawn>(position, evaluate_pawn);
