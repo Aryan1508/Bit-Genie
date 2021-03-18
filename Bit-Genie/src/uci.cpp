@@ -85,13 +85,17 @@ void uci_input_loop()
 
 			if (options.movetime != -1)
 			{
-				search.limits.movetime = options.movetime + options.inc;
+				search.limits.movetime = options.movetime;
 				search.limits.time_set = true;
 			}
 			else
 				search.limits.movetime = std::numeric_limits<int64_t>::max();
 
+			StopWatch watch;
+			watch.go();
 			search_position(position, search, table);
+			watch.stop();
+			std::cout << "Watch time: " << watch.elapsed_time().count() << std::endl;
 		}
 
 		else if (command == UciCommands::setoption)

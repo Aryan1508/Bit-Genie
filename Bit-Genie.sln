@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bit Genie", "Bit Genie\Bit Genie.vcxproj", "{F34FECF3-3264-4AB4-A94D-DF2127359CBC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bit-Genie", "Bit-Genie\Bit-Genie.vcxproj", "{F34FECF3-3264-4AB4-A94D-DF2127359CBC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
