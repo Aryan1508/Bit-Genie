@@ -30,7 +30,7 @@ void uci_input_loop(int argc, char** argv)
 
 		else if (command == UciCommands::uci)
 		{
-			std::cout << "id name Bit Genie" << std::endl;
+			std::cout << "id name Bit Genie 1.0.0" << std::endl;
 			std::cout << "id author Aryan Parekh" << std::endl;
 			std::cout << "option name Hash type spin default 2 min 2 max 3000" << std::endl;
 			std::cout << "option name Clear Hash type button" << std::endl;
