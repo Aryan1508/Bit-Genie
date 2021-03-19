@@ -97,7 +97,7 @@ void uci_input_loop(int argc, char** argv)
 				search.limits.time_set = true;
 			}
 			else
-				search.limits.movetime = std::numeric_limits<int64_t>::max();
+				search.limits.movetime = options.movetime;
 
 			StopWatch watch;
 			watch.go();
