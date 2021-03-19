@@ -87,6 +87,8 @@ void uci_input_loop(int argc, char** argv)
 			search.limits.max_depth = std::min(options.depth, 64);
 			search.limits.stopped = false;
 			search.limits.time_set = false;
+			search.limits.time_set = true;
+
 
 			if (options.movetime == -1)
 			{
@@ -94,7 +96,6 @@ void uci_input_loop(int argc, char** argv)
 				auto& inc = position.side == White ? options.winc : options.binc;
 
 				search.limits.movetime = t / options.movestogo + inc - 50;
-				search.limits.time_set = true;
 			}
 			else
 				search.limits.movetime = options.movetime;
