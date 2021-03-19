@@ -9,7 +9,7 @@ enum {
 	PawnIsolated = S(-15, -15)
 };
 
-// evaluation scores are taken from weiss 
+// evaluation scores are taken from weiss - Terje Kirstihagen
 
 static constexpr int open_file_scores[2] = { S(28, 10), S(-9,  5) };
 static constexpr int semiopen_file_scores[2] = { S(9, 15), S(1,  5) };

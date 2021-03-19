@@ -35,7 +35,7 @@ void trim(std::string& str)
 std::string& tolower(std::string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(),
-						  [](unsigned char c) { return std::tolower(c); });
+				   [](unsigned char c) { return std::tolower(c); });
 	return str;
 }
 
