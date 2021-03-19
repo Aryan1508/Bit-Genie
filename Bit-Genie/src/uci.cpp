@@ -89,7 +89,6 @@ void uci_input_loop(int argc, char** argv)
 			search.limits.time_set = false;
 			search.limits.time_set = true;
 
-
 			if (options.movetime == -1)
 			{
 				auto& t = position.side == White ? options.wtime : options.btime;
@@ -98,7 +97,7 @@ void uci_input_loop(int argc, char** argv)
 				search.limits.movetime = t / options.movestogo + inc - 50;
 			}
 			else
-				search.limits.movetime = options.movetime;
+				search.limits.movetime = options.movetime - 50;
 
 			StopWatch watch;
 			watch.go();
