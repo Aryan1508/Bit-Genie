@@ -203,7 +203,7 @@ namespace
 		}
 		else
 		{
-			o << "cp " << score / get_score(wPawn);
+			o << "cp " << score / get_score(wPawn) * 100;
 		}
 		return o.str();
 	}
