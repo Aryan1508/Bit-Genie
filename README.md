@@ -17,6 +17,10 @@ Bit-Genie is **not** a complete chess software, but a chess engine which still n
 # Build 
 Bit-Genie comes with a [makefile](https://github.com/Aryan1508/Bit-Genie/blob/master/Bit-Genie/makefile "makefile") that you can use to build your own binaries. 
 
+```
+cd Bit-Genie
+make clean 
+```
 
 # Contributing
 
