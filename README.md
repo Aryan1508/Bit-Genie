@@ -6,7 +6,7 @@
 
 With  all the lockdowns in 2020, I decided that it would be a good time to start working on a new project. I have lots of love for programming; I have lots of love for chess, so a chess software seemed like a good start. I ended up creating a small & simple chess GUI which although wasn't easy, didn't satisfy me. I thought it would be interesting if I could write a program that could play *good* chess  and possibly beat me. And that's how I started writing Bit-Genie.  What I didn't know was chess programming is very addictive , and it would turn out to be more than a small project.  What inspired me the most was the huge community of open-source chess engines like [Ethereal](https://github.com/AndyGrant/Ethereal "Ethereal")
 
-As of March 2020, Bit-Genie isn't a top-tier chess engine, but we're getting there.
+As of March 2020, Bit-Genie isn't a top-tier chess engine, but we're getting somewhere for now.
 
 # Usage
 Bit-Genie is **not** a complete chess software, but a chess engine which still needs a GUI if you don't prefer writing and reading [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface "UCI") commands through the terminal. There are plenty of free softwares available online, here are two common ones
@@ -34,6 +34,6 @@ The development wouldn't have been possible if not for the huge resources availa
  - [Ethereal](https://github.com/AndyGrant/Ethereal)
  - [Weiss](https://github.com/TerjeKir/weiss)
  - [Halogen](https://github.com/KierenP/Halogen)
- - [Koisvisto](https://github.com/Luecx/Koivisto)
+ - [Koivisto](https://github.com/Luecx/Koivisto)
  - [Drofa](https://github.com/justNo4b/Drofa)
  - [Stockfish](https://github.com/official-stockfish/Stockfish)
