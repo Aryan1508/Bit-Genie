@@ -1,0 +1,35 @@
+# Bit-Genie
+[Bit-Genie](https://github.com/Aryan1508/Bit-Genie "Bit-Genie") is an open-source [chess engine](https://en.wikipedia.org/wiki/Chess_engine "chess engine") written in C++ by [Aryan Parekh](https://github.com/Aryan1508 "Aryan Parekh"). It has support for the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol.
+
+# About
+**TLDR; I got addicted to chess programming**
+
+With  all the lockdowns in 2020, I decided that it would be a good time to start working on a new project. I have lots of love for programming; I have lots of love for chess, so a chess software seemed like a good start. I ended up creating a small & simple chess GUI which although wasn't easy, didn't satisfy me. I thought it would be interesting if I could write a program that could play *good* chess  and possibly beat me. And that's how I started writing Bit-Genie.  What I didn't know was chess programming is very addictive , and it would turn out to be more than a small project.  What inspired me the most was the huge community of open-source chess engines like [Ethereal](https://github.com/AndyGrant/Ethereal "Ethereal")
+
+As of March 2020, Bit-Genie isn't a top-tier chess engine, but we're getting there.
+
+# Usage
+Bit-Genie is **not** a complete chess software, but a chess engine which still needs a GUI if you don't prefer writing and reading [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface "UCI") commands through the terminal. There are plenty of free softwares available online, here are two common ones
+- [Cute Chess](https://github.com/cutechess/cutechess "Cute Chess")
+- [Arena Chess GUI](http://www.playwitharena.de/)
+
+
+# Build 
+Bit-Genie comes with a [makefile](https://github.com/Aryan1508/Bit-Genie/blob/master/Bit-Genie/makefile "makefile") that you can use to build your own binaries. 
+
+
+# Contributing
+
+If you have any ideas/questions, feel free to reach out to [me](aryanparekh1508@gmail.com), I'm ready to help. 
+
+-------------
+
+# Acknowledgements
+
+The development wouldn't have been possible if not for the huge resources available online like the [Chess programming Wiki](https://www.chessprogramming.org/Main_Page "Chess Programming Wiki"). I would like the following chess engines and their authors for their support. Their works have influenced the progress of Bit-Genie greatly
+ - [Ethereal](https://github.com/AndyGrant/Ethereal)
+ - [Weiss](https://github.com/TerjeKir/weiss)
+ - [Halogen](https://github.com/KierenP/Halogen)
+ - [Koisvisto](https://github.com/Luecx/Koivisto)
+ - [Drofa](https://github.com/justNo4b/Drofa)
+ - [Stockfish](https://github.com/official-stockfish/Stockfish)
