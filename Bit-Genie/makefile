@@ -1,4 +1,4 @@
-EXE = Bit_Genie.exe
+EXE = Bit-Genie.exe
 
 SOURCES = $(wildcard src/*.cpp)
 
