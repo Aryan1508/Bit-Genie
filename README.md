@@ -31,8 +31,9 @@ If you have any ideas/questions, feel free to reach out to [me](aryanparekh1508@
 # Acknowledgements
 
 The development wouldn't have been possible if not for the huge resources available online like the [Chess programming Wiki](https://www.chessprogramming.org/Main_Page "Chess Programming Wiki"). I would like the following chess engines and their authors for their support. Their works have influenced the progress of Bit-Genie greatly
+ 
+ - [Weiss](https://github.com/TerjeKir/weiss) (aiding in eval.cpp with tuned evaluation scores)
  - [Ethereal](https://github.com/AndyGrant/Ethereal)
- - [Weiss](https://github.com/TerjeKir/weiss) (Resposible for evaluation scores in eval.cpp)
  - [Halogen](https://github.com/KierenP/Halogen)
  - [Koivisto](https://github.com/Luecx/Koivisto)
  - [Drofa](https://github.com/justNo4b/Drofa)
