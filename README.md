@@ -19,7 +19,7 @@ Bit-Genie comes with a [makefile](https://github.com/Aryan1508/Bit-Genie/blob/ma
 
 ```
 cd Bit-Genie
-make clean 
+make 
 ```
 
 # Contributing
