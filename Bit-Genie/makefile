@@ -15,6 +15,10 @@ $(EXE): $(OBJECTS)
 
 -include $(DEPENDS)
 
+clean:
+	rm src/*.o ($OBJECTS)
+	rm src/*.d ($DEPENDS)
+
 re: clean all
 
 .PHONY: all clean re
