@@ -30,7 +30,7 @@ TTable::TTable()
 
 void TTable::resize(int mb)
 {
-	entries.resize(mb_to_b(mb), TEntry());
+	entries.resize(mb_to_b(mb) / sizeof TEntry, TEntry());
 	printf("Hash table initialized with %d Mb ( %llu entries )\n", mb, entries.size());
 }
 
