@@ -220,7 +220,7 @@ namespace
 		}
 		else
 		{
-			o << "cp " << score / get_score(wPawn) * 100;
+			o << "cp " << int(score / float(get_score(wPawn)) * 100);
 		}
 		return o.str();
 	}
