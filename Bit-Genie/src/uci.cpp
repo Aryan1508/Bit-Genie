@@ -114,10 +114,16 @@ void uci_input_loop(int argc, char** argv)
 					search.limits.movetime = std::numeric_limits<int64_t>::max();
 
 				else
+				{
+					search.limits.time_set = true;
 					search.limits.movetime = t / options.movestogo + inc - 50;
+				}
 			}
 			else
+			{
 				search.limits.movetime = options.movetime - 50;
+				search.limits.time_set = true;
+			}
 
 			search_position(position, search, table);
 		}
