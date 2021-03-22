@@ -68,7 +68,7 @@ void uci_input_loop(int argc, char** argv)
 			Position temp = position;
 
 			temp.history.total = 0;
-			for (std::string move : moves)
+			for (std::string const& move : moves)
 			{
 				if (!temp.apply_move(move))
 				{

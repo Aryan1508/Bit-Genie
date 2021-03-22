@@ -266,6 +266,9 @@ void Position::perft(int depth, uint64_t& nodes, bool root)
 
 bool Position::move_is_legal(Move move)
 {
+	if (!move)
+		return false;
+
 	Square from = move_from(move);
 	Square to = move_to(move);
 
@@ -297,6 +300,17 @@ bool Position::move_is_legal(Move move)
 			uint64_t queens = pieces.bitboards[Queen] & enemy;
 
 			Square king = get_lsb(pieces.bitboards[King] & friend_bb());
+
+			if (king == 80)
+			{
+				std::cout << *this;
+
+				for (int i = 0; i < history.total; i++)
+				{
+					std::cout << print_move(history.history[i].move) << std::endl;
+				}
+				__debugbreak();
+			}
 
 			bishops |= queens;
 			rooks |= queens;
@@ -653,7 +667,7 @@ bool Position::move_exists(Move move)
 
 bool Position::move_is_pseudolegal(Move move)
 {
-	if (!move)
+	if (!move_without_score(move))
 		return false;
 
 	Square from    = move_from(move);
@@ -716,7 +730,7 @@ bool Position::move_is_pseudolegal(Move move)
 				Square cap_right = Square(from + forward + Direction::east);
 				Square cap_left  = Square(from + forward + Direction::west);
 
-				return (to == cap_right || to == cap_left);
+				return (to == cap_right || to == cap_left); // ?? teleport
 			}
 		}
 

@@ -18,6 +18,8 @@
 #include "attacks.h"
 #include "uci.h"
 #include "zobrist.h"
+#include "position.h"
+#include "move.h"
 
 int main(int argc, char** argv)
 {

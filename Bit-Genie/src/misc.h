@@ -16,11 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include <cassert>
 #include <chrono>
 #include <iostream>
 #include <stdint.h>
 #include <type_traits>
+#include <cassert>
+
 
 constexpr int total_pieces = 6;
 constexpr int total_colors = 2;

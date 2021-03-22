@@ -125,7 +125,7 @@ MovePicker::MovePicker(Position& p, Search& s, TTable& tt)
 bool MovePicker::next(Move& move)
 {
 	auto can_move = [&](Move m) {
-		return position->move_is_legal(m) && position->move_is_pseudolegal(m);
+		return position->move_is_pseudolegal(m) && position->move_is_legal(m);
 	};
 
 	if (stage == Stage::HashMove)
