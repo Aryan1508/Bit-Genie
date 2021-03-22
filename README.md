@@ -24,7 +24,7 @@ make
 
 # Contributing
 
-If you have any ideas/questions, feel free to reach out to [me](aryanparekh1508@gmail.com), I'm ready to help. 
+If you have any ideas/questions, feel free to reach out to me, I'm ready to help. 
 
 -------------
 
