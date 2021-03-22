@@ -1,6 +1,6 @@
 /*
   Bit-Genie is an open-source, UCI-compliant chess engine written by 
-  Aryan Parekh - https://github.com/Aryan1508/Bit-Genie>    
+  Aryan Parekh - https://github.com/Aryan1508/Bit-Genie    
 
   Bit-Genie is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
