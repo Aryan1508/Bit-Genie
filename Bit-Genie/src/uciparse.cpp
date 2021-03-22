@@ -188,7 +188,7 @@ std::pair<std::string, std::string>
 				name = std::move(token);
 		}
 
-		if (token == "value")
+		else if (token == "value")
 		{
 			stream >> token;
 			value = std::move(tolower(token));

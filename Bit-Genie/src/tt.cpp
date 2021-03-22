@@ -31,7 +31,8 @@ TTable::TTable()
 void TTable::resize(int mb)
 {
 	entries.resize(mb_to_b(mb) / sizeof(TEntry), TEntry());
-	printf("Hash table initialized with %d Mb ( %llu entries )\n", mb, entries.size());
+	std::cout << "Hash table initialized with " << mb << " MB. ";
+	std::cout << "Total entires: " << entries.size() << std::endl;
 }
 
 void TTable::add(Position const& position, Move move)

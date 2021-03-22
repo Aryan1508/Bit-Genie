@@ -251,12 +251,13 @@ namespace
 	void print_info_string(Position& position, SearchResult& result, TTable& tt, Search& search, int depth)
 	{
 		using namespace std::chrono;
-		std::printf("info depth %d seldepth %d nodes %llu score %s time %lld pv ",
-					depth,
-					search.info.seldepth,
-					search.info.nodes,
-					print_score(result.score).c_str(),
-					duration_cast<milliseconds>(search.limits.stopwatch.elapsed_time()).count());
+		std::cout << "info";
+		std::cout << " depth " << depth;
+		std::cout << " seldepth " << search.info.seldepth;
+		std::cout << " nodes " << search.info.nodes;
+		std::cout << " score " << print_score(result.score);
+		std::cout << " time " << duration_cast<milliseconds>(search.limits.stopwatch.elapsed_time()).count();
+		std::cout << " pv ";
 
 		for (auto m : get_pv(position, tt, depth))
 		{

@@ -88,11 +88,20 @@ bool Position::set_fen(std::string_view fen)
 	Position temp = *this;
 	reset();
 
+	
 	std::vector<std::string> parts = split_string(fen, ' ');
 
+	if (!(parts.size() >=  4 && parts.size() <= 6))
+		return false;
+
+
 	bool valid = pieces.parse_fen_board(parts[0]) && parse_fen_side(parts[1])
-		&& castle_rights.parse_fen(parts[2]) && parse_fen_ep(parts[3])
-		&& parse_fen_hmn(parts[4]);
+		&& castle_rights.parse_fen(parts[2]) && parse_fen_ep(parts[3]);
+
+	if (parts.size() == 5)
+		valid = valid && parse_fen_hmn(parts[4]);
+	else
+		half_moves = 0;
 
 	if (!valid)
 	{
@@ -101,6 +110,7 @@ bool Position::set_fen(std::string_view fen)
 	}
 
 	key.generate(*this);
+	history.total = 0;
 	return valid;
 }
 
