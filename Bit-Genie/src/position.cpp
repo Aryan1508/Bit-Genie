@@ -726,7 +726,7 @@ bool Position::move_is_pseudolegal(Move move)
 			if (to != ep_sq)
 				return false;
 
-			if (!(BitMask::neighbor_files[ep_sq]) & (1ull << from))
+			if (!((BitMask::neighbor_files[ep_sq]) & (1ull << from)))
 				return false;
 
 			captured = pieces.squares[to ^ 8];
