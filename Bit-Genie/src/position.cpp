@@ -727,10 +727,7 @@ bool Position::move_is_pseudolegal(Move move)
 			// Already confirmed that captured piece isn't ours
 			else
 			{
-				Square cap_right = Square(from + forward + Direction::east);
-				Square cap_left  = Square(from + forward + Direction::west);
-
-				return (to == cap_right || to == cap_left); // ?? teleport
+				return test_bit(to, BitMask::pawn_attacks[side][from]);
 			}
 		}
 
@@ -738,6 +735,9 @@ bool Position::move_is_pseudolegal(Move move)
 		else
 		{
 			if (to != ep_sq)
+				return false;
+
+			if (!(BitMask::neighbor_files[ep_sq]) & (1ull << from))
 				return false;
 
 			captured = pieces.squares[to ^ 8];
