@@ -301,17 +301,6 @@ bool Position::move_is_legal(Move move)
 
 			Square king = get_lsb(pieces.bitboards[King] & friend_bb());
 
-			if (king == 80)
-			{
-				std::cout << *this;
-
-				for (int i = 0; i < history.total; i++)
-				{
-					std::cout << print_move(history.history[i].move) << std::endl;
-				}
-				__debugbreak();
-			}
-
 			bishops |= queens;
 			rooks |= queens;
 
