@@ -91,12 +91,6 @@ private:
 
 	bool parse_fen_ep(std::string_view);
 
-	Piece& save(Move = NullMove);
-
-	void restore();
-
-	void restore(Move&, Piece&);
-
 	inline void switch_players()
 	{
 		side = !side;
