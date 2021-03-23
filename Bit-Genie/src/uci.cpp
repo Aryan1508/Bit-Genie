@@ -24,6 +24,8 @@
 #include "stringparse.h"
 #include "benchmark.h"
 
+const char* version = "1.1";
+
 void uci_input_loop(int argc, char** argv)
 {
 	std::cout << "Bit Genie by Aryan Parekh" << std::endl;
@@ -47,7 +49,7 @@ void uci_input_loop(int argc, char** argv)
 
 		else if (command == UciCommands::uci)
 		{
-			std::cout << "id name Bit-Genie 1.0.0" << std::endl;
+			std::cout << "id name Bit-Genie " << version << std::endl;
 			std::cout << "id author Aryan Parekh" << std::endl;
 			std::cout << "option name Hash type spin default 2 min 2 max 3000" << std::endl;
 			std::cout << "option name Clear Hash type button" << std::endl;
