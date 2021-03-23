@@ -116,7 +116,7 @@ void uci_input_loop(int argc, char** argv)
 				else
 				{
 					search.limits.time_set = true;
-					search.limits.movetime = t / options.movestogo + inc - 50;
+					search.limits.movetime = t / options.movestogo - 50;
 				}
 			}
 			else
