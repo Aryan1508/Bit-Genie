@@ -141,7 +141,7 @@ namespace
 		{
 			position.apply_null_move(search.info.ply);
 
-			int score = -pvs(position, search, tt, depth - 4, -beta, -beta + 1, false).score;
+			int score = -pvs(position, search, tt, depth - 4, -alpha, -alpha - 1, false).score;
 
 			position.revert_null_move(search.info.ply);
 
