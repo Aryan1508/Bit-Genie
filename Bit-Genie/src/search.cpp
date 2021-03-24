@@ -132,25 +132,6 @@ namespace
 			return 0;
 
 		bool in_check = position.king_in_check();
-		int static_eval = eval_position(position);
-
-
-		if (do_null && search.info.depth >= 4
-			&& !is_pv(alpha, beta) && search.info.ply
-			&& !in_check && static_eval >= beta)
-		{
-			position.apply_null_move(search.info.ply);
-
-			int score = -pvs(position, search, tt, depth - 4, -alpha, -alpha - 1, false).score;
-
-			position.revert_null_move(search.info.ply);
-
-			if (search.limits.stopped)
-				return 0;
-
-			if (score >= beta)
-				return beta;
-		}
 
 		SearchResult result;
 	
@@ -169,7 +150,7 @@ namespace
 
 			int score = 0;
 			if (move_num == 1)
-				score = -pvs(position, search, tt, depth - 1, -beta, -alpha).score;
+				score = -pvs(position, search, tt, depth - 1, -beta, -alpha, false).score;
 			else
 			{
 				score = -pvs(position, search, tt, depth - 1, -alpha - 1, -alpha).score;
