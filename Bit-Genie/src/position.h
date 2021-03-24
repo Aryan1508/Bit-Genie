@@ -42,15 +42,15 @@ public:
 
 	void apply_move(Move);
 
+	void apply_move(Move, int& ply);
+
 	void revert_move();
 
-	void apply_null_move(int& search_ply);
+	void revert_move(int& ply);
 
-	void revert_null_move(int& search_ply);
+	void apply_null_move(int& ply);
 
-	void apply_move(Move, int& search_ply);
-
-	void revert_move(int& search_ply);
+	void revert_null_move(int& ply);
 
 	bool move_was_legal() const;
 
@@ -65,8 +65,6 @@ public:
 	void perft(int, uint64_t&, bool = true);
 
 	bool king_in_check() const;
-
-	bool should_apply_null() const;
 
 	friend std::ostream& operator<<(std::ostream&, Position const&);
 public:
@@ -113,6 +111,12 @@ private:
 	void revert_promotion(Move, Piece);
 
 	void update_ep(Square from, Square to);
+
+	PositionHistory::Undo& save(Move = NullMove);
+
+	void restore();
+
+	void restore(Move&, Piece&);
 public:
 	Color side;
 	int half_moves;

@@ -49,6 +49,11 @@ namespace
 		{}
 	};
 
+	bool is_pv(int alpha, int beta)
+	{
+		return beta != alpha - 1;
+	}
+
 	int qsearch(Position& position, Search& search, TTable& tt, int alpha, int beta)
 	{
 		if (search.limits.stopped)
@@ -85,11 +90,11 @@ namespace
 			if (move_score(move) < 0)
 				break;
 
-			position.apply_move(move);
-			search.info.ply++;
+			position.apply_move(move, search.info.ply);
+
 			int score = -qsearch(position, search, tt, -beta, -alpha);
-			search.info.ply--;
-			position.revert_move();
+
+			position.revert_move(search.info.ply);
 
 			if (search.limits.stopped)
 				return 0;
@@ -104,7 +109,7 @@ namespace
 	}
 
 	SearchResult pvs(Position& position, Search& search, TTable& tt,
-						 int depth, int alpha = MinEval, int beta = MaxEval)
+						 int depth, int alpha = MinEval, int beta = MaxEval, bool do_null = true)
 	{
 		if (search.limits.stopped)
 			return 0;
@@ -126,6 +131,27 @@ namespace
 		if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
 			return 0;
 
+		bool in_check = position.king_in_check();
+		int static_eval = eval_position(position);
+
+
+		if (do_null && search.info.depth >= 4
+			&& !is_pv(alpha, beta) && search.info.ply
+			&& !in_check && static_eval >= beta)
+		{
+			position.apply_null_move(search.info.ply);
+
+			int score = -pvs(position, search, tt, depth - 4, -beta, -beta + 1, false).score;
+
+			position.revert_null_move(search.info.ply);
+
+			if (search.limits.stopped)
+				return 0;
+
+			if (score >= beta)
+				return beta;
+		}
+
 		SearchResult result;
 	
 		int move_num = 0;
@@ -139,8 +165,7 @@ namespace
 		for (Move move; picker.next(move);)
 		{
 			move_num++;
-			position.apply_move(move);
-			search.info.ply++;
+			position.apply_move(move, search.info.ply);
 
 			int score = 0;
 			if (move_num == 1)
@@ -153,9 +178,7 @@ namespace
 					score = -pvs(position, search, tt, depth - 1, -beta, -score).score;
 			}
 
-			search.info.ply--;
-			position.revert_move();
-
+			position.revert_move(search.info.ply);
 
 			if (search.limits.stopped)
 				return 0;
@@ -184,7 +207,7 @@ namespace
 
 		if (move_num == 0)
 		{
-			if (position.king_in_check())
+			if (in_check)
 				return search.info.ply - MateEval;
 
 			else

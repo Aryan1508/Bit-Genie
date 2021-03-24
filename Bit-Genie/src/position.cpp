@@ -564,15 +564,7 @@ void Position::revert_promotion(Move move, Piece captured)
 
 void Position::apply_move(Move move)
 {
-	auto& undo = history.current();
-
-	undo.castle = castle_rights;
-	undo.ep_sq = ep_sq;
-	undo.half_moves = half_moves;
-	undo.key = key;
-	undo.move = move;
-
-	history.total++;
+	auto& undo = save(move);
 
 	if (ep_sq != Square::bad_sq)
 		key.hash_ep(ep_sq);
@@ -599,27 +591,24 @@ void Position::apply_move(Move move)
 
 void Position::revert_move()
 {
-	auto& undo = history.previous();
-	history.total--;
+	Move move = NullMove;
+	Piece captured = Empty;
 
-	key = undo.key;
-	ep_sq = undo.ep_sq;
-	half_moves = undo.half_moves;
-	castle_rights = undo.castle;
+	restore(move, captured);
 
-	MoveFlag type = move_flag(undo.move);
+	MoveFlag type = move_flag(move);
 
 	if (type == MoveFlag::normal)
-		revert_normal_move(undo.move, undo.captured);
+		revert_normal_move(move, captured);
 
 	else if (type == MoveFlag::enpassant)
-		revert_enpassant(undo.move, undo.captured);
+		revert_enpassant(move, captured);
 
 	else if (type == MoveFlag::castle)
-		revert_castle(undo.move);
+		revert_castle(move);
 
 	else
-		revert_promotion(undo.move, undo.captured);
+		revert_promotion(move, captured);
 
 	switch_players();
 }
@@ -754,4 +743,75 @@ bool Position::move_is_pseudolegal(Move move)
 	}
 
 	return false;
+}
+
+void Position::apply_move(Move move, int& ply)
+{
+	ply++;
+	apply_move(move);
+}
+
+void Position::revert_move(int& ply)
+{
+	ply--;
+	revert_move();
+}
+
+PositionHistory::Undo& Position::save(Move move)
+{
+	auto& undo = history.current();
+
+	undo.move   = move;
+	undo.key    = key;
+	undo.ep_sq  = ep_sq;
+	undo.castle = castle_rights;
+	undo.half_moves = half_moves;
+
+	history.total++;
+	
+	return undo;
+}
+
+void Position::restore()
+{
+	auto& undo = history.previous();
+
+	key = undo.key;
+	ep_sq = undo.ep_sq;
+	castle_rights = undo.castle;
+	half_moves = undo.half_moves;
+
+	history.total--;
+}
+
+void Position::restore(Move& move, Piece& captured)
+{
+	auto& undo = history.previous();
+
+	key = undo.key;
+	ep_sq = undo.ep_sq;
+	castle_rights = undo.castle;
+	half_moves = undo.half_moves;
+	move = undo.move;
+	captured = undo.captured;
+
+	history.total--;
+}
+
+void Position::apply_null_move(int& ply)
+{
+	ply++;
+	save();
+
+	if (ep_sq != bad_sq)
+		key.hash_ep(ep_sq);
+	key.hash_side();
+	switch_players();
+}
+
+void Position::revert_null_move(int& ply)
+{
+	ply--;
+	restore();
+	switch_players();
 }
