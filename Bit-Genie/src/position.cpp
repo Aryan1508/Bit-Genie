@@ -673,9 +673,9 @@ bool Position::move_is_pseudolegal(Move move)
 
 	if (flag == MoveFlag::castle)
 	{
-		MoveGenerator<true> gen;
+		MoveGenerator<false> gen;
 		gen.generate_castle(*this);
-		return gen.movelist.find(move);
+		return !king_in_check() && gen.movelist.find(move);
 	}
 
 	// Validating pawn moves
