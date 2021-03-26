@@ -24,6 +24,9 @@
 #include <sstream>
 #include <unordered_map>
 
+
+std::atomic_bool SEARCH_ABORT = false;
+
 namespace
 {
 	std::unordered_map<int, int> cutoff_table;
@@ -255,7 +258,7 @@ namespace
 
 		TEntry* entry = &tt.retrieve(position);
 
-		while (entry->hash == position.key.data() && depth--)
+		while (entry->hash == position.key.data() && depth != 0)
 		{
 			if (position.move_exists((Move)entry->move))
 			{
@@ -302,9 +305,10 @@ void print_cutoffs(Search& search)
 	std::cout << '\n';
 }
 
-void search_position(Position& position, Search& search, TTable& tt)
+void search_position(Position& position, Search search, TTable& tt)
 {
 	cutoff_table.clear();
+	SEARCH_ABORT = false;
 
 	Move best_move = NullMove;
 	for (int depth = 1;

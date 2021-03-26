@@ -15,22 +15,10 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once
-#include "searchinfo.h"
 #include "searchlimits.h"
-#include "killer.h"
-#include "shistory.h"
-#include <atomic>
+#include "search.h"
 
-struct Search
+void SearchLimits::update()
 {
-	SearchInfo   info;
-	SearchLimits limits;
-	Killers  killers;
-	SHistory history;
-};
-
-void print_cutoffs(Search&);
-void search_position(Position&, Search, TTable& tt);
-
-extern std::atomic_bool SEARCH_ABORT;
+	stopped = SEARCH_ABORT || (time_set && std::chrono::duration_cast<std::chrono::milliseconds>(stopwatch.elapsed_time()).count() >= movetime);
+}

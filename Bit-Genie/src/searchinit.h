@@ -16,21 +16,17 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "searchinfo.h"
-#include "searchlimits.h"
-#include "killer.h"
-#include "shistory.h"
-#include <atomic>
+#include "misc.h"
+#include <thread>
 
-struct Search
+
+class SearchInit
 {
-	SearchInfo   info;
-	SearchLimits limits;
-	Killers  killers;
-	SHistory history;
+public:
+	SearchInit() = default;
+
+	void begin(Search&, Position&, TTable&);
+	void end();
+private:
+	std::thread worker;
 };
-
-void print_cutoffs(Search&);
-void search_position(Position&, Search, TTable& tt);
-
-extern std::atomic_bool SEARCH_ABORT;

@@ -23,15 +23,17 @@
 #include "eval.h"
 #include "stringparse.h"
 #include "benchmark.h"
+#include "searchinit.h"
 
 const char* version = "1.1";
 
 void uci_input_loop(int argc, char** argv)
 {
 	std::cout << "Bit Genie by Aryan Parekh" << std::endl;
-	UciParser command;
-	Position position;
-	TTable table(2);
+	UciParser  command;
+	Position   position;
+	TTable     table(2);
+	SearchInit worker;
 
 	if (argc > 1 && !strncmp(argv[1], "bench", 5)) {
 		BenchMark::bench(position, table);
@@ -42,7 +44,11 @@ void uci_input_loop(int argc, char** argv)
 	{
 		command.take_input();
 
-		if (command == UciCommands::quit)  break;
+		if (command == UciCommands::quit)
+		{
+			worker.end();
+			break;
+		}
 
 		else if (command == UciCommands::isready)
 			std::cout << "readyok" << std::endl;
@@ -109,9 +115,9 @@ void uci_input_loop(int argc, char** argv)
 
 			if (options.movetime == -1)
 			{
-				auto& t   = position.side == White ? options.wtime : options.btime;
-				auto& inc = position.side == White ? options.winc  : options.binc;
-			
+				auto& t = position.side == White ? options.wtime : options.btime;
+				auto& inc = position.side == White ? options.winc : options.binc;
+
 				if (t == -1)
 					search.limits.movetime = std::numeric_limits<int64_t>::max();
 
@@ -127,8 +133,11 @@ void uci_input_loop(int argc, char** argv)
 				search.limits.time_set = true;
 			}
 
-			search_position(position, search, table);
+			worker.begin(search, position, table);
 		}
+
+		else if (command == UciCommands::stop)
+			worker.end();
 
 		else if (command == UciCommands::setoption)
 		{
