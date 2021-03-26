@@ -220,7 +220,7 @@ namespace
 		else
 			tt.add(position, result.best_move, alpha, depth, TEFlag::upper);
 
-		return { alpha, result.best_move };
+		return SearchResult(alpha, result.best_move);
 	}
 
 	int mate_distance(int score)
