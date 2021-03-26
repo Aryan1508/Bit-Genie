@@ -673,7 +673,7 @@ bool Position::move_is_pseudolegal(Move move)
 
 	if (flag == MoveFlag::castle)
 	{
-		MoveGenerator<false> gen;
+		MoveGenerator<true> gen;
 		gen.generate_castle(*this);
 		return gen.movelist.find(move);
 	}

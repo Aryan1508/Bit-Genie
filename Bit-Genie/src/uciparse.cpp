@@ -110,7 +110,8 @@ UciParser::parse_position_command() const
 			}
 			else
 			{
-				fen = command.substr(command.find("fen ") + 4, last);
+				auto start = command.find("fen ") + 4;
+				fen = command.substr(start, last - start);
 				continue;
 			}
 		}
