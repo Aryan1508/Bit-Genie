@@ -91,7 +91,7 @@ static int16_t see(Position& position, Move move)
 
 static Move get_hash_move(Position& position, TTable& tt)
 {
-	return tt.retrieve(position).move;
+	return (Move)tt.retrieve(position).move;
 }
 
 template<bool quiet = false>

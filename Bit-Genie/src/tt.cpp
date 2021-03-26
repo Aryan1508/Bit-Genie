@@ -35,11 +35,11 @@ void TTable::resize(int mb)
 	std::cout << "Total entires: " << entries.size() << std::endl;
 }
 
-void TTable::add(Position const& position, Move move)
+void TTable::add(Position const& position, Move move, int score, uint8_t depth, TEFlag flag)
 {
 	uint64_t hash = position.key.data();
 	uint64_t index = hash % entries.size();
-	entries[index] = { hash, move };
+	entries[index] = TEntry(hash, score, move, depth, flag);
 }
 
 TEntry& TTable::retrieve(Position const& position)

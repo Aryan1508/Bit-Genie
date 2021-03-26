@@ -111,6 +111,26 @@ namespace
 	SearchResult pvs(Position& position, Search& search, TTable& tt,
 						 int depth, int alpha = MinEval, int beta = MaxEval, bool do_null = true)
 	{
+		TEntry& entry = tt.retrieve(position);
+
+		if (entry.depth >= depth && entry.hash == position.key.data())
+		{
+			int min = alpha, max = beta;
+
+			if (entry.flag == TEFlag::exact)
+				return SearchResult(entry.score, (Move)entry.move);
+
+			if (entry.flag == TEFlag::upper)
+				min = std::max(min, entry.score);
+
+			else if (entry.flag == TEFlag::lower)
+				max = std::min(max, entry.score);
+
+			if (min >= max)
+				return SearchResult(entry.score, (Move)entry.move);
+
+		}
+
 		if (search.limits.stopped)
 			return 0;
 
@@ -195,10 +215,17 @@ namespace
 				return 0;
 		}
 
-		if (original != alpha)
-		{
-			tt.add(position, result.best_move);
-		}
+		if (search.limits.stopped)
+			return 0;
+
+		TEFlag flag = result.score <= original ? TEFlag::upper
+			: result.score >= beta ? TEFlag::lower : TEFlag::exact;
+
+		entry.depth = depth;
+		entry.flag  = flag;
+		entry.score = result.score;
+		entry.move  = result.best_move;
+		entry.hash  = position.key.data();
 
 		return { alpha, result.best_move };
 	}
@@ -237,10 +264,10 @@ namespace
 
 		while (entry->hash == position.key.data() && depth)
 		{
-			if (position.move_exists(entry->move))
+			if (position.move_exists((Move)entry->move))
 			{
-				position.apply_move(entry->move);
-				pv.push_back(entry->move);
+				position.apply_move((Move)entry->move);
+				pv.push_back((Move)entry->move);
 				depth--;
 			}
 			else
@@ -305,7 +332,7 @@ void search_position(Position& position, Search& search, TTable& tt)
 		}
 
 		print_info_string(position, result, tt, search, depth);
-		best_move = tt.retrieve(position).move;
+		best_move = result.best_move;
 	}
 	std::cout << "bestmove " << print_move(best_move) << std::endl;
 }

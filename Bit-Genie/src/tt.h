@@ -20,10 +20,24 @@
 #include "move.h"
 #include <vector>
 
+enum class TEFlag
+{
+	none, lower, upper, exact
+};
+
 struct TEntry
 {
-	uint64_t hash = 0;
-	Move     move = NullMove;
+	uint64_t hash  = 0;
+	int32_t  score = 0;
+	uint16_t move  = 0;
+	uint8_t  depth = 0;
+	TEFlag   flag = TEFlag::none;
+
+	TEntry() = default;
+
+	TEntry(uint64_t h, int32_t s, Move m, uint8_t d, TEFlag fl)
+		: hash(h), score(s), move(move_without_score(m)), depth(d), flag(fl)
+	{}
 };
 
 class TTable
@@ -34,10 +48,10 @@ public:
 	TTable(int mb) { resize(mb); }
 
 	void resize(int);
-	void add(Position const&, Move);
+	void add(Position const&, Move, int score, uint8_t depth, TEFlag);
 	void reset()
 	{
-		std::fill(entries.begin(), entries.end(), TEntry{ 0, NullMove });
+		std::fill(entries.begin(), entries.end(), TEntry());
 	}
 
 	TEntry& retrieve(Position const&);
