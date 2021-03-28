@@ -306,6 +306,31 @@ static int material_balance(Position const& position)
 	return score;
 }
 
+static int get_phase(Position const& position)
+{
+	constexpr int knight_phase = 1;
+	constexpr int bishop_phase = 1;
+	constexpr int rook_phase = 2;
+	constexpr int queen_phase = 4;
+	
+	int phase = 24;
+
+	uint64_t knights = position.pieces.bitboards[Knight];
+	uint64_t bishops = position.pieces.bitboards[Bishop];
+	uint64_t rooks = position.pieces.bitboards[Rook];
+	uint64_t queens = position.pieces.bitboards[Queen];
+
+	phase -= popcount64(knights) * knight_phase;
+	phase -= popcount64(bishops) * bishop_phase;
+	phase -= popcount64(queens) * queen_phase;
+	phase -= popcount64(rooks) * rook_phase;
+	
+	return phase;
+}
+
+#define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
+#define eg_score(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
+
 int eval_position(Position const& position)
 {
 	int score = 0;
@@ -319,6 +344,10 @@ int eval_position(Position const& position)
 	score += evaluate_piece<Rook>(position, evaluate_rook);
 	score += evaluate_piece<Bishop>(position, evaluate_bishop);
 	score += evaluate_piece<Queen>(position, evaluate_queen);
+
+	int phase = get_phase(position);
+
+	score = ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase)) / 256;
 
 	return position.side == White ? score : -score;
 }

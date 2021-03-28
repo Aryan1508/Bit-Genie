@@ -21,6 +21,12 @@
 #define make_score(mg, eg) ((int)((unsigned int)(eg) << 16) + (mg))
 #define S(mg, eg) make_score((mg), (eg))
 
+enum {
+	PawnScore = 100, KnightScore = 300,
+	BishopScore = 325, RookScore = 520,
+	QueenScore = 950,
+};
+
 constexpr int get_score(Piece piece)
 {
 	constexpr int pawn   = S(100, 100);

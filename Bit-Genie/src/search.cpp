@@ -52,15 +52,25 @@ namespace
 		{}
 	};
 
-	bool is_pv(int alpha, int beta)
+	int delta_prune_margin(Position const& position)
 	{
-		return beta != alpha - 1;
+		uint64_t queens = position.pieces.get_piece_bb<Queen>(!position.side);
+		uint64_t rooks = position.pieces.get_piece_bb<Rook>(!position.side);
+		uint64_t knights = position.pieces.get_piece_bb<Knight>(!position.side);
+		uint64_t bishops = position.pieces.get_piece_bb<Bishop>(!position.side);
+
+		knights |= bishops;
+
+		return queens ? QueenScore :
+			rooks ? RookScore :
+			knights ? KnightScore : PawnScore;			
 	}
 
 	int qsearch(Position& position, Search& search, TTable& tt, int alpha, int beta)
 	{
 		if (search.limits.stopped)
 			return 0;
+
 		search.info.total_nodes++;
 		search.info.nodes++;
 
@@ -79,6 +89,9 @@ namespace
 
 		if (stand_pat >= beta)
 			return beta;
+
+		if (stand_pat + delta_prune_margin(position) < alpha)
+			return alpha;
 
 		alpha = std::max(alpha, stand_pat);
 
@@ -247,7 +260,7 @@ namespace
 		}
 		else
 		{
-			o << "cp " << int(score / float(get_score(wPawn)) * 100);
+			o << "cp " << int(score / 100.0f);
 		}
 		return o.str();
 	}
