@@ -328,8 +328,14 @@ static int get_phase(Position const& position)
 	return phase;
 }
 
+static inline int scale_score(Position const& position, int score)
+{
 #define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
 #define eg_score(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
+	int phase = get_phase(position);
+	return ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase)) / 256;
+}
+
 
 int eval_position(Position const& position)
 {
@@ -345,9 +351,7 @@ int eval_position(Position const& position)
 	score += evaluate_piece<Bishop>(position, evaluate_bishop);
 	score += evaluate_piece<Queen>(position, evaluate_queen);
 
-	int phase = get_phase(position);
-
-	score = ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase)) / 256;
+	score = scale_score(position, score);
 
 	return position.side == White ? score : -score;
 }
