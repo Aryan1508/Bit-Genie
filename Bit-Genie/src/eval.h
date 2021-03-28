@@ -27,6 +27,11 @@ enum {
 	QueenScore = 950,
 };
 
+constexpr int piece_scores[13]{
+	PawnScore, KnightScore, BishopScore, RookScore, QueenScore, 0,
+	PawnScore, KnightScore, BishopScore, RookScore, QueenScore, 0,
+};
+
 constexpr int get_score(Piece piece)
 {
 	constexpr int pawn   = S(100, 100);

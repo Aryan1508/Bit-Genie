@@ -55,7 +55,7 @@ namespace
 	int delta_prune_margin(Position const& position)
 	{
 		uint64_t queens = position.pieces.get_piece_bb<Queen>(!position.side);
-		uint64_t rooks = position.pieces.get_piece_bb<Rook>(!position.side);
+		uint64_t rooks  = position.pieces.get_piece_bb<Rook>(!position.side);
 		uint64_t knights = position.pieces.get_piece_bb<Knight>(!position.side);
 		uint64_t bishops = position.pieces.get_piece_bb<Bishop>(!position.side);
 
@@ -105,6 +105,9 @@ namespace
 		{
 			if (move_score(move) < 0)
 				break;
+
+			if (stand_pat + 60 + piece_scores[position.pieces.squares[move_to(move)]] < alpha)
+				continue;
 
 			position.apply_move(move, search.info.ply);
 
