@@ -90,9 +90,6 @@ namespace
 		if (stand_pat >= beta)
 			return beta;
 
-		if (stand_pat + delta_prune_margin(position) < alpha)
-			return alpha;
-
 		alpha = std::max(alpha, stand_pat);
 
 		SearchResult result;
@@ -105,9 +102,6 @@ namespace
 		{
 			if (move_score(move) < 0)
 				break;
-
-			if (stand_pat + 60 + piece_scores[position.pieces.squares[move_to(move)]] < alpha)
-				continue;
 
 			position.apply_move(move, search.info.ply);
 
