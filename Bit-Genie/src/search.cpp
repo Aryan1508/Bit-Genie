@@ -22,15 +22,12 @@
 #include "moveorder.h"
 #include "tt.h"
 #include <sstream>
-#include <unordered_map>
 
 
 std::atomic_bool SEARCH_ABORT = false;
 
 namespace
 {
-	std::unordered_map<int, int> cutoff_table;
-
 	enum
 	{
 		MinEval = -std::numeric_limits<int>::max(),
@@ -221,7 +218,7 @@ namespace
 			if (alpha >= beta)
 			{
 				search.info.total_cutoffs++;
-				cutoff_table[move_num]++;
+				
 				if (!move_is_capture(position, move))
 				{
 					search.history.add(position, move, depth);
@@ -323,19 +320,8 @@ namespace
 	}
 }
 
-void print_cutoffs(Search& search)
-{
-	for (int i = 1; i < 11; i++)
-	{
-		int total = cutoff_table[i];
-		std::cout << "Move " << i << ": " << std::fixed << (float(total) / search.info.total_cutoffs) * 100 << std::endl;
-	}
-	std::cout << '\n';
-}
-
 void search_position(Position& position, Search search, TTable& tt)
 {
-	cutoff_table.clear();
 	SEARCH_ABORT = false;
 
 	Move best_move = NullMove;

@@ -165,18 +165,5 @@ void uci_input_loop(int argc, char** argv)
 		{
 			std::cout << "eval: " << eval_position(position) << std::endl;
 		}
-
-		else if (command == UciCommands::printcutoffs)
-		{
-			Search search;
-			search.limits.movetime = 5000;
-			search.limits.max_depth = 64;
-			search.limits.time_set = true;
-			search.limits.stopwatch.go();
-			search.limits.stopped = false;
-
-			search_position(position, search, table);
-			print_cutoffs(search);
-		}
 	}
 }

@@ -71,9 +71,6 @@ bool UciParser::operator==(UciCommands type) const
 		case UciCommands::static_eval:
 			return command == "eval";
 
-		case UciCommands::printcutoffs:
-			return command == "cutoff";
-
 		case UciCommands::setoption:
 			return starts_with(command, "setoption");
 
