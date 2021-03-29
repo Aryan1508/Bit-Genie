@@ -49,20 +49,6 @@ namespace
 		{}
 	};
 
-	int delta_prune_margin(Position const& position)
-	{
-		uint64_t queens = position.pieces.get_piece_bb<Queen>(!position.side);
-		uint64_t rooks  = position.pieces.get_piece_bb<Rook>(!position.side);
-		uint64_t knights = position.pieces.get_piece_bb<Knight>(!position.side);
-		uint64_t bishops = position.pieces.get_piece_bb<Bishop>(!position.side);
-
-		knights |= bishops;
-
-		return queens ? QueenScore :
-			rooks ? RookScore :
-			knights ? KnightScore : PawnScore;			
-	}
-
 	int qsearch(Position& position, Search& search, TTable& tt, int alpha, int beta)
 	{
 		constexpr int delta_margin = 300;
