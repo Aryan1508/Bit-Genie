@@ -128,7 +128,7 @@ namespace
 	}
 
 	SearchResult pvs(Position& position, Search& search, TTable& tt,
-						 int depth, int alpha = MinEval, int beta = MaxEval, bool pv_node = false)
+	int depth, int alpha = MinEval, int beta = MaxEval, bool pv_node = false, bool do_null = true)
 	{
 		if (search.limits.stopped)
 			return 0;
@@ -166,6 +166,19 @@ namespace
 		}
 
 		bool in_check = position.king_in_check();
+
+		if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null)
+		{
+			position.apply_null_move(search.info.ply);
+			int score = -pvs(position, search, tt, depth - 4, -beta, -beta + 1, false, false).score;
+			position.revert_null_move(search.info.ply);
+
+			if (search.limits.stopped)
+				return 0;
+
+			if (score >= beta)
+				return beta;
+		}
 
 		SearchResult result;
 	
