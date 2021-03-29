@@ -116,7 +116,6 @@ void uci_input_loop(int argc, char** argv)
 			if (options.movetime == -1)
 			{
 				auto& t = position.side == White ? options.wtime : options.btime;
-				auto& inc = position.side == White ? options.winc : options.binc;
 
 				if (t == -1)
 					search.limits.movetime = std::numeric_limits<int64_t>::max();
