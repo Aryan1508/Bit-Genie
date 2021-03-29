@@ -20,7 +20,7 @@
 #include "move.h"
 #include <vector>
 
-enum class TEFlag
+enum class TEFlag : uint8_t
 {
 	none, lower, upper, exact
 };
