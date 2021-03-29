@@ -16,16 +16,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include <array>
-#include "bitboard.h"
-#include "castle_rights.h"
 #include "piece_manager.h"
-#include "piece.h"
+#include "castle_rights.h"
 #include "position_history.h"
-#include <string_view>
-#include "Square.h"
 #include "zobrist.h"
-#include <vector>
 
 class Position
 {

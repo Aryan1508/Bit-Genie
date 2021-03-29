@@ -16,8 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "bitboard.h"
-#include "piece.h"
+#include "misc.h"
 #include <string_view>
 
 class CastleRights

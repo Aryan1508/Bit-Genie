@@ -16,9 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "bitboard.h"
 #include "position.h"
-#include "Square.h"
 #include "magicmoves.hpp"
 
 namespace Attacks

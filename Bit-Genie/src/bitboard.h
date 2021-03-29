@@ -17,8 +17,8 @@
 */
 #pragma once
 #include "bitmask.h"
+#include "Square.h"
 #include <iostream>
-#include "misc.h"
 
 
 template<Direction dir>

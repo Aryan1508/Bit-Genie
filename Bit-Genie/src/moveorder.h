@@ -17,9 +17,6 @@
 */
 #pragma once
 #include "movegen.h"
-#include "tt.h"
-#include "killer.h"
-#include "position.h"
 
 class MovePicker
 {

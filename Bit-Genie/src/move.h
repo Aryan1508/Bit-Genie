@@ -17,9 +17,9 @@
 */
 #pragma once
 #include "misc.h"
+#include <string>
 
 #define CreateMove(from, to, type, promoted) (Move(((from)) | ((to) << 6) | ((to_int(type)) << 12) | (((promoted) - 1) << 14)))
-
 
 enum class MoveFlag : uint8_t
 {

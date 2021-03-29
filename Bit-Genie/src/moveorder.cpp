@@ -16,8 +16,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "moveorder.h"
+#include "tt.h"
 #include "search.h"
-#include "movelist.h"
 #include <algorithm>
 
 static uint64_t least_valuable_attacker(Position& position, uint64_t attackers, Color side, Piece& capturing)

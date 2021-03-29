@@ -16,10 +16,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "castle_rights.h"
-#include "move.h"
 #include "piece.h"
 #include "Square.h"
-#include <unordered_map>
+#include "bitboard.h"
+#include "move.h"
 
 CastleRights::CastleRights()
 {

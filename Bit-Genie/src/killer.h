@@ -17,9 +17,6 @@
 */
 #pragma once
 #include "misc.h"
-#include "move.h"
-#include <array>
-#include <cstring>
 
 class Killers
 {
@@ -43,5 +40,5 @@ public:
 	}
 
 private:
-	Move moves[64][2] = { NullMove };
+	Move moves[64][2] = { (Move)0 };
 };

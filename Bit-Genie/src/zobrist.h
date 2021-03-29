@@ -17,6 +17,7 @@
 */
 #pragma once
 #include "misc.h"
+
 class ZobristKey
 {
 public:

@@ -16,13 +16,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "attacks.h"
-#include "bitboard.h"
-#include "board.h"
-#include "misc.h"
-#include "move.h"
-#include "movelist.h" 
 #include "position.h"
+#include "attacks.h"
+#include "movelist.h"
+#include "board.h"
 
 enum class MoveGenType : uint8_t
 {

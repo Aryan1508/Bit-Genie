@@ -17,6 +17,8 @@
 */
 #pragma once
 #include "misc.h"
+#include <ostream>
+
 enum class File : uint8_t { A, B, C, D, E, F, G, H, total };
 enum class Rank : uint8_t { one, two, three, four, five, six, seven, eight, total };
 

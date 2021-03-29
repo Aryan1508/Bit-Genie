@@ -16,10 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include <array>
 #include "misc.h"
-#include <stdint.h>
-#include <type_traits>
+#include <string_view>
+
 enum Square : uint8_t
 {
 	A1, B1, C1, D1, E1, F1, G1, H1,
@@ -32,6 +31,7 @@ enum Square : uint8_t
 	A8, B8, C8, D8, E8, F8, G8, H8,
 	bad_sq = 100,
 };
+
 enum class Direction : int8_t
 {
 	north = 8, south = -8,

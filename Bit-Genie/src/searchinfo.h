@@ -16,11 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include <utility>
+#include <stdint.h>
 
 struct SearchInfo
 {
-
 	uint64_t total_nodes = 0;
 	uint64_t nodes = 0;
 	uint64_t total_cutoffs = 0;
