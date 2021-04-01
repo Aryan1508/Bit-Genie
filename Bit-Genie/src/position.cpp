@@ -776,10 +776,10 @@ void Position::restore()
 {
 	auto& undo = history.previous();
 
-	key = undo.key;
-	ep_sq = undo.ep_sq;
+	key           = undo.key;
+	ep_sq		  = undo.ep_sq;
 	castle_rights = undo.castle;
-	half_moves = undo.half_moves;
+	half_moves	  = undo.half_moves;
 
 	history.total--;
 }
@@ -814,4 +814,9 @@ void Position::revert_null_move(int& ply)
 	ply--;
 	restore();
 	switch_players();
+}
+
+bool Position::should_do_null() const
+{
+	return popcount64(total_occupancy()) >= 4;
 }

@@ -149,7 +149,7 @@ namespace
 
 		bool in_check = position.king_in_check();
 
-		if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null)
+		if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null && position.should_do_null())
 		{
 			position.apply_null_move(search.info.ply);
 			int score = -pvs(position, search, tt, depth - 4, -beta, -beta + 1, false, false).score;

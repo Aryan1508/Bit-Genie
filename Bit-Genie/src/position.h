@@ -56,6 +56,8 @@ public:
 
 	bool apply_move(std::string);
 
+	bool should_do_null() const;
+
 	void perft(int, uint64_t&, bool = true);
 
 	bool king_in_check() const;
