@@ -77,7 +77,7 @@ namespace BenchMark
 	void perft(Position& position, int depth)
 	{
 		uint64_t nodes = 0;
-		StopWatch watch;
+		StopWatch<> watch;
 		watch.go();
 		position.perft(depth, nodes);
 		watch.stop();

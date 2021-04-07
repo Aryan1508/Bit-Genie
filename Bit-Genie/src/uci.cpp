@@ -25,7 +25,7 @@
 #include "benchmark.h"
 #include "searchinit.h"
 
-const char* version = "2";
+const char* version = "2.1";
 
 void uci_input_loop(int argc, char** argv)
 {
@@ -46,7 +46,8 @@ void uci_input_loop(int argc, char** argv)
 
 		if (command == UciCommands::quit)
 		{
-			worker.end();
+			if (worker.is_searching())
+				worker.end();
 			break;
 		}
 

@@ -27,6 +27,9 @@ public:
 
 	void begin(Search&, Position&, TTable&);
 	void end();
+	bool is_searching() const noexcept {
+		return worker.joinable();
+	}
 private:
 	std::thread worker;
 };

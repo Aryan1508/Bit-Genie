@@ -317,7 +317,7 @@ void search_position(Position& position, Search search, TTable& tt)
 		search.info.ply = 0;
 		search.info.nodes = 0;
 
-		auto result = pvs(position, search, tt, depth);
+		SearchResult result = pvs(position, search, tt, depth);
 
 		if (search.limits.stopped)
 		{
