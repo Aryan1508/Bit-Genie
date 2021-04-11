@@ -158,7 +158,11 @@ namespace
 				return 0;
 
 			if (score >= beta)
-				return beta;
+			{
+				depth -= 4;
+				if (depth <= 0)
+					return eval_position(position);
+			}
 		}
 
 		SearchResult result;
