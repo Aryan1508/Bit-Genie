@@ -77,7 +77,7 @@ namespace BenchMark
 	void perft(Position& position, int depth)
 	{
 		uint64_t nodes = 0;
-		StopWatch watch;
+		StopWatch<> watch;
 		watch.go();
 		position.perft(depth, nodes);
 		watch.stop();
@@ -103,7 +103,7 @@ namespace BenchMark
 		watch.stop();
 
 		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(watch.elapsed_time()).count();
-		elapsed = std::max(1ll, elapsed);
+		elapsed = std::max(static_cast<int64_t>(1ll), elapsed);
 
 		std::cout << nodes << " nodes " << int((nodes / elapsed)) << " nps" << std::endl;
 	}

@@ -23,8 +23,7 @@
 #include "tt.h"
 #include <sstream>
 
-
-std::atomic_bool SEARCH_ABORT = false;
+std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);
 
 namespace
 {
@@ -68,7 +67,7 @@ namespace
 			return eval_position(position);
 
 		if (position.history.is_drawn(position.key))
-			return 0;
+			return 2 - (search.info.total_nodes & 1);
 
 		int stand_pat = eval_position(position);
 
@@ -130,7 +129,7 @@ namespace
 			return eval_position(position);
 
 		if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
-			return 0;
+			return 1 - (search.info.total_nodes & 2);
 
 
 		TEntry const& entry = tt.retrieve(position);
@@ -318,7 +317,7 @@ void search_position(Position& position, Search search, TTable& tt)
 		search.info.ply = 0;
 		search.info.nodes = 0;
 
-		auto result = pvs(position, search, tt, depth);
+		SearchResult result = pvs(position, search, tt, depth);
 
 		if (search.limits.stopped)
 		{

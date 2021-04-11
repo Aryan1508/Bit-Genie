@@ -29,16 +29,16 @@ public:
 		std::memset(&history[0][0][0], 0, sizeof(history));
 	}
 
-	uint16_t& get(Position& position, Move move)
+	int16_t& get(Position& position, Move move) noexcept
 	{
 		return history[position.side][move_from(move)][move_to(move)];
 	}
 
-	void add(Position& position, Move move, int depth)
+	void add(Position& position, Move move, int depth) noexcept
 	{
-		history[position.side][move_from(move)][move_to(move)] += depth;
+		get(position, move) += depth * depth;		
 	}
 
 private:
-	uint16_t history[2][64][64];
+	int16_t history[2][64][64]{0};
 };
