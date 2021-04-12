@@ -26,40 +26,57 @@ namespace Attacks
 		initmagicmoves();
 	}
 
+	// Return a bitboard of the knight attacks for a 
+	// knight situated on the given square
 	inline uint64_t knight(Square sq)
 	{
 		return BitMask::knight_attacks[sq];
 	}
 
+	// Return a bitboard of the king attacks for a 
+	// king situated on the given square
 	inline uint64_t king(Square sq)
 	{
 		return BitMask::king_attacks[sq];
 	}
 
+	// Return a bitboard of the bishop attacks for a 
+	// bishop situated on the given square 
+	// Diagonal and anti-diagonal attacks with respect to the current occupancy
 	inline uint64_t bishop(Square sq, uint64_t occ)
 	{
 		return Bmagic(sq, occ);
 	}
 
+	// Return a bitboard of the rook attacks for a 
+	// rook situated on the given square 
+	// Vertical (file) and horizontal(rank) attacks with respect to the current occupancy
 	inline uint64_t rook(Square sq, uint64_t occ)
 	{
 		return Rmagic(sq, occ);
 	}
 
+	// Return a bitboard of the queen attacks for a 
+	// queen situated on the given square 
+
+	// Diagonal and anti-diagonal attacks with respect to the current occupancy
+	// Vertical (file) and horizontal(rank) attacks with respect to the current occupancy
 	inline uint64_t queen(Square sq, uint64_t occ)
 	{
 		return Qmagic(sq, occ);
 	}
-
+	
+	// Check whether the given square is directly attacked by any of the given color's 
+	//pieces in the position. 
 	inline bool square_attacked(Position const& position, Square sq, Color enemy, uint64_t occupancy)
 	{
 		assert(is_ok(sq));
-		uint64_t pawns = position.pieces.get_piece_bb<Pawn>(enemy);
+		uint64_t pawns   = position.pieces.get_piece_bb<Pawn>(enemy);
 		uint64_t knights = position.pieces.get_piece_bb<Knight>(enemy);
 		uint64_t bishops = position.pieces.get_piece_bb<Bishop>(enemy);
-		uint64_t rooks = position.pieces.get_piece_bb<Rook>(enemy);
-		uint64_t queens = position.pieces.get_piece_bb<Queen>(enemy);
-		uint64_t kings = position.pieces.get_piece_bb<King>(enemy);
+		uint64_t rooks   = position.pieces.get_piece_bb<Rook>(enemy);
+		uint64_t queens  = position.pieces.get_piece_bb<Queen>(enemy);
+		uint64_t kings   = position.pieces.get_piece_bb<King>(enemy);
 
 		bishops |= queens;
 		rooks |= queens;
