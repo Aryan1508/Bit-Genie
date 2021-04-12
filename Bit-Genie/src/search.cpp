@@ -66,7 +66,7 @@ namespace
 		if (search.info.ply >= MaxPly)
 			return eval_position(position);
 
-		if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply))
+		if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
 			return 0;
 
 		int stand_pat = eval_position(position);
@@ -157,11 +157,7 @@ namespace
 				return 0;
 
 			if (score >= beta)
-			{
-				depth -= 4;
-				if (depth <= 0)
-					return eval_position(position);
-			}
+                return beta;
 		}
 
 		SearchResult result;
