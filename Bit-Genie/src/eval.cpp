@@ -186,6 +186,11 @@ static inline Square psqt_sq(Square sq, Color color)
 	return color == White ? flip_square(sq) : sq;
 }
 
+// Pawn evaluation has the following aspects
+//  - piece square tables -> general value of how strong a piece is on a square
+//  - penalty for doubled pawns 
+//  - penalty for isolated pawns
+//  - bonus for passed pawns. Extra bonus if the passed pawn is on a rank close to promotion
 static int evaluate_pawn(Position const& position, Square sq, Color us)
 {
 	int score = 0;
@@ -200,6 +205,9 @@ static int evaluate_pawn(Position const& position, Square sq, Color us)
 	return score;
 }
 
+// Knight evaluation has the following aspects
+//  - piece square tables -> general value of how strong a piece is on a square
+//  - Penalise immobile knights and give bonus for knights with more squares to move on
 static int evaluate_knight(Position const& position, Square sq, Color us)
 {
 	int score = 0;
@@ -225,6 +233,11 @@ static bool is_on_semiopen_file(Position const& position, Square sq)
 	return !(file & white) || !(file & black);
 }
 
+// Rook evaluation has the following terms
+// - piece square tables -> general value of how strong a piece is on a square
+// - bonus for higher mobility and penalty for low 
+// - bonus for a rook on a semi-open file
+// - bonus for a rook on an open file
 static int evaluate_rook(Position const& position, Square sq, Color us)
 {
 	int score = 0;
@@ -237,6 +250,11 @@ static int evaluate_rook(Position const& position, Square sq, Color us)
 	return score;
 }
 
+// Queen evaluation has the following terms
+// - piece square tables -> general value of how strong a piece is on a square
+// - bonus for higher mobility and penalty for low 
+// - bonus for a queen on a semi-open file
+// - bonus for a queen on an open file
 static int evaluate_queen(Position const& position, Square sq, Color us)
 {
 	int score = 0;
@@ -249,6 +267,9 @@ static int evaluate_queen(Position const& position, Square sq, Color us)
 	return score;
 }
 
+// Bishop evaluation has the following terms
+//  - piece square tables -> general value of how strong a piece is on a square
+//  - bonus for higher mobility and penalty for low 
 static int evaluate_bishop(Position const& position, Square sq, Color us)
 {
 	int score = 0;
@@ -308,8 +329,6 @@ static int material_balance(Position const& position)
 
 static int get_phase(Position const& position)
 {
-	constexpr int knight_phase = 1;
-	constexpr int bishop_phase = 1;
 	constexpr int rook_phase = 2;
 	constexpr int queen_phase = 4;
 	
@@ -317,11 +336,11 @@ static int get_phase(Position const& position)
 
 	uint64_t knights = position.pieces.bitboards[Knight];
 	uint64_t bishops = position.pieces.bitboards[Bishop];
-	uint64_t rooks = position.pieces.bitboards[Rook];
-	uint64_t queens = position.pieces.bitboards[Queen];
+	uint64_t rooks   = position.pieces.bitboards[Rook];
+	uint64_t queens  = position.pieces.bitboards[Queen];
 
-	phase -= popcount64(knights) * knight_phase;
-	phase -= popcount64(bishops) * bishop_phase;
+	phase -= popcount64(knights);
+	phase -= popcount64(bishops);
 	phase -= popcount64(queens) * queen_phase;
 	phase -= popcount64(rooks) * rook_phase;
 	

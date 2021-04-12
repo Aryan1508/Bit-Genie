@@ -30,6 +30,7 @@ struct Search
 	SHistory history;
 };
 
+uint64_t bench_search_position(Position&, TTable&);
 void search_position(Position&, Search, TTable& tt);
 
 extern std::atomic_bool SEARCH_ABORT;

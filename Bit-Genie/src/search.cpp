@@ -330,3 +330,21 @@ void search_position(Position& position, Search search, TTable& tt)
 	}
 	std::cout << "bestmove " << print_move(best_move) << std::endl;
 }
+
+uint64_t bench_search_position(Position& position, TTable& tt)
+{
+    Search search;
+    search.limits.stopped = false;
+    search.limits.time_set = false;
+    SEARCH_ABORT = false;
+
+	for (int depth = 1;
+		 depth <= 7;
+		 depth++)
+	{
+		search.info.ply = 0;
+		search.info.nodes = 0;
+        pvs(position, search, tt, depth);
+	}
+    return search.info.total_nodes;
+}
