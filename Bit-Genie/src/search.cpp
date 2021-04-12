@@ -66,8 +66,8 @@ namespace
 		if (search.info.ply >= MaxPly)
 			return eval_position(position);
 
-		if (position.history.is_drawn(position.key))
-			return 2 - (search.info.total_nodes & 1);
+		if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply))
+			return 0;
 
 		int stand_pat = eval_position(position);
 
@@ -129,8 +129,7 @@ namespace
 			return eval_position(position);
 
 		if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
-			return 1 - (search.info.total_nodes & 2);
-
+			return 0;
 
 		TEntry const& entry = tt.retrieve(position);
 
