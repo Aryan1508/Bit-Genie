@@ -61,6 +61,7 @@ const std::array<std::string, 35> benchmark_fens = {
 
 namespace BenchMark
 {
+    // Benchmark a perft test and print out the nodes and time taken
 	void perft(Position& position, int depth)
 	{
 		uint64_t nodes = 0;
@@ -73,6 +74,8 @@ namespace BenchMark
 		std::cout << "\ttime: " << watch.elapsed_time().count() << " ms" << std::endl;
 	}
 
+    // Run through a list of positions and search a fixed depth at each 
+    // position. Print out the total nodes search and the nodes per second ( nodes / time)
 	void bench(Position position, TTable& tt) // copy on purpose
 	{
 		StopWatch<> watch;

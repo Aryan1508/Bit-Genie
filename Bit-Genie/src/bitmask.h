@@ -18,8 +18,11 @@
 #pragma once
 #include "misc.h"
 
+// Various pre-calculated bitmasks for move-generation and evaluation
+
 namespace BitMask
 {
+    // Bitmasks for all the 8 files of a board
 	constexpr uint64_t file_a = 0x0101010101010101;
 	constexpr uint64_t file_b = file_a << 1;
 	constexpr uint64_t file_c = file_b << 1;
@@ -31,6 +34,7 @@ namespace BitMask
 	constexpr uint64_t not_file_h = ~file_h;
 	constexpr uint64_t not_file_a = ~file_a;
 
+    // Bitmasks for all the 8 ranks of a board;
 	constexpr uint64_t rank1 = 0xff;
 	constexpr uint64_t rank2 = rank1 << 8;
 	constexpr uint64_t rank3 = rank2 << 8;

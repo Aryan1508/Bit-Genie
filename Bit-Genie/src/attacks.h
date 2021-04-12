@@ -21,6 +21,8 @@
 
 namespace Attacks
 {
+    // Initializes magic bitboard arrays. Should be called before
+    // using Attacks::bishop / Attacks::rook
 	inline void init()
 	{
 		initmagicmoves();
@@ -89,6 +91,8 @@ namespace Attacks
 			|| (king(sq) & kings);
 	}
 
+    // Return a bitboard of all the attackers to the given square, both black and white pieces
+    // are included. 
 	inline uint64_t attackers_to_sq(Position const& position, Square sq)
 	{
 		uint64_t occ = position.total_occupancy();
