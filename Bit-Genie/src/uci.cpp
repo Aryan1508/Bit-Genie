@@ -25,7 +25,7 @@
 #include "benchmark.h"
 #include "searchinit.h"
 
-const char* version = "2.1";
+const char* version = "2.5";
 
 void uci_input_loop(int argc, char** argv)
 {
