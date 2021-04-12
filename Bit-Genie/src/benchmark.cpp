@@ -59,19 +59,6 @@ const std::array<std::string, 35> benchmark_fens = {
 	"4k3/3q1r2/1N2r1b1/3ppN2/2nPP3/1B1R2n1/2R1Q3/3K4 w - - 5 1"
 };
 
-static uint64_t bench_search(Position& position, TTable& tt)
-{
-	constexpr int bench_search_depth = 5;
-
-	Search search;
-	search.limits.max_depth = bench_search_depth;
-	search.limits.time_set = false;
-	search.limits.stopped = false;
-
-	search_position(position, search, tt);
-	return search.info.nodes;
-}
-
 namespace BenchMark
 {
 	void perft(Position& position, int depth)
@@ -88,7 +75,7 @@ namespace BenchMark
 
 	void bench(Position position, TTable& tt) // copy on purpose
 	{
-		StopWatch<std::chrono::nanoseconds> watch;
+		StopWatch<> watch;
 		watch.go();
 		uint64_t nodes = 0;
 		for (auto const& fen : benchmark_fens)
@@ -96,11 +83,16 @@ namespace BenchMark
 			if (!position.set_fen(fen))
 			{
 				std::cout << fen;
-				assert(false);
+				throw std::runtime_error("Invalid fen in bench");
 			}
-			nodes += bench_search(position, tt);
+
+            uint64_t count = bench_search_position(position, tt);
+            std::cout << fen << ": " << nodes << std::endl;
+			nodes += count; 
 		}
 		watch.stop();
+        
+        std::cout << "Time elapsed: " << watch.elapsed_time().count() / 1000.0f << std::endl;
 
 		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(watch.elapsed_time()).count();
 		elapsed = std::max(static_cast<int64_t>(1ll), elapsed);
