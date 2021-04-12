@@ -19,6 +19,15 @@
 #include "bitmask.h"
 #include "Square.h"
 
+template<Direction dir>
+constexpr uint64_t shift(uint64_t bits)
+{
+	return dir == Direction::north ? bits << 8
+		: dir == Direction::south ? bits >> 8
+		: dir == Direction::east ? (bits << 1) & BitMask::not_file_a
+		: (bits >> 1) & BitMask::not_file_h;
+}
+
 constexpr uint64_t shift(uint64_t bits, Direction dir)
 {
 	return dir == Direction::north ? bits << 8
