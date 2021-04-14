@@ -23,12 +23,12 @@ class Killers
 public:
 	Killers() = default;
 
-	Move first(int ply)
+	Move first(int ply) const 
 	{
 		return moves[ply][0];
 	}
 
-	Move second(int ply)
+	Move second(int ply) const
 	{
 		return moves[ply][1];
 	}
