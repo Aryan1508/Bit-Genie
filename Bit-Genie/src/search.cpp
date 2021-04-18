@@ -177,9 +177,9 @@ namespace
 			
             int score = 0;
 
-            if (move_num > 3 && !pv_node && !in_check && depth > 4 && !move_is_capture(position, move))
+            if (move_num > 3 && !pv_node && !in_check && depth > 4)
             {
-                score = -pvs(position, search, tt, depth - 2, -(alpha + 1), -alpha, false, false).score;
+                score = -pvs(position, search, tt, depth - 3, -alpha - 1, -alpha, false, false).score;
 
                 if (score > alpha)
                     score = -pvs(position, search, tt, depth - 1, -beta, -alpha, false).score;
