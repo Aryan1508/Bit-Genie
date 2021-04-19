@@ -27,9 +27,113 @@
 
 const char* version = "2.6";
 
+namespace
+{
+    template<typename... Args>
+    void printl(Args const&... args)
+    {
+        (std::cout << ... << args) << std::endl;
+    }
+
+    void uci_ok() 
+    {
+        printl("id name Bit-Genie ", version);
+        printl("id author Aryan Parekh");
+        printl("option name Hash type spin default 2 min 2 max 3000");
+        printl("option name Clear Hash type button");
+        printl("uciok");
+    }
+
+    void uci_ready()
+    {
+        printl("readyok");
+    }
+
+    void uci_setoption(UciParser const& parser, TTable& tt)
+    {
+        auto [name, value] = parser.parse_setoption();
+
+        if (name == "hash")
+        {
+            if (!string_is_number(value))
+                return;
+            tt.resize(std::stoi(value));
+        }
+
+        else if (name == "clear hash")
+            tt.reset();
+    }
+
+    void uci_stop(SearchInit& worker)
+    {
+        if (worker.is_searching())
+            worker.end();
+    }
+
+    void uci_go(UciParser const& parser, Position& position, TTable& tt, SearchInit& worker)
+    {
+        UciGo options = parser.parse_go(position.side);
+
+        Search search;
+        search.limits.stopwatch.go();
+        search.limits.max_depth = std::min(options.depth, 64);
+        search.limits.stopped = false;
+        search.limits.time_set = false;
+
+        if (options.movetime == -1)
+        {
+            auto& t = position.side == White ? options.wtime : options.btime;
+
+            if (t == -1)
+                search.limits.movetime = std::numeric_limits<int64_t>::max();
+
+            else
+            {
+                search.limits.time_set = true;
+                search.limits.movetime = t / options.movestogo - 50;
+            }
+        }
+        else
+        {
+            search.limits.movetime = options.movetime - 50;
+            search.limits.time_set = true;
+        }
+
+        worker.begin(search, position, tt);
+    }
+
+    void uci_setposition(UciParser const& parser, Position& position)
+    {
+        auto [fen, moves] = parser.parse_position_command();
+
+        if (!position.set_fen(fen))
+        {
+            std::cout << fen << std::endl;
+            std::cout << "Invalid FEN string" << std::endl;
+            return;
+        }
+
+        Position temp = position;
+
+        temp.history.total = 0;
+        for (std::string const& move : moves)
+        {
+            if (!temp.apply_move(move))
+            {
+                std::cout << "Invalid move in movelist: " << move << std::endl;
+                continue;
+            }
+        }
+
+        position = temp;
+    }
+}
+
+
 void uci_input_loop(int argc, char** argv)
 {
-	std::cout << "Bit Genie by Aryan Parekh" << std::endl;
+	printl("Bit-Genie ", version, " by Aryan Parekh");
+
 	UciParser  command;
 	Position   position;
 	TTable     table(2);
@@ -46,126 +150,35 @@ void uci_input_loop(int argc, char** argv)
 
 		if (command == UciCommands::quit)
 		{
-			if (worker.is_searching())
-				worker.end();
-			break;
+            uci_stop(worker);
+            break;
 		}
 
 		else if (command == UciCommands::isready)
-			std::cout << "readyok" << std::endl;
+			uci_ready();
 
 		else if (command == UciCommands::uci)
-		{
-			std::cout << "id name Bit-Genie " << version << std::endl;
-			std::cout << "id author Aryan Parekh" << std::endl;
-			std::cout << "option name Hash type spin default 2 min 2 max 3000" << std::endl;
-			std::cout << "option name Clear Hash type button" << std::endl;
-			std::cout << "uciok" << std::endl;
-		}
+            uci_ok();
 
 		else if (command == UciCommands::position)
-		{
-			auto [fen, moves] = command.parse_position_command();
-
-			if (!position.set_fen(fen))
-			{
-				std::cout << fen << std::endl;
-				std::cout << "Invalid FEN string" << std::endl;
-				continue;
-			}
-
-			Position temp = position;
-
-			temp.history.total = 0;
-			for (std::string const& move : moves)
-			{
-				if (!temp.apply_move(move))
-				{
-					std::cout << "Invalid move in movelist: " << move << std::endl;
-					continue;
-				}
-			}
-
-			position = temp;
-		}
+            uci_setposition(command, position);
 
 		else if (command == UciCommands::print)
-			std::cout << position << std::endl;
+			printl(position);
 
 		else if (command == UciCommands::perft)
-		{
-			int depth = command.parse_perft();
-			if (depth <= 0)
-			{
-				std::cout << "Invalid perft depth" << std::endl;
-				continue;
-			}
-
-			BenchMark::perft(position, depth);
-		}
-
+			BenchMark::perft(position, command.parse_perft());
+	
 		else if (command == UciCommands::go)
-		{
-			UciGo options = command.parse_go(position.side);
-
-			Search search;
-			search.limits.stopwatch.go();
-			search.limits.max_depth = std::min(options.depth, 64);
-			search.limits.stopped = false;
-			search.limits.time_set = false;
-
-			if (options.movetime == -1)
-			{
-				auto& t = position.side == White ? options.wtime : options.btime;
-
-				if (t == -1)
-					search.limits.movetime = std::numeric_limits<int64_t>::max();
-
-				else
-				{
-					search.limits.time_set = true;
-					search.limits.movetime = t / options.movestogo - 50;
-				}
-			}
-			else
-			{
-				search.limits.movetime = options.movetime - 50;
-				search.limits.time_set = true;
-			}
-
-			worker.begin(search, position, table);
-		}
+            uci_go(command, position, table, worker);
 
 		else if (command == UciCommands::stop)
-        {
-            if (worker.is_searching())
-			    worker.end();
-            else
-            {
-                std::cout << "Not searching!" << std::endl;
-            }
-        }
+            uci_stop(worker);
 
 		else if (command == UciCommands::setoption)
-		{
-			auto [name, value] = command.parse_setoption();
-
-			if (name == "hash")
-			{
-				if (!string_is_number(value))
-					continue;
-				table.resize(std::stoi(value));
-			}
-
-			else if (name == "clear hash")
-			{
-				table.reset();
-			}
-		}
+            uci_setoption(command, table);
 
 		else if (command == UciCommands::bench)
-		{
 			BenchMark::bench(position, table);
-		}
 	}
 }
