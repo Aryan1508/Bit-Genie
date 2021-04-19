@@ -18,10 +18,12 @@
 #include "attacks.h"
 #include "uci.h"
 #include "zobrist.h"
+#include "search.h"
 
 int main(int argc, char** argv)
 {
 	Attacks::init();
 	ZobristKey::init();
+    init_lmr_array();
     uci_input_loop(argc, argv);
 }
