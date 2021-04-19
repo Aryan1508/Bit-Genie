@@ -17,9 +17,8 @@
 */
 #include "uciparse.h"
 #include "stringparse.h"
-#include <vector>
-#include <iostream>
 #include "piece.h"
+#include <utility>
 
 void UciParser::take_input()
 {
