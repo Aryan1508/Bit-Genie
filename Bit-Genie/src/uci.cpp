@@ -140,6 +140,10 @@ void uci_input_loop(int argc, char** argv)
         {
             if (worker.is_searching())
 			    worker.end();
+            else
+            {
+                std::cout << "Not searching!" << std::endl;
+            }
         }
 
 		else if (command == UciCommands::setoption)
