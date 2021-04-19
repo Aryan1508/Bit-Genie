@@ -137,7 +137,10 @@ void uci_input_loop(int argc, char** argv)
 		}
 
 		else if (command == UciCommands::stop)
-			worker.end();
+        {
+            if (worker.is_searching())
+			    worker.end();
+        }
 
 		else if (command == UciCommands::setoption)
 		{
