@@ -68,9 +68,6 @@ bool UciParser::operator==(UciCommands type) const
 		case UciCommands::go:
 			return starts_with(command, "go");
 
-		case UciCommands::static_eval:
-			return command == "eval";
-
 		case UciCommands::setoption:
 			return starts_with(command, "setoption");
 

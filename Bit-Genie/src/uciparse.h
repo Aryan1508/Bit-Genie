@@ -34,7 +34,6 @@ enum class UciCommands
 	// *debugging/other purpose commands*
 	print,
 	perft,
-	static_eval,
 	bench
 };
 

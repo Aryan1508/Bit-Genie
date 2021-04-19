@@ -167,10 +167,5 @@ void uci_input_loop(int argc, char** argv)
 		{
 			BenchMark::bench(position, table);
 		}
-
-		else if (command == UciCommands::static_eval)
-		{
-			std::cout << "eval: " << eval_position(position) << std::endl;
-		}
 	}
 }
