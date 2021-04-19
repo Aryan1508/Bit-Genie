@@ -22,6 +22,9 @@
 #include "moveorder.h"
 #include "tt.h"
 #include <sstream>
+#include <cmath>
+
+int lmr_reductions_array[2][32]{0};
 
 std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);
 
@@ -177,9 +180,15 @@ namespace
 			
             int score = 0;
 
-            if (move_num > 3 && !pv_node && !in_check && depth > 4)
+            if (move_num > 3 && depth > 2)
             {
-                score = -pvs(position, search, tt, depth - 3, -alpha - 1, -alpha, false, false).score;
+                bool quiet = !move_is_capture(position, move);
+
+                int R = lmr_reductions_array[quiet][std::min(move_num, 31)];
+
+                R -= pv_node;
+
+                score = -pvs(position, search, tt, depth - R, -alpha - 1, -alpha, false, false).score;
 
                 if (score > alpha)
                     score = -pvs(position, search, tt, depth - 1, -beta, -alpha, false).score;
@@ -313,6 +322,15 @@ namespace
 
 		std::cout << std::endl;
 	}
+}
+
+void init_lmr_array()
+{
+    for(int i = 0;i < 32;i++)
+    {
+        lmr_reductions_array[0][i] = log(i) / 2.3 + 2;
+        lmr_reductions_array[1][i] = log(i) / 1.5 + 2;
+    }
 }
 
 void search_position(Position& position, Search search, TTable& tt)
