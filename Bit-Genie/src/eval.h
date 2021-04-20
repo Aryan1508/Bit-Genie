@@ -22,23 +22,25 @@
 #define S(mg, eg) make_score((mg), (eg))
 
 enum {
-	PawnScore = 100, KnightScore = 300,
-	BishopScore = 325, RookScore = 520,
-	QueenScore = 950,
+	PawnScoreMg = 119, PawnScoreEg = 126,
+    KnightScoreMg = 321, KnightScoreEg = 322,
+    BishopScoreMg = 354, BishopScoreEg = 346,
+    RookScoreMg = 565, RookScoreEg = 565,
+    QueenScoreMg = 1082, QueenScoreEg = 1082
 };
 
 constexpr int piece_scores[13]{
-	PawnScore, KnightScore, BishopScore, RookScore, QueenScore, 0,
-	PawnScore, KnightScore, BishopScore, RookScore, QueenScore, 0,
+	PawnScoreMg, KnightScoreMg, BishopScoreMg, RookScoreMg, QueenScoreMg, 0,
+	PawnScoreMg, KnightScoreMg, BishopScoreMg, RookScoreMg, QueenScoreMg, 0,
 };
 
 constexpr int get_score(Piece piece)
 {
-	constexpr int pawn   = S(100, 100);
-	constexpr int knight = S(300, 300);
-	constexpr int bishop = S(325, 325);
-	constexpr int rook   = S(520, 520);
-	constexpr int queen  = S(950, 950);
+	constexpr int pawn   = S(PawnScoreMg, PawnScoreEg);
+	constexpr int knight = S(KnightScoreMg, KnightScoreEg);
+	constexpr int bishop = S(BishopScoreMg, BishopScoreEg);
+	constexpr int rook   = S(RookScoreMg, RookScoreEg);
+	constexpr int queen  = S(QueenScoreMg, QueenScoreEg);
 
 	constexpr int scores[13]
 	{
