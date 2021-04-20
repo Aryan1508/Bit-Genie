@@ -10,6 +10,8 @@ As of March 2020, Bit-Genie isn't a top-tier chess engine, but we're getting som
 
 # Elo progression
 
+The estimated strength over the different versions
+
 |   Version       |  Elo   |
 | -------------   | ------ |
 | Bit-Genie 1     |  1771  |
