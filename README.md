@@ -8,6 +8,15 @@ With  all the lockdowns in 2020, I decided that it would be a good time to start
 
 As of March 2020, Bit-Genie isn't a top-tier chess engine, but we're getting somewhere.
 
+# Elo progression
+
+|   Version       |  Elo   |
+| -------------   | ------ |
+| Bit-Genie 1     |  1771  |
+| Bit-Genie 2     |  1860  |
+
+[Bit-Genie on the CCRL](https://ccrl.chessdom.com/ccrl/404/cgi/compare_engines.cgi?family=Bit-Genie&print=Rating+list&print=Results+table&print=LOS+table&print=Ponder+hit+table&print=Eval+difference+table&print=Comopp+gamenum+table&print=Overlap+table&print=Score+with+common+opponents)
+
 # Usage
 Bit-Genie is **not** a complete chess software, but a chess engine which still needs a GUI if you don't prefer writing and reading [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface "UCI") commands through the terminal. There are plenty of free softwares available online, here are two common ones
 - [Cute Chess](https://github.com/cutechess/cutechess "Cute Chess")
