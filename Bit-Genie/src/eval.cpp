@@ -115,8 +115,14 @@ static constexpr int mobility_score(Callable F, Args... args)
 }
 
 static constexpr int passed_pawn_scores[total_ranks] = {
-	S(0,  0) , S(-16, 22), S(-16, 25), S(-7, 56),
-	S(26, 80), S(60,139) , S(136,196), S(0,  0),
+	S( 0, 0 ),
+    S( -16, -16 ),
+    S( -24, -24 ),
+    S( 2, 2 ),
+    S( 55, 54 ),
+    S( 162, 162 ),
+    S( 228, 228 ),
+    S( 0, 0),
 };
 
 static bool material_draw(Position const& position)
