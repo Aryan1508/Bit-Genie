@@ -44,16 +44,6 @@ PieceManager::PieceManager()
 	reset();
 }
 
-uint64_t PieceManager::get_occupancy(Color color) const
-{
-	return colors[to_int(color)];
-}
-
-uint64_t PieceManager::get_piece_bb(Piece piece) const
-{
-	return bitboards[to_int(type_of(piece))] & colors[to_int(color_of(piece))];
-}
-
 void PieceManager::reset()
 {
 	colors.fill(0);
@@ -122,12 +112,6 @@ bool PieceManager::add_rank(Square& counter, std::string_view rank)
 		}
 	}
 	return true;
-}
-
-Piece const& PieceManager::get_piece(const Square sq) const
-{
-	assert(is_ok(sq));
-	return squares[sq];
 }
 
 bool PieceManager::parse_fen_board(std::string_view fen)

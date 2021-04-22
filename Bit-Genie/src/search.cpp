@@ -304,32 +304,43 @@ namespace
 		return pv;
 	}
 
+    void print_pv(Position& position, TTable& tt, int depth)
+    {
+        for (auto m : get_pv(position, tt, depth))
+        {
+            std::cout << print_move(m) << ' ';
+        }
+    }
+
 	void print_info_string(Position& position, SearchResult& result, TTable& tt, Search& search, int depth)
 	{
-		using namespace std::chrono;
-		std::cout << "info";
-		std::cout << " depth " << depth;
-		std::cout << " seldepth " << search.info.seldepth;
-		std::cout << " nodes " << search.info.nodes;
-		std::cout << " score " << print_score(result.score);
-		std::cout << " time " << duration_cast<milliseconds>(search.limits.stopwatch.elapsed_time()).count();
-		std::cout << " pv ";
-
-		for (auto m : get_pv(position, tt, depth))
-		{
-			std::cout << print_move(m) << ' ';
-		}
-
-		std::cout << std::endl;
+        print("info");
+        print(" depth ", depth);
+        print(" seldepth ", search.info.seldepth);
+        print(" nodes ", search.info.nodes);
+        print(" score ", print_score(result.score));
+        print(" time ", std::chrono::duration_cast<std::chrono::milliseconds>(search.limits.stopwatch.elapsed_time()).count());
+		print(" pv ");
+        print_pv(position, tt, depth);
+        printl();
 	}
+
+    template<bool quiet>
+    int calculate_late_move_reduction(int movenumber)
+    {
+        constexpr int    constant = 2;
+        constexpr double coeff    = quiet ? 2.3 : 1.5;
+
+        return log(movenumber) / coeff + constant;
+    }
 }
 
 void init_lmr_array()
 {
     for(int i = 0;i < 32;i++)
     {
-        lmr_reductions_array[0][i] = log(i) / 2.3 + 2;
-        lmr_reductions_array[1][i] = log(i) / 1.5 + 2;
+        lmr_reductions_array[0][i] = calculate_late_move_reduction<true>(i);
+        lmr_reductions_array[1][i] = calculate_late_move_reduction<false>(i);
     }
 }
 
@@ -347,17 +358,13 @@ void search_position(Position& position, Search search, TTable& tt)
 
 		SearchResult result = pvs(position, search, tt, depth);
 
-		if (search.limits.stopped)
-		{
-			if (depth == 1)
-				std::cout << "stopped at depth 1\n";
-			break;
-		}
+        if (search.limits.stopped)
+            break;
 
 		print_info_string(position, result, tt, search, depth);
 		best_move = result.best_move;
 	}
-	std::cout << "bestmove " << print_move(best_move) << std::endl;
+	printl("bestmove ", print_move(best_move));
 }
 
 uint64_t bench_search_position(Position& position, TTable& tt)
@@ -368,7 +375,7 @@ uint64_t bench_search_position(Position& position, TTable& tt)
     SEARCH_ABORT = false;
 
 	for (int depth = 1;
-		 depth <= 7;
+		 depth <= 8;
 		 depth++)
 	{
 		search.info.ply = 0;

@@ -72,16 +72,15 @@ namespace Attacks
 	//pieces in the position. 
 	inline bool square_attacked(Position const& position, Square sq, Color enemy, uint64_t occupancy)
 	{
-		assert(is_ok(sq));
-		uint64_t pawns   = position.pieces.get_piece_bb<Pawn>(enemy);
-		uint64_t knights = position.pieces.get_piece_bb<Knight>(enemy);
-		uint64_t bishops = position.pieces.get_piece_bb<Bishop>(enemy);
-		uint64_t rooks   = position.pieces.get_piece_bb<Rook>(enemy);
-		uint64_t queens  = position.pieces.get_piece_bb<Queen>(enemy);
-		uint64_t kings   = position.pieces.get_piece_bb<King>(enemy);
+		uint64_t pawns   = position.pieces.get_piece_bb(Pawn  , enemy);
+		uint64_t knights = position.pieces.get_piece_bb(Knight, enemy);
+		uint64_t bishops = position.pieces.get_piece_bb(Bishop, enemy);
+		uint64_t rooks   = position.pieces.get_piece_bb(Rook  , enemy);
+		uint64_t queens  = position.pieces.get_piece_bb(Queen , enemy);
+		uint64_t kings   = position.pieces.get_piece_bb(King  , enemy);
 
 		bishops |= queens;
-		rooks |= queens;
+		rooks   |= queens;
 
 
 		return (BitMask::pawn_attacks[!enemy][sq] & pawns)
@@ -139,6 +138,7 @@ namespace Attacks
 				throw std::invalid_argument("Invalid argument in generate");
 				return 0;
 		}
+        return 0;
 	}
 
 }

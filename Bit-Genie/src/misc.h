@@ -18,6 +18,7 @@
 #pragma once
 #include <stdint.h>
 #include <type_traits>
+#include <iostream>
 
 #define assert(x)
 
@@ -59,4 +60,17 @@ template <typename E>
 constexpr typename std::underlying_type<E>::type to_int(E e)
 {
 	return static_cast<typename std::underlying_type<E>::type>(e);
+}
+
+
+template<typename... Args>
+void printl(Args const&... args)
+{
+    (std::cout << ... << args) << std::endl;
+}
+
+template<typename... Args>
+void print(Args const&... args)
+{
+    (std::cout << ... << args);
 }

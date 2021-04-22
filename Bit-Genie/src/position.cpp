@@ -152,7 +152,7 @@ static inline bool is_double_push(Square from, Square to, PieceType moving)
 void Position::update_ep(Square from, Square to)
 {
 	uint64_t potential = BitMask::pawn_attacks[side][to ^ 8];
-	uint64_t enemy_pawns = pieces.get_piece_bb<Pawn>(!side);
+	uint64_t enemy_pawns = pieces.get_piece_bb(Pawn, !side);
 
 	if (potential & enemy_pawns)
 	{
@@ -632,7 +632,7 @@ bool Position::apply_move(std::string move)
 
 bool Position::king_in_check() const
 {
-	uint64_t king = pieces.get_piece_bb<King>(side);
+	uint64_t king = pieces.get_piece_bb(King, side);
 	return Attacks::square_attacked(*this, get_lsb(king), !side);
 }
 

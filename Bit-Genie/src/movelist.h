@@ -27,8 +27,9 @@ public:
 	using const_iterator = movelist_type::const_iterator;
 
 	Movelist()
-		: cap(0)
-	{}
+	{
+        clear();
+    }
 
 	void clear()
 	{

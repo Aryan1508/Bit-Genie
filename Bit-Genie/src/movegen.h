@@ -36,16 +36,17 @@ public:
 		uint64_t targets   = get_targets<type>(position);
 		uint64_t occupancy = position.total_occupancy();
 
-		generate_normal_moves(position, King, targets, Attacks::king);
-		generate_normal_moves(position, Knight, targets, Attacks::knight);
-		generate_normal_moves(position, Bishop, targets, Attacks::bishop, occupancy);
-		generate_normal_moves(position, Rook, targets, Attacks::rook, occupancy);
-		generate_normal_moves(position, Queen, targets, Attacks::queen, occupancy);
+		generate_moves<Knight>(position, occupancy, targets);
+		generate_moves<Bishop>(position, occupancy, targets);
+		generate_moves<Rook>  (position, occupancy, targets);
+		generate_moves<Queen> (position, occupancy, targets);
+		generate_moves<King>  (position, occupancy, targets);
+
 		generate_pawn_moves<type>(position);
 
 		if constexpr (type == MoveGenType::quiet || type == MoveGenType::normal)
 		{
-			uint64_t king = position.pieces.get_piece_bb<King>(position.side);
+			uint64_t king = position.pieces.get_piece_bb(King, position.side);
 			if (!Attacks::square_attacked(position, get_lsb(king), !position.side, occupancy))
 				generate_castle(position);
 		}
@@ -83,64 +84,73 @@ private:
 			type == MoveGenType::noisy ? position.enemy_bb() : ~position.total_occupancy();
 	}
 
-	template<bool is_promo = false>
-	void add_moves(Position& pos, Square from, uint64_t attacks, MoveFlag gen_type)
+	template<PieceType pt>
+	void generate_moves(Position& position, uint64_t occupancy, uint64_t targets)
 	{
-		assert(is_ok(from));
-		while (attacks)
-		{
-			Square to = pop_lsb(attacks);
-			if constexpr (is_promo)
-			{
-				movelist.add<checked>(pos, CreateMove(from, to, gen_type, Knight));
-				movelist.add<checked>(pos, CreateMove(from, to, gen_type, Bishop));
-				movelist.add<checked>(pos, CreateMove(from, to, gen_type, Rook));
-				movelist.add<checked>(pos, CreateMove(from, to, gen_type, Queen));
+		uint64_t pieces = position.pieces.get_piece_bb(pt, position.side);
 
-			}
-			movelist.add<checked>(pos, CreateMove(from, to, gen_type, Knight));
-		}
-	}
-
-	template<typename Callable, typename... Args>
-	void generate_normal_moves(Position& position, PieceType p_type, uint64_t targets, Callable F, Args const&... args)
-	{
-		uint64_t pieces = position.pieces.get_piece_bb(make_piece(p_type, position.side));
 		while (pieces)
 		{
 			Square sq = pop_lsb(pieces);
-			uint64_t attacks = F(sq, args...) & targets;
-			add_moves(position, sq, attacks, MoveFlag::normal);
+			uint64_t attacks = Attacks::generate(pt, sq, occupancy) & targets;
+
+            while (attacks)
+                movelist.add<checked>(position, CreateMove(sq, pop_lsb(attacks), MoveFlag::normal, 1));
 		}
 	}
 
-	template<bool is_promo = false>
-	inline void add_pawn_moves(Position& pos, uint64_t attacks, Direction delta, MoveFlag gen_type = MoveFlag::normal)
+    void add_pawn_promotions(Position& pos, uint64_t attacks, Direction delta)
+    {
+        while(attacks)
+        {
+            Square sq = pop_lsb(attacks);
+
+            movelist.add<checked>(pos, CreateMove(sq - delta, sq, MoveFlag::promotion, Knight));
+            movelist.add<checked>(pos, CreateMove(sq - delta, sq, MoveFlag::promotion, Bishop));
+            movelist.add<checked>(pos, CreateMove(sq - delta, sq, MoveFlag::promotion, Rook));
+            movelist.add<checked>(pos, CreateMove(sq - delta, sq, MoveFlag::promotion, Queen));
+        }
+    }
+
+	void add_pawn_moves(Position& pos, uint64_t attacks, Direction delta, MoveFlag gen_type = MoveFlag::normal)
 	{
 		while (attacks)
-		{
-			Square sq = pop_lsb(attacks);
-			if constexpr (is_promo)
-			{
-				movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Knight));
-				movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Bishop));
-				movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Rook));
-				movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Queen));
-
-			}
-			else
-			{
-				movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Knight));
-			}
-		}
+        {
+            Square sq = pop_lsb(attacks);
+			movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, 1));
+        }
 	}
+
+
+    //
+    // @param pawns_normal: Bitboard of all the pawns of the playing side not on the promotion rank 
+    // @param pawn_promo  : Bitboard of all the pawns of the playing side on the promotion rank
+    void generate_pawn_quiet_moves(Position& position, uint64_t pawns_normal, uint64_t pawns_promo)
+    {
+        uint64_t empty          = ~position.total_occupancy();
+		uint64_t pawn_st_rank   =  position.side == White ? BitMask::rank4 : BitMask::rank5;
+		Direction forward        = position.side == White ? Direction::north : Direction::south;
+
+        // Single pawn psuhes
+        uint64_t push_one_normal = shift(pawns_normal   , forward) & empty;
+
+        // Double pawn pushes
+        uint64_t push_two_noraml = shift(push_one_normal, forward) & empty & pawn_st_rank;
+       
+        // Single push with promotion 
+        uint64_t push_one_promo = shift(pawns_promo, forward) & empty;
+
+        add_pawn_moves(position, push_one_normal    , forward); 
+        add_pawn_moves(position, push_two_noraml    , forward + forward);
+        add_pawn_promotions(position, push_one_promo, forward);
+    }
 
 	template<MoveGenType type>
 	void generate_pawn_moves(Position& position)
 	{
-		uint64_t pawn_st_rank = position.side == White ? BitMask::rank4 : BitMask::rank5;
+		uint64_t pawn_st_rank   = position.side == White ? BitMask::rank4 : BitMask::rank5;
 		uint64_t promotion_rank = position.side == White ? BitMask::rank7 : BitMask::rank2;
-		uint64_t ep_rank = position.side == White ? BitMask::rank6 : BitMask::rank3;
+		uint64_t ep_rank        = position.side == White ? BitMask::rank6 : BitMask::rank3;
 
 		Direction forward = position.side == White ? Direction::north : Direction::south;
 		uint64_t empty = ~position.total_occupancy();
@@ -152,16 +162,7 @@ private:
 		uint64_t pawns_promo = pawns & promotion_rank;
 
 		if constexpr (type == MoveGenType::normal || type == MoveGenType::quiet)
-		{
-			uint64_t push_one_normal = shift(pawns_normal, forward) & empty;
-			uint64_t push_two_noraml = shift(push_one_normal, forward) & empty & pawn_st_rank;
-
-			add_pawn_moves(position, push_one_normal, forward);
-			add_pawn_moves(position, push_two_noraml, forward + forward);
-
-			push_one_normal = shift(pawns_promo, forward) & empty;
-			add_pawn_moves<true>(position, push_one_normal, forward, MoveFlag::promotion);
-		}
+            generate_pawn_quiet_moves(position, pawns_normal, pawns_promo);
 
 		if constexpr (type == MoveGenType::normal || type == MoveGenType::noisy)
 		{
@@ -187,8 +188,8 @@ private:
 			left = shift<Direction::west>(forward_one) & enemy;
 			right = shift<Direction::east>(forward_one) & enemy;
 
-			add_pawn_moves<true>(position, left, forward + Direction::west, MoveFlag::promotion);
-			add_pawn_moves<true>(position, right, forward + Direction::east, MoveFlag::promotion);
+			add_pawn_promotions(position, left, forward + Direction::west);
+			add_pawn_promotions(position, right, forward + Direction::east);
 		}
 	}
 

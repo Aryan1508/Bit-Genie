@@ -29,12 +29,6 @@ const char* version = "3.1";
 
 namespace
 {
-    template<typename... Args>
-    void printl(Args const&... args)
-    {
-        (std::cout << ... << args) << std::endl;
-    }
-
     void uci_ok() 
     {
         printl("id name Bit-Genie ", version);

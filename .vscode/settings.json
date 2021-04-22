@@ -57,6 +57,8 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "mutex": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "codecvt": "cpp",
+        "list": "cpp"
     }
 }

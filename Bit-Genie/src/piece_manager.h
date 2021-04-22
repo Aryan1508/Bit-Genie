@@ -19,7 +19,6 @@
 #include <array>
 #include "bitboard.h"
 #include "piece.h"
-#include <vector>
 
 class PieceManager
 {
@@ -28,15 +27,27 @@ public:
 	PieceManager();
 	void reset();
 	bool parse_fen_board(std::string_view);
-	uint64_t get_piece_bb(Piece) const;
-	uint64_t get_occupancy(Color) const;
-	Piece const& get_piece(const Square) const;
 
-	template<PieceType type>
-	inline uint64_t get_piece_bb(Color color) const
-	{
-		return bitboards[type] & colors[color];
-	}
+
+	uint64_t get_occupancy(Color color) const noexcept 
+    {
+        return colors[color];
+    }
+
+	Piece const& get_piece(Square sq) const noexcept
+    {
+        return squares[sq];
+    }
+
+	uint64_t get_piece_bb(Piece piece) const noexcept
+    {
+        return bitboards[type_of(piece)] & colors[color_of(piece)];
+    }
+
+	uint64_t get_piece_bb(PieceType pt, Color color) const noexcept
+    {
+        return bitboards[pt] & colors[color];
+    }
 
 	friend std::ostream& operator<<(std::ostream&, PieceManager const&);
 
