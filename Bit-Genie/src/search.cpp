@@ -276,7 +276,7 @@ namespace
 		}
 		else
 		{
-			o << "cp " << int(score / 100.0f);
+			o << "cp " << int(score * 100 / PawnScoreMg);
 		}
 		return o.str();
 	}
