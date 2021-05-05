@@ -106,7 +106,7 @@ private:
 
 	void revert_promotion(Move, Piece);
 
-	void update_ep(Square from, Square to);
+	void update_ep(Square to);
 
 	PositionHistory::Undo& save(Move = NullMove);
 

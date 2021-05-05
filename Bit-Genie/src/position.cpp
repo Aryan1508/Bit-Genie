@@ -144,12 +144,12 @@ std::ostream& operator<<(std::ostream& o, Position const& position)
 	return o << '\n';
 }
 
-static inline bool is_double_push(Square from, Square to, PieceType moving)
+static inline bool is_double_push(Square from, Square to)
 {
 	return (from ^ to) == 16;
 }
 
-void Position::update_ep(Square from, Square to)
+void Position::update_ep(Square to)
 {
 	uint64_t potential = BitMask::pawn_attacks[side][to ^ 8];
 	uint64_t enemy_pawns = pieces.get_piece_bb<Pawn>(!side);
@@ -473,8 +473,8 @@ Piece Position::apply_normal_move(Move move)
 	{
 		reset_halfmoves();
 
-		if (is_double_push(from, to, from_pce_t))
-			update_ep(from, to);
+		if (is_double_push(from, to))
+			update_ep(to);
 	}
 
 	if (captured != Empty)
