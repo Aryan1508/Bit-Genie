@@ -1,17 +1,17 @@
 #include "searchinit.h"
 #include "search.h"
 
-void SearchInit::begin(Search& search, Position& position, TTable& tt)
+void SearchInit::begin(Search &search, Position &position, TTable &tt)
 {
-	if (worker.joinable())
-		end();
+    if (worker.joinable())
+        end();
 
-	using std::ref;
-	worker = std::thread(search_position, ref(position), search, ref(tt));
+    using std::ref;
+    worker = std::thread(search_position, ref(position), search, ref(tt));
 }
 
 void SearchInit::end()
 {
-	SEARCH_ABORT = true;
-	worker.join();
+    SEARCH_ABORT = true;
+    worker.join();
 }

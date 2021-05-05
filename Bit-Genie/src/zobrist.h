@@ -21,28 +21,29 @@
 class ZobristKey
 {
 public:
-	ZobristKey();
-	void generate(Position const&);
+    ZobristKey();
+    void generate(Position const &);
 
-	void hash_side();
-	void hash_ep(const Square);
-	void hash_piece(const Square, const Piece);
-	void hash_castle(const CastleRights, const CastleRights);
-	void reset();
+    void hash_side();
+    void hash_ep(const Square);
+    void hash_piece(const Square, const Piece);
+    void hash_castle(const CastleRights, const CastleRights);
+    void reset();
 
-	uint64_t data() const { return hash; }
+    uint64_t data() const { return hash; }
 
-	static void init();
+    static void init();
 
-	bool operator==(ZobristKey other) const
-	{
-		return hash == other.hash;
-	}
+    bool operator==(ZobristKey other) const
+    {
+        return hash == other.hash;
+    }
 
-	friend std::ostream& operator<<(std::ostream& o, const ZobristKey);
-private:
-	void hash_pieces(Position const&);
+    friend std::ostream &operator<<(std::ostream &o, const ZobristKey);
 
 private:
-	uint64_t hash;
+    void hash_pieces(Position const &);
+
+private:
+    uint64_t hash;
 };

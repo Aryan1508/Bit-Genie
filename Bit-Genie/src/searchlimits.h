@@ -21,11 +21,11 @@
 
 struct SearchLimits
 {
-	StopWatch<std::chrono::nanoseconds> stopwatch;
-	int64_t movetime = -1;
-	bool    time_set = false;
-	bool    stopped = false;
-	int     max_depth = 1;
+    StopWatch<std::chrono::nanoseconds> stopwatch;
+    int64_t movetime = -1;
+    bool time_set = false;
+    bool stopped = false;
+    int max_depth = 1;
 
-	void update();
+    void update();
 };

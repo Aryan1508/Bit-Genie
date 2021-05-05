@@ -34,58 +34,60 @@ enum Square : uint8_t
 
 enum class Direction : int8_t
 {
-	north = 8, south = -8,
-	east = 1, west = -1,
+    north = 8,
+    south = -8,
+    east = 1,
+    west = -1,
 };
 
-template<typename E>
-inline Square to_sq(E const& e)
+template <typename E>
+inline Square to_sq(E const &e)
 {
-	return static_cast<Square>(e);
+    return static_cast<Square>(e);
 }
 
-template<>
-inline Square to_sq<std::string_view>(std::string_view const& sq)
+template <>
+inline Square to_sq<std::string_view>(std::string_view const &sq)
 {
-	return static_cast<Square>((sq[0] - 97) + ((sq[1] - 49) * 8));
+    return static_cast<Square>((sq[0] - 97) + ((sq[1] - 49) * 8));
 }
 
 inline Direction operator+(Direction l, Direction r)
 {
-	return static_cast<Direction>(to_int(l) + to_int(r));
+    return static_cast<Direction>(to_int(l) + to_int(r));
 }
 
 inline Square operator-(Square l, Direction r)
 {
-	return static_cast<Square>(to_int(l) - to_int(r));
+    return static_cast<Square>(to_int(l) - to_int(r));
 }
 
 inline Square flip_square(const Square sq)
 {
-	return to_sq(sq ^ 56);
+    return to_sq(sq ^ 56);
 }
 
-inline Square operator++(Square& sq, int)
+inline Square operator++(Square &sq, int)
 {
-	Square temp = sq;
-	sq = to_sq(sq + 1);
-	return temp;
+    Square temp = sq;
+    sq = to_sq(sq + 1);
+    return temp;
 }
 
 inline Square operator+(Square sq, Direction dir)
 {
-	return to_sq(sq + to_int(dir));
+    return to_sq(sq + to_int(dir));
 }
 
-inline Square& operator+=(Square& sq, int inc)
+inline Square &operator+=(Square &sq, int inc)
 {
-	sq = to_sq(sq + inc);
-	return sq;
+    sq = to_sq(sq + inc);
+    return sq;
 }
 
 inline bool is_ok(const Square sq)
 {
-	return sq >= Square::A1 && sq <= Square::H8;
+    return sq >= Square::A1 && sq <= Square::H8;
 }
 bool is_valid_sq(std::string_view);
-std::ostream& operator<<(std::ostream&, const Square);
+std::ostream &operator<<(std::ostream &, const Square);

@@ -22,172 +22,171 @@
 
 void UciParser::take_input()
 {
-	std::getline(std::cin, command);
-	trim(command);
+    std::getline(std::cin, command);
+    trim(command);
 }
 
 int UciParser::parse_perft() const
 {
-	auto options = split_string(command);
+    auto options = split_string(command);
 
-	if (options.size() != 2)
-		return 0;
+    if (options.size() != 2)
+        return 0;
 
-	if (!string_is_number(options[1]))
-		return 0;
+    if (!string_is_number(options[1]))
+        return 0;
 
-	return std::stoi(options[1]);
+    return std::stoi(options[1]);
 }
 
 bool UciParser::operator==(UciCommands type) const
 {
-	switch (type)
-	{
-		case UciCommands::uci:
-			return command == "uci";
+    switch (type)
+    {
+    case UciCommands::uci:
+        return command == "uci";
 
-		case UciCommands::isready:
-			return command == "isready";
+    case UciCommands::isready:
+        return command == "isready";
 
-		case UciCommands::position:
-			return starts_with(command, "position");
+    case UciCommands::position:
+        return starts_with(command, "position");
 
-		case UciCommands::quit:
-			return command == "quit";
+    case UciCommands::quit:
+        return command == "quit";
 
-		case UciCommands::print:
-			return command == "print";
+    case UciCommands::print:
+        return command == "print";
 
-		case UciCommands::perft:
-			return starts_with(command, "perft");
+    case UciCommands::perft:
+        return starts_with(command, "perft");
 
-		case UciCommands::stop:
-			return command == "stop";
+    case UciCommands::stop:
+        return command == "stop";
 
-		case UciCommands::go:
-			return starts_with(command, "go");
+    case UciCommands::go:
+        return starts_with(command, "go");
 
-		case UciCommands::setoption:
-			return starts_with(command, "setoption");
+    case UciCommands::setoption:
+        return starts_with(command, "setoption");
 
-		case UciCommands::bench:
-			return command == "bench";
+    case UciCommands::bench:
+        return command == "bench";
 
-		default:
-			return false;
-			break;
-	}
+    default:
+        return false;
+        break;
+    }
 }
 
 std::pair<std::string, std::vector<std::string>>
 
 UciParser::parse_position_command() const
 {
-	std::string fen;
-	std::vector<std::string> moves;
+    std::string fen;
+    std::vector<std::string> moves;
 
-	std::stringstream stream(command);
-	std::string name;
+    std::stringstream stream(command);
+    std::string name;
 
-	while (stream >> name)
-	{
-		if (name == "startpos")
-			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    while (stream >> name)
+    {
+        if (name == "startpos")
+            fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-		else if (name == "fen")
-		{
-			auto last = command.find("moves");
-			if (last == std::string::npos)
-			{
-				fen = command.substr(command.find("fen ") + 4);
-			}
-			else
-			{
-				auto start = command.find("fen ") + 4;
-				fen = command.substr(start, last - start);
-				continue;
-			}
-		}
+        else if (name == "fen")
+        {
+            auto last = command.find("moves");
+            if (last == std::string::npos)
+            {
+                fen = command.substr(command.find("fen ") + 4);
+            }
+            else
+            {
+                auto start = command.find("fen ") + 4;
+                fen = command.substr(start, last - start);
+                continue;
+            }
+        }
 
-		else if (name == "moves")
-		{
-			while (stream >> name)
-			{
-				moves.push_back(std::move(name));
-			}
-			break;
-		}
-	}
+        else if (name == "moves")
+        {
+            while (stream >> name)
+            {
+                moves.push_back(std::move(name));
+            }
+            break;
+        }
+    }
 
-	return std::pair{ fen, moves };
+    return std::pair{fen, moves};
 }
 
 UciGo UciParser::parse_go(Color side) const
 {
-	UciGo options;
+    UciGo options;
 
-	auto parts = split_string(command);
+    auto parts = split_string(command);
 
-	for (auto key = parts.begin(); key != parts.end() - 1; key++)
-	{
-		std::string_view value = *(key + 1);
+    for (auto key = parts.begin(); key != parts.end() - 1; key++)
+    {
+        std::string_view value = *(key + 1);
 
-		if (*key == "infinite")
-			break;
+        if (*key == "infinite")
+            break;
 
-		if (*key == "depth")
-			options.depth = std::stoi(value.data());
+        if (*key == "depth")
+            options.depth = std::stoi(value.data());
 
-		else if (*key == "movetime")
-			options.movetime = std::stoi(value.data());
+        else if (*key == "movetime")
+            options.movetime = std::stoi(value.data());
 
-		else if (*key == "movestogo")
-			options.movestogo = std::stoi(value.data());
+        else if (*key == "movestogo")
+            options.movestogo = std::stoi(value.data());
 
-		else if (*key == "btime" && side == Black)
-			options.btime = std::stoi(value.data());
+        else if (*key == "btime" && side == Black)
+            options.btime = std::stoi(value.data());
 
-		else if (*key == "wtime" && side == White)
-			options.wtime = std::stoi(value.data());
+        else if (*key == "wtime" && side == White)
+            options.wtime = std::stoi(value.data());
 
-		else if (*key == "winc" && side == White)
-			options.winc = std::stoi(value.data());
+        else if (*key == "winc" && side == White)
+            options.winc = std::stoi(value.data());
 
-		else if (*key == "binc" && side == Black)
-			options.binc = std::stoi(value.data());
-
-	}
-	return options;
+        else if (*key == "binc" && side == Black)
+            options.binc = std::stoi(value.data());
+    }
+    return options;
 }
 
 std::pair<std::string, std::string>
-	UciParser::parse_setoption() const
+UciParser::parse_setoption() const
 {
-	std::stringstream stream(command);
-	std::string name, value;
+    std::stringstream stream(command);
+    std::string name, value;
 
-	for (std::string token; stream >> token;)
-	{
-		if (token == "name")
-		{
-			stream >> token;
+    for (std::string token; stream >> token;)
+    {
+        if (token == "name")
+        {
+            stream >> token;
 
-			if (tolower(token) == "clear")
-			{
-				name = std::move(token);
-				stream >> token;
-				name += " " + std::move(tolower(token));
-			}
-			else
-				name = std::move(token);
-		}
+            if (tolower(token) == "clear")
+            {
+                name = std::move(token);
+                stream >> token;
+                name += " " + std::move(tolower(token));
+            }
+            else
+                name = std::move(token);
+        }
 
-		else if (token == "value")
-		{
-			stream >> token;
-			value = std::move(tolower(token));
-			break;
-		}
-	}
-	return { name, value };
+        else if (token == "value")
+        {
+            stream >> token;
+            value = std::move(tolower(token));
+            break;
+        }
+    }
+    return {name, value};
 }

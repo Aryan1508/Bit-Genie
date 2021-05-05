@@ -20,27 +20,32 @@
 
 class MovePicker
 {
-	enum class Stage
-	{
-		HashMove, 
-		GenNoisy, GiveGoodNoisy,
-		Killer1, Killer2, 
-		GiveBadNoisy, GenQuiet, GiveQuiet
-	};
+    enum class Stage
+    {
+        HashMove,
+        GenNoisy,
+        GiveGoodNoisy,
+        Killer1,
+        Killer2,
+        GiveBadNoisy,
+        GenQuiet,
+        GiveQuiet
+    };
 
 public:
-	MovePicker(Position&, Search&, TTable&);
-	
-	bool next(Move&);
+    MovePicker(Position &, Search &, TTable &);
 
-	MoveGenerator<true> gen;
+    bool next(Move &);
+
+    MoveGenerator<true> gen;
+
 private:
-	Position* position;
-	Search*   search;
-	TTable*   table;
+    Position *position;
+    Search *search;
+    TTable *table;
 
-	Stage stage = Stage::HashMove;
-	Movelist::iterator current;
+    Stage stage = Stage::HashMove;
+    Movelist::iterator current;
 };
 
-void sort_qmovelist(Movelist&, Position&, Search& search);
+void sort_qmovelist(Movelist &, Position &, Search &search);

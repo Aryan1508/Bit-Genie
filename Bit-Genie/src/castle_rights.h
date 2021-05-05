@@ -25,37 +25,37 @@
 class CastleRights
 {
 public:
-	CastleRights();
+    CastleRights();
 
     // Reset to 0
-	void reset();
+    void reset();
 
-    // parse a castle fen ('KQkq') 
-	bool parse_fen(std::string_view);
+    // parse a castle fen ('KQkq')
+    bool parse_fen(std::string_view);
 
-    // Return the rooks available for castling of a specific color. 
-	uint64_t get_rooks(Color) const;
+    // Return the rooks available for castling of a specific color.
+    uint64_t get_rooks(Color) const;
 
     // Update the castle rights using a move
     // If a move includes moving the rook, then that side loses
     // its ability to castle using that rook.  If the king moves
     // then that side cannot castle at all
-	void update(Move);
+    void update(Move);
 
-	uint64_t data() const { return rooks; }
+    uint64_t data() const { return rooks; }
 
     // Check if the squares needed for castling are not occupied by any piece
-	static bool castle_path_is_clear(Square rook, uint64_t);
+    static bool castle_path_is_clear(Square rook, uint64_t);
 
     // Return that squares that would be covered if the given rook was to castle
-	static uint64_t get_castle_path(Square rook);
+    static uint64_t get_castle_path(Square rook);
 
     // print out a fen representation of the current castle rights
-	friend std::ostream& operator<<(std::ostream&, const CastleRights);
-private:
-	bool set(const char);
+    friend std::ostream &operator<<(std::ostream &, const CastleRights);
 
 private:
-	uint64_t rooks;
+    bool set(const char);
+
+private:
+    uint64_t rooks;
 };
-

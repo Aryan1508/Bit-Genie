@@ -22,49 +22,48 @@
 
 enum class UciCommands
 {
-	uci,
-	quit,
-	isready,
-	position,
-	go,
-	stop,
-	setoption,
+    uci,
+    quit,
+    isready,
+    position,
+    go,
+    stop,
+    setoption,
 
-
-	// *debugging/other purpose commands*
-	print,
-	perft,
-	bench
+    // *debugging/other purpose commands*
+    print,
+    perft,
+    bench
 };
 
 struct UciGo
 {
-	int depth = 64;
-	int movestogo = 30;
+    int depth = 64;
+    int movestogo = 30;
 
-	int64_t btime = -1;
-	int64_t wtime = -1;
-	int64_t movetime = -1;
-	int64_t binc = -1;
-	int64_t winc = -1;
+    int64_t btime = -1;
+    int64_t wtime = -1;
+    int64_t movetime = -1;
+    int64_t binc = -1;
+    int64_t winc = -1;
 };
 
 class UciParser
 {
 public:
-	UciParser() = default;
+    UciParser() = default;
 
-	bool operator==(UciCommands) const;
-	void take_input();
+    bool operator==(UciCommands) const;
+    void take_input();
 
-	std::pair<std::string, std::vector<std::string>>
-		parse_position_command() const;
+    std::pair<std::string, std::vector<std::string>>
+    parse_position_command() const;
 
-	int parse_perft() const;	
-	UciGo parse_go(Color) const;
-	std::pair<std::string, std::string>
-		parse_setoption() const;
+    int parse_perft() const;
+    UciGo parse_go(Color) const;
+    std::pair<std::string, std::string>
+    parse_setoption() const;
 
 public:
-	std::string command;
+    std::string command;
 };

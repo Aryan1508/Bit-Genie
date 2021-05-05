@@ -20,32 +20,32 @@
 
 static inline int mb_to_b(int mb)
 {
-	return mb * 1000000;
+    return mb * 1000000;
 }
 
 TTable::TTable()
 {
-	resize(32);
+    resize(32);
 }
 
 void TTable::resize(int mb)
 {
-	entries.resize(mb_to_b(mb) / sizeof(TEntry), TEntry());
-	std::cout << "Hash table initialized with " << mb << " MB. ";
-	std::cout << "Total entries: " << entries.size() << std::endl;
+    entries.resize(mb_to_b(mb) / sizeof(TEntry), TEntry());
+    std::cout << "Hash table initialized with " << mb << " MB. ";
+    std::cout << "Total entries: " << entries.size() << std::endl;
 }
 
-void TTable::add(Position const& position, Move move, int score, uint8_t depth, TEFlag flag)
+void TTable::add(Position const &position, Move move, int score, uint8_t depth, TEFlag flag)
 {
-	uint64_t hash = position.key.data();
-	uint64_t index = hash % entries.size();
+    uint64_t hash = position.key.data();
+    uint64_t index = hash % entries.size();
 
-	entries[index] = TEntry(hash, score, move, depth, flag);
+    entries[index] = TEntry(hash, score, move, depth, flag);
 }
 
-TEntry& TTable::retrieve(Position const& position)
+TEntry &TTable::retrieve(Position const &position)
 {
-	uint64_t hash = position.key.data();
-	uint64_t index = hash % entries.size();
-	return entries[index];
+    uint64_t hash = position.key.data();
+    uint64_t index = hash % entries.size();
+    return entries[index];
 }

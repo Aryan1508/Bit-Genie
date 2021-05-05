@@ -58,5 +58,5 @@ struct TEntry;
 template <typename E>
 constexpr typename std::underlying_type<E>::type to_int(E e)
 {
-	return static_cast<typename std::underlying_type<E>::type>(e);
+    return static_cast<typename std::underlying_type<E>::type>(e);
 }

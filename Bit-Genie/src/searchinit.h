@@ -19,17 +19,18 @@
 #include "misc.h"
 #include <thread>
 
-
 class SearchInit
 {
 public:
-	SearchInit() = default;
+    SearchInit() = default;
 
-	void begin(Search&, Position&, TTable&);
-	void end();
-	bool is_searching() const noexcept {
-		return worker.joinable();
-	}
+    void begin(Search &, Position &, TTable &);
+    void end();
+    bool is_searching() const noexcept
+    {
+        return worker.joinable();
+    }
+
 private:
-	std::thread worker;
+    std::thread worker;
 };

@@ -22,40 +22,44 @@
 
 enum class TEFlag : uint8_t
 {
-	none, lower, upper, exact
+    none,
+    lower,
+    upper,
+    exact
 };
 
 struct TEntry
 {
-	uint64_t hash  = 0;
-	int32_t  score = 0;
-	uint16_t move  = 0;
-	uint8_t  depth = 0;
-	TEFlag   flag = TEFlag::none;
+    uint64_t hash = 0;
+    int32_t score = 0;
+    uint16_t move = 0;
+    uint8_t depth = 0;
+    TEFlag flag = TEFlag::none;
 
-	TEntry() = default;
+    TEntry() = default;
 
-	TEntry(uint64_t h, int32_t s, Move m, uint8_t d, TEFlag fl)
-		: hash(h), score(s), move(move_without_score(m)), depth(d), flag(fl)
-	{}
+    TEntry(uint64_t h, int32_t s, Move m, uint8_t d, TEFlag fl)
+        : hash(h), score(s), move(move_without_score(m)), depth(d), flag(fl)
+    {
+    }
 };
 
 class TTable
 {
 public:
-	TTable();
+    TTable();
 
-	TTable(int mb) { resize(mb); }
+    TTable(int mb) { resize(mb); }
 
-	void resize(int);
-	void add(Position const&, Move, int score, uint8_t depth, TEFlag);
-	void reset()
-	{
-		std::fill(entries.begin(), entries.end(), TEntry());
-	}
+    void resize(int);
+    void add(Position const &, Move, int score, uint8_t depth, TEFlag);
+    void reset()
+    {
+        std::fill(entries.begin(), entries.end(), TEntry());
+    }
 
-	TEntry& retrieve(Position const&);
+    TEntry &retrieve(Position const &);
 
 private:
-	std::vector<TEntry> entries;
+    std::vector<TEntry> entries;
 };

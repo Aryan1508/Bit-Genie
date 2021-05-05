@@ -17,4 +17,4 @@
 */
 #pragma once
 
-void uci_input_loop(int argc, char** argv);
+void uci_input_loop(int argc, char **argv);

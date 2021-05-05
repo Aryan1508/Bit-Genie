@@ -21,15 +21,16 @@
 #include "attacks.h"
 #include "board.h"
 
-enum {
-	PawnDoubled = S(-10, -10),
-	PawnIsolated = S(-15, -15)
+enum
+{
+    PawnDoubled = S(-10, -10),
+    PawnIsolated = S(-15, -15)
 };
 
 // evaluation scores are taken from weiss - Terje Kirstihagen
 
-static constexpr int open_file_scores[2] = { S(28, 10), S(-9,  5) };
-static constexpr int semiopen_file_scores[2] = { S(9, 15), S(1,  5) };
+static constexpr int open_file_scores[2] = {S(28, 10), S(-9, 5)};
+static constexpr int semiopen_file_scores[2] = {S(9, 15), S(1, 5)};
 
 static constexpr int pawn_psqt[]
 { 
@@ -109,275 +110,272 @@ static constexpr int mobility_scores[4][28]
     S(106, 85), S(112, 84), S(104,111), S(108,131) }
 };
 
-template<PieceType type, typename Callable, typename... Args>
+template <PieceType type, typename Callable, typename... Args>
 static constexpr int mobility_score(Callable F, Args... args)
 {
-	return mobility_scores[type - 1][popcount64(F(args...))];
+    return mobility_scores[type - 1][popcount64(F(args...))];
 }
 
 static constexpr int passed_pawn_scores[total_ranks] = {
-	S( 0, 0 ),
-    S( -16, -16 ),
-    S( -24, -24 ),
-    S( 2, 2 ),
-    S( 55, 54 ),
-    S( 162, 162 ),
-    S( 228, 228 ),
-    S( 0, 0),
+    S(0, 0),
+    S(-16, -16),
+    S(-24, -24),
+    S(2, 2),
+    S(55, 54),
+    S(162, 162),
+    S(228, 228),
+    S(0, 0),
 };
 
-static bool material_draw(Position const& position)
+static bool material_draw(Position const &position)
 {
-	auto single = [](uint64_t bb) { return bb && !is_several(bb); };
+    auto single = [](uint64_t bb) { return bb && !is_several(bb); };
 
-	auto& pieces    = position.pieces;
-	auto& bitboards = position.pieces.bitboards;
+    auto &pieces = position.pieces;
+    auto &bitboards = position.pieces.bitboards;
 
-	if (bitboards[Pawn] || bitboards[Queen])
-		return false;
+    if (bitboards[Pawn] || bitboards[Queen])
+        return false;
 
-	if (!bitboards[Rook])
-	{
-		if (!bitboards[Bishop])
-		{
-			uint64_t white = pieces.get_piece_bb<Knight>(White);
-			uint64_t black = pieces.get_piece_bb<Knight>(Black);
+    if (!bitboards[Rook])
+    {
+        if (!bitboards[Bishop])
+        {
+            uint64_t white = pieces.get_piece_bb<Knight>(White);
+            uint64_t black = pieces.get_piece_bb<Knight>(Black);
 
-			return popcount64(black) <= 2 && popcount64(white) <= 2;
-		}
+            return popcount64(black) <= 2 && popcount64(white) <= 2;
+        }
 
-		if (!bitboards[Knight])
-		{
-			uint64_t white = pieces.get_piece_bb<Bishop>(White);
-			uint64_t black = pieces.get_piece_bb<Bishop>(Black);
+        if (!bitboards[Knight])
+        {
+            uint64_t white = pieces.get_piece_bb<Bishop>(White);
+            uint64_t black = pieces.get_piece_bb<Bishop>(Black);
 
-			return abs(popcount64(white) - popcount64(black)) <= 2;
-		}
-	}
-	else
-	{
-		// Rook vs 2 minors
-		if (single(bitboards[Rook]))
-		{
-			Color owner = pieces.get_piece_bb<Rook>(White) ? White : Black;
+            return abs(popcount64(white) - popcount64(black)) <= 2;
+        }
+    }
+    else
+    {
+        // Rook vs 2 minors
+        if (single(bitboards[Rook]))
+        {
+            Color owner = pieces.get_piece_bb<Rook>(White) ? White : Black;
 
-			uint64_t minor = bitboards[Bishop] | bitboards[Knight];
+            uint64_t minor = bitboards[Bishop] | bitboards[Knight];
 
-			return !(minor & pieces.colors[owner]) 
-				&& (popcount64(minor & pieces.colors[!owner]) == 1 
-					|| popcount64(minor & pieces.colors[!owner]) == 2);
-		}
-	}
+            return !(minor & pieces.colors[owner]) && (popcount64(minor & pieces.colors[!owner]) == 1 || popcount64(minor & pieces.colors[!owner]) == 2);
+        }
+    }
 
-	return false;
+    return false;
 }
 
 static bool pawn_doubled(uint64_t friend_pawns, Square sq)
 {
-	uint64_t file = BitMask::files[sq];
-	return is_several(file & friend_pawns);
+    uint64_t file = BitMask::files[sq];
+    return is_several(file & friend_pawns);
 }
 
 static bool pawn_passed(uint64_t enemy_pawns, Color us, Square sq)
 {
-	return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
+    return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
 }
 
 static bool pawn_isolated(uint64_t friend_pawns, Square sq)
 {
-	return !(friend_pawns & BitMask::neighbor_files[sq]);
+    return !(friend_pawns & BitMask::neighbor_files[sq]);
 }
 
 static inline Square psqt_sq(Square sq, Color color)
 {
-	return color == White ? flip_square(sq) : sq;
+    return color == White ? flip_square(sq) : sq;
 }
 
 // Pawn evaluation has the following aspects
 //  - piece square tables -> general value of how strong a piece is on a square
-//  - penalty for doubled pawns 
+//  - penalty for doubled pawns
 //  - penalty for isolated pawns
 //  - bonus for passed pawns. Extra bonus if the passed pawn is on a rank close to promotion
-static int evaluate_pawn(Position const& position, Square sq, Color us)
+static int evaluate_pawn(Position const &position, Square sq, Color us)
 {
-	int score = 0;
-	uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
-	uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
+    int score = 0;
+    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
+    uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
 
-	score += pawn_doubled(friend_pawns, sq)   * PawnDoubled;
-	score += pawn_isolated(friend_pawns, sq)  * PawnIsolated;
-	score += pawn_passed(enemy_pawns, us, sq) * passed_pawn_scores[to_int(rank_of(sq, us))];
-	score += pawn_psqt[psqt_sq(sq, us)];
+    score += pawn_doubled(friend_pawns, sq) * PawnDoubled;
+    score += pawn_isolated(friend_pawns, sq) * PawnIsolated;
+    score += pawn_passed(enemy_pawns, us, sq) * passed_pawn_scores[to_int(rank_of(sq, us))];
+    score += pawn_psqt[psqt_sq(sq, us)];
 
-	return score;
+    return score;
 }
 
 // Knight evaluation has the following aspects
 //  - piece square tables -> general value of how strong a piece is on a square
 //  - Penalise immobile knights and give bonus for knights with more squares to move on
-static int evaluate_knight(Position const& position, Square sq, Color us)
+static int evaluate_knight(Position const &position, Square sq, Color us)
 {
-	int score = 0;
+    int score = 0;
 
-	score += knight_psqt[psqt_sq(sq, us)];
-	score += mobility_score<Knight>(Attacks::knight, sq);
+    score += knight_psqt[psqt_sq(sq, us)];
+    score += mobility_score<Knight>(Attacks::knight, sq);
 
-	return score;
+    return score;
 }
 
-static bool is_on_open_file(Position const& position, Square sq)
+static bool is_on_open_file(Position const &position, Square sq)
 {
-	uint64_t file = BitMask::files[sq];
-	return !(file & position.pieces.bitboards[Pawn]);
+    uint64_t file = BitMask::files[sq];
+    return !(file & position.pieces.bitboards[Pawn]);
 }
 
-static bool is_on_semiopen_file(Position const& position, Square sq)
+static bool is_on_semiopen_file(Position const &position, Square sq)
 {
-	uint64_t file = BitMask::files[sq];
-	uint64_t white = position.pieces.get_piece_bb<Pawn>(White);
-	uint64_t black = position.pieces.get_piece_bb<Pawn>(Black);
+    uint64_t file = BitMask::files[sq];
+    uint64_t white = position.pieces.get_piece_bb<Pawn>(White);
+    uint64_t black = position.pieces.get_piece_bb<Pawn>(Black);
 
-	return !(file & white) || !(file & black);
+    return !(file & white) || !(file & black);
 }
 
 // Rook evaluation has the following terms
 // - piece square tables -> general value of how strong a piece is on a square
-// - bonus for higher mobility and penalty for low 
+// - bonus for higher mobility and penalty for low
 // - bonus for a rook on a semi-open file
 // - bonus for a rook on an open file
-static int evaluate_rook(Position const& position, Square sq, Color us)
+static int evaluate_rook(Position const &position, Square sq, Color us)
 {
-	int score = 0;
+    int score = 0;
 
-	score += rook_psqt[psqt_sq(sq, us)];
-	score += mobility_score<Rook>(Attacks::rook, sq, position.total_occupancy());
-	score += is_on_open_file(position, sq)     * open_file_scores[Rook - 3];
-	score += is_on_semiopen_file(position, sq) * semiopen_file_scores[Rook - 3];
+    score += rook_psqt[psqt_sq(sq, us)];
+    score += mobility_score<Rook>(Attacks::rook, sq, position.total_occupancy());
+    score += is_on_open_file(position, sq) * open_file_scores[Rook - 3];
+    score += is_on_semiopen_file(position, sq) * semiopen_file_scores[Rook - 3];
 
-	return score;
+    return score;
 }
 
 // Queen evaluation has the following terms
 // - piece square tables -> general value of how strong a piece is on a square
-// - bonus for higher mobility and penalty for low 
+// - bonus for higher mobility and penalty for low
 // - bonus for a queen on a semi-open file
 // - bonus for a queen on an open file
-static int evaluate_queen(Position const& position, Square sq, Color us)
+static int evaluate_queen(Position const &position, Square sq, Color us)
 {
-	int score = 0;
+    int score = 0;
 
-	score += queen_psqt[psqt_sq(sq, us)];
-	score += mobility_score<Queen>(Attacks::queen, sq, position.total_occupancy());
-	score += is_on_open_file(position, sq) * open_file_scores[Queen - 3];
-	score += is_on_semiopen_file(position, sq) * semiopen_file_scores[Queen - 3];
+    score += queen_psqt[psqt_sq(sq, us)];
+    score += mobility_score<Queen>(Attacks::queen, sq, position.total_occupancy());
+    score += is_on_open_file(position, sq) * open_file_scores[Queen - 3];
+    score += is_on_semiopen_file(position, sq) * semiopen_file_scores[Queen - 3];
 
-	return score;
+    return score;
 }
 
 // Bishop evaluation has the following terms
 //  - piece square tables -> general value of how strong a piece is on a square
-//  - bonus for higher mobility and penalty for low 
-static int evaluate_bishop(Position const& position, Square sq, Color us)
+//  - bonus for higher mobility and penalty for low
+static int evaluate_bishop(Position const &position, Square sq, Color us)
 {
-	int score = 0;
+    int score = 0;
 
-	score += bishop_psqt[psqt_sq(sq, us)];
-	score += mobility_score<Bishop>(Attacks::bishop, sq, position.total_occupancy());
+    score += bishop_psqt[psqt_sq(sq, us)];
+    score += mobility_score<Bishop>(Attacks::bishop, sq, position.total_occupancy());
 
-	return score;
+    return score;
 }
 
-template<typename Callable>
-static int evaluate_piece(Position const& position, Callable F, uint64_t pieces, Color us)
+template <typename Callable>
+static int evaluate_piece(Position const &position, Callable F, uint64_t pieces, Color us)
 {
-	int score = 0;
-	while (pieces)
-	{
-		Square sq = pop_lsb(pieces);
-		score += F(position, sq, us);
-	}
-	return score;
+    int score = 0;
+    while (pieces)
+    {
+        Square sq = pop_lsb(pieces);
+        score += F(position, sq, us);
+    }
+    return score;
 }
 
-template<PieceType type, typename Callable>
-static int evaluate_piece(Position const& position, Callable F)
+template <PieceType type, typename Callable>
+static int evaluate_piece(Position const &position, Callable F)
 {
-	int score = 0;
+    int score = 0;
 
-	uint64_t white = position.pieces.bitboards[type] & position.pieces.colors[White];
-	uint64_t black = position.pieces.bitboards[type] & position.pieces.colors[Black];
+    uint64_t white = position.pieces.bitboards[type] & position.pieces.colors[White];
+    uint64_t black = position.pieces.bitboards[type] & position.pieces.colors[Black];
 
-	score += evaluate_piece(position, F, white, Color::White);
-	score -= evaluate_piece(position, F, black, Color::Black);
-	return score;
+    score += evaluate_piece(position, F, white, Color::White);
+    score -= evaluate_piece(position, F, black, Color::Black);
+    return score;
 }
 
 static int material_balance(uint64_t pieces, PieceType piece)
 {
-	return popcount64(pieces) * get_score(Piece(piece));
+    return popcount64(pieces) * get_score(Piece(piece));
 }
 
-static int material_balance(Position const& position)
+static int material_balance(Position const &position)
 {
-	auto& pieces = position.pieces;
-	int score = 0;
+    auto &pieces = position.pieces;
+    int score = 0;
 
-	for (int i = 0; i < total_pieces; i++)
-	{
-		PieceType type = PieceType(i);
-		uint64_t white = pieces.bitboards[i] & pieces.colors[White];
-		uint64_t black = pieces.bitboards[i] & pieces.colors[Black];
+    for (int i = 0; i < total_pieces; i++)
+    {
+        PieceType type = PieceType(i);
+        uint64_t white = pieces.bitboards[i] & pieces.colors[White];
+        uint64_t black = pieces.bitboards[i] & pieces.colors[Black];
 
-		score += material_balance(white, type);
-		score -= material_balance(black, type);
-	}
-	return score;
+        score += material_balance(white, type);
+        score -= material_balance(black, type);
+    }
+    return score;
 }
 
-static int get_phase(Position const& position)
+static int get_phase(Position const &position)
 {
-	constexpr int rook_phase = 2;
-	constexpr int queen_phase = 4;
-	
-	int phase = 24;
+    constexpr int rook_phase = 2;
+    constexpr int queen_phase = 4;
 
-	uint64_t knights = position.pieces.bitboards[Knight];
-	uint64_t bishops = position.pieces.bitboards[Bishop];
-	uint64_t rooks   = position.pieces.bitboards[Rook];
-	uint64_t queens  = position.pieces.bitboards[Queen];
+    int phase = 24;
 
-	phase -= popcount64(knights);
-	phase -= popcount64(bishops);
-	phase -= popcount64(queens) * queen_phase;
-	phase -= popcount64(rooks) * rook_phase;
-	
-	return phase;
+    uint64_t knights = position.pieces.bitboards[Knight];
+    uint64_t bishops = position.pieces.bitboards[Bishop];
+    uint64_t rooks = position.pieces.bitboards[Rook];
+    uint64_t queens = position.pieces.bitboards[Queen];
+
+    phase -= popcount64(knights);
+    phase -= popcount64(bishops);
+    phase -= popcount64(queens) * queen_phase;
+    phase -= popcount64(rooks) * rook_phase;
+
+    return phase;
 }
 
-static inline int scale_score(Position const& position, int score)
+static inline int scale_score(Position const &position, int score)
 {
 #define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
 #define eg_score(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
-	int phase = get_phase(position);
-	return ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase)) / 256;
+    int phase = get_phase(position);
+    return ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase)) / 256;
 }
 
-
-int eval_position(Position const& position)
+int eval_position(Position const &position)
 {
-	int score = 0;
+    int score = 0;
 
-	if (material_draw(position))
-		return 0;
+    if (material_draw(position))
+        return 0;
 
-	score += material_balance(position);
-	score += evaluate_piece<Pawn>(position, evaluate_pawn);
-	score += evaluate_piece<Knight>(position, evaluate_knight);
-	score += evaluate_piece<Rook>(position, evaluate_rook);
-	score += evaluate_piece<Bishop>(position, evaluate_bishop);
-	score += evaluate_piece<Queen>(position, evaluate_queen);
+    score += material_balance(position);
+    score += evaluate_piece<Pawn>(position, evaluate_pawn);
+    score += evaluate_piece<Knight>(position, evaluate_knight);
+    score += evaluate_piece<Rook>(position, evaluate_rook);
+    score += evaluate_piece<Bishop>(position, evaluate_bishop);
+    score += evaluate_piece<Queen>(position, evaluate_queen);
 
-	score = scale_score(position, score);
+    score = scale_score(position, score);
 
-	return position.side == White ? score : -score;
+    return position.side == White ? score : -score;
 }

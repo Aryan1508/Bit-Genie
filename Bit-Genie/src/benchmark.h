@@ -20,6 +20,6 @@
 
 namespace BenchMark
 {
-	void perft(Position&, int depth);
-	void bench(Position, TTable&); 
+    void perft(Position &, int depth);
+    void bench(Position, TTable &);
 }

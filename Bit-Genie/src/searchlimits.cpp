@@ -20,5 +20,5 @@
 
 void SearchLimits::update()
 {
-	stopped = SEARCH_ABORT || (time_set && std::chrono::duration_cast<std::chrono::milliseconds>(stopwatch.elapsed_time()).count() >= movetime);
+    stopped = SEARCH_ABORT || (time_set && std::chrono::duration_cast<std::chrono::milliseconds>(stopwatch.elapsed_time()).count() >= movetime);
 }

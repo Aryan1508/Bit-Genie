@@ -23,98 +23,101 @@
 
 class Position
 {
-	friend class PositionHistory;
+    friend class PositionHistory;
+
 public:
-	Position();
-	bool set_fen(std::string_view);
+    Position();
+    bool set_fen(std::string_view);
 
-	uint64_t friend_bb() const;
+    uint64_t friend_bb() const;
 
-	uint64_t enemy_bb() const;
+    uint64_t enemy_bb() const;
 
-	uint64_t total_occupancy() const;
+    uint64_t total_occupancy() const;
 
-	void apply_move(Move);
+    void apply_move(Move);
 
-	void apply_move(Move, int& ply);
+    void apply_move(Move, int &ply);
 
-	void revert_move();
+    void revert_move();
 
-	void revert_move(int& ply);
+    void revert_move(int &ply);
 
-	void apply_null_move(int& ply);
+    void apply_null_move(int &ply);
 
-	void revert_null_move(int& ply);
+    void revert_null_move(int &ply);
 
-	bool move_was_legal() const;
+    bool move_was_legal() const;
 
-	bool move_is_legal(Move);
+    bool move_is_legal(Move);
 
-	bool move_is_pseudolegal(Move);
+    bool move_is_pseudolegal(Move);
 
-	bool move_exists(Move);
+    bool move_exists(Move);
 
-	bool apply_move(std::string const&);
+    bool apply_move(std::string const &);
 
-	bool should_do_null() const;
+    bool should_do_null() const;
 
-	void perft(int, uint64_t&, bool = true);
+    void perft(int, uint64_t &, bool = true);
 
-	bool king_in_check() const;
+    bool king_in_check() const;
 
-	friend std::ostream& operator<<(std::ostream&, Position const&);
+    friend std::ostream &operator<<(std::ostream &, Position const &);
+
 public:
-	PieceManager pieces;
+    PieceManager pieces;
 
-	CastleRights castle_rights;
+    CastleRights castle_rights;
 
-	ZobristKey key;
+    ZobristKey key;
 
-	PositionHistory history;
+    PositionHistory history;
 
 private:
-	void reset();
+    void reset();
 
-	bool parse_fen_side(std::string_view);
+    bool parse_fen_side(std::string_view);
 
-	bool parse_fen_hmn(std::string_view);
+    bool parse_fen_hmn(std::string_view);
 
-	void reset_halfmoves();
+    void reset_halfmoves();
 
-	void reset_ep();
+    void reset_ep();
 
-	bool parse_fen_ep(std::string_view);
+    bool parse_fen_ep(std::string_view);
 
-	inline void switch_players()
-	{
-		side = !side;
-	}
+    inline void switch_players()
+    {
+        side = !side;
+    }
 
-	Piece apply_normal_move(Move);
+    Piece apply_normal_move(Move);
 
-	Piece apply_enpassant(Move);
+    Piece apply_enpassant(Move);
 
-	Piece apply_castle(Move);
+    Piece apply_castle(Move);
 
-	Piece apply_promotion(Move);
+    Piece apply_promotion(Move);
 
-	void revert_normal_move(Move, Piece);
+    void revert_normal_move(Move, Piece);
 
-	void revert_enpassant(Move, Piece);
+    void revert_enpassant(Move, Piece);
 
-	void revert_castle(Move);
+    void revert_castle(Move);
 
-	void revert_promotion(Move, Piece);
+    void revert_promotion(Move, Piece);
 
-	void update_ep(Square to);
+    void update_ep(Square to);
 
-	PositionHistory::Undo& save(Move = NullMove);
+    PositionHistory::Undo &save(Move = NullMove);
 
-	void restore();
+    void restore();
 
-	void restore(Move&, Piece&);
+    void restore(Move &, Piece &);
+
 public:
-	Color side;
-	int half_moves;
-	Square ep_sq;
+    Color side;
+    int half_moves;
+    Square ep_sq;
 };

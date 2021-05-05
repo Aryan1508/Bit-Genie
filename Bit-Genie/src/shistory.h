@@ -24,21 +24,21 @@
 class SHistory
 {
 public:
-	SHistory()
-	{
-		std::memset(&history[0][0][0], 0, sizeof(history));
-	}
+    SHistory()
+    {
+        std::memset(&history[0][0][0], 0, sizeof(history));
+    }
 
-	int16_t& get(Position& position, Move move) noexcept
-	{
-		return history[position.side][move_from(move)][move_to(move)];
-	}
+    int16_t &get(Position const &position, Move move) noexcept
+    {
+        return history[position.side][move_from(move)][move_to(move)];
+    }
 
-	void add(Position& position, Move move, int depth) noexcept
-	{
-		get(position, move) += depth * depth;		
-	}
+    void add(Position &position, Move move, int depth) noexcept
+    {
+        get(position, move) += depth * depth;
+    }
 
 private:
-	int16_t history[2][64][64]{0};
+    int16_t history[2][64][64]{0};
 };
