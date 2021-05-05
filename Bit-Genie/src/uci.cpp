@@ -25,17 +25,17 @@
 #include "benchmark.h"
 #include "searchinit.h"
 
-const char* version = "3.4";
+const char *version = "3.4";
 
 namespace
 {
-    template<typename... Args>
-    void printl(Args const&... args)
+    template <typename... Args>
+    void printl(Args const &...args)
     {
         (std::cout << ... << args) << std::endl;
     }
 
-    void uci_ok() 
+    void uci_ok()
     {
         printl("id name Bit-Genie ", version);
         printl("id author Aryan Parekh");
@@ -49,7 +49,7 @@ namespace
         printl("readyok");
     }
 
-    void uci_setoption(UciParser const& parser, TTable& tt)
+    void uci_setoption(UciParser const &parser, TTable &tt)
     {
         auto [name, value] = parser.parse_setoption();
 
@@ -64,13 +64,13 @@ namespace
             tt.reset();
     }
 
-    void uci_stop(SearchInit& worker)
+    void uci_stop(SearchInit &worker)
     {
         if (worker.is_searching())
             worker.end();
     }
 
-    void uci_go(UciParser const& parser, Position& position, TTable& tt, SearchInit& worker)
+    void uci_go(UciParser const &parser, Position &position, TTable &tt, SearchInit &worker)
     {
         UciGo options = parser.parse_go(position.side);
 
@@ -82,7 +82,7 @@ namespace
 
         if (options.movetime == -1)
         {
-            auto& t = position.side == White ? options.wtime : options.btime;
+            auto &t = position.side == White ? options.wtime : options.btime;
 
             if (t == -1)
                 search.limits.movetime = std::numeric_limits<int64_t>::max();
@@ -102,7 +102,7 @@ namespace
         worker.begin(search, position, tt);
     }
 
-    void uci_setposition(UciParser const& parser, Position& position)
+    void uci_setposition(UciParser const &parser, Position &position)
     {
         auto [fen, moves] = parser.parse_position_command();
 
@@ -116,7 +116,7 @@ namespace
         Position temp = position;
 
         temp.history.total = 0;
-        for (std::string const& move : moves)
+        for (std::string const &move : moves)
         {
             if (!temp.apply_move(move))
             {
@@ -129,56 +129,56 @@ namespace
     }
 }
 
-
-void uci_input_loop(int argc, char** argv)
+void uci_input_loop(int argc, char **argv)
 {
-	printl("Bit-Genie ", version, " by Aryan Parekh");
+    printl("Bit-Genie ", version, " by Aryan Parekh");
 
-	UciParser  command;
-	Position   position;
-	TTable     table(2);
-	SearchInit worker;
+    UciParser command;
+    Position position;
+    TTable table(2);
+    SearchInit worker;
 
-	if (argc > 1 && !strncmp(argv[1], "bench", 5)) {
-		BenchMark::bench(position, table);
-		return;
-	}
+    if (argc > 1 && !strncmp(argv[1], "bench", 5))
+    {
+        BenchMark::bench(position, table);
+        return;
+    }
 
-	while (true)
-	{
-		command.take_input();
+    while (true)
+    {
+        command.take_input();
 
-		if (command == UciCommands::quit)
-		{
+        if (command == UciCommands::quit)
+        {
             uci_stop(worker);
             break;
-		}
+        }
 
-		else if (command == UciCommands::isready)
-			uci_ready();
+        else if (command == UciCommands::isready)
+            uci_ready();
 
-		else if (command == UciCommands::uci)
+        else if (command == UciCommands::uci)
             uci_ok();
 
-		else if (command == UciCommands::position)
+        else if (command == UciCommands::position)
             uci_setposition(command, position);
 
-		else if (command == UciCommands::print)
-			printl(position);
+        else if (command == UciCommands::print)
+            printl(position);
 
-		else if (command == UciCommands::perft)
-			BenchMark::perft(position, command.parse_perft());
-	
-		else if (command == UciCommands::go)
+        else if (command == UciCommands::perft)
+            BenchMark::perft(position, command.parse_perft());
+
+        else if (command == UciCommands::go)
             uci_go(command, position, table, worker);
 
-		else if (command == UciCommands::stop)
+        else if (command == UciCommands::stop)
             uci_stop(worker);
 
-		else if (command == UciCommands::setoption)
+        else if (command == UciCommands::setoption)
             uci_setoption(command, table);
 
-		else if (command == UciCommands::bench)
-			BenchMark::bench(position, table);
-	}
+        else if (command == UciCommands::bench)
+            BenchMark::bench(position, table);
+    }
 }
