@@ -1,4 +1,4 @@
-PROJECT := Bit-Genie
+EXE := Bit-Genie
 SRC_DIR := src
 OBJ_DIR := obj
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
