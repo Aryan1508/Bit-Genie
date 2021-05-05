@@ -613,7 +613,7 @@ void Position::revert_move()
 	switch_players();
 }
 
-bool Position::apply_move(std::string move)
+bool Position::apply_move(std::string const& move)
 {
 	MoveGenerator gen;
 	gen.generate(*this);

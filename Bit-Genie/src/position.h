@@ -54,7 +54,7 @@ public:
 
 	bool move_exists(Move);
 
-	bool apply_move(std::string);
+	bool apply_move(std::string const&);
 
 	bool should_do_null() const;
 
