@@ -116,6 +116,19 @@ static constexpr int mobility_score(Callable F, Args... args)
     return mobility_scores[type - 1][popcount64(F(args...))];
 }
 
+template<PieceType pt>
+static constexpr int safe_mobility_score(Position const& position, Color us, Square sq)
+{
+    uint64_t enemy_pawns = position.pieces.get_piece_bb(make_piece(Pawn, !us));
+    uint64_t forward = us == White ? shift<Direction::south>(enemy_pawns) : shift<Direction::north>(enemy_pawns);
+    uint64_t enemy_pawn_attacks = shift<Direction::east>(forward) | shift<Direction::west>(forward);
+
+    uint64_t occupancy   = position.total_occupancy();
+    uint64_t attacks     = Attacks::generate(pt, sq, occupancy) & ~enemy_pawn_attacks;
+
+    return mobility_scores[pt - 1][popcount64(attacks)];
+}
+
 static constexpr int passed_pawn_scores[total_ranks] = {
     S(0, 0),
     S(-16, -16),
@@ -219,7 +232,7 @@ static int evaluate_knight(Position const &position, Square sq, Color us)
     int score = 0;
 
     score += knight_psqt[psqt_sq(sq, us)];
-    score += mobility_score<Knight>(Attacks::knight, sq);
+    score += safe_mobility_score<Knight>(position, us, sq);
 
     return score;
 }
