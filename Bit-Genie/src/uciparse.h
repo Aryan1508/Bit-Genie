@@ -54,7 +54,7 @@ public:
     UciParser() = default;
 
     bool operator==(UciCommands) const;
-    void take_input();
+    bool take_input();
 
     std::pair<std::string, std::vector<std::string>>
     parse_position_command() const;

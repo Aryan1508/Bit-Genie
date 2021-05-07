@@ -144,10 +144,8 @@ void uci_input_loop(int argc, char **argv)
         return;
     }
 
-    while (true)
+    while (command.take_input())
     {
-        command.take_input();
-
         if (command == UciCommands::quit)
         {
             uci_stop(worker);

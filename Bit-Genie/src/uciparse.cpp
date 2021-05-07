@@ -20,10 +20,11 @@
 #include "piece.h"
 #include <utility>
 
-void UciParser::take_input()
+bool UciParser::take_input()
 {
-    std::getline(std::cin, command);
+    auto& val = std::getline(std::cin, command);
     trim(command);
+    return bool(val);
 }
 
 int UciParser::parse_perft() const
