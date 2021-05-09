@@ -186,10 +186,13 @@ namespace
                 bool quiet = !move_is_capture(position, move);
 
                 int R = lmr_reductions_array[quiet][std::min(move_num, 31)];
+                int new_depth = depth - 1;
 
                 R -= pv_node;
 
-                score = -pvs(position, search, tt, depth - R, -alpha - 1, -alpha, false, false).score;
+                int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
+
+                score = -pvs(position, search, tt, RDepth, -alpha - 1, -alpha, false, false).score;
 
                 if (score > alpha)
                     score = -pvs(position, search, tt, depth - 1, -beta, -alpha, false).score;
