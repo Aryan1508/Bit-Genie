@@ -372,7 +372,7 @@ uint64_t bench_search_position(Position &position, TTable &tt)
     SEARCH_ABORT = false;
 
     for (int depth = 1;
-         depth <= 9;
+         depth <= 10;
          depth++)
     {
         search.info.ply = 0;
