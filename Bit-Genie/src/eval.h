@@ -23,16 +23,16 @@
 
 enum
 {
-    PawnScoreMg = 119,
-    PawnScoreEg = 126,
-    KnightScoreMg = 321,
-    KnightScoreEg = 322,
-    BishopScoreMg = 354,
-    BishopScoreEg = 346,
-    RookScoreMg = 565,
-    RookScoreEg = 565,
-    QueenScoreMg = 1082,
-    QueenScoreEg = 1082
+    PawnScoreMg = 114,
+    PawnScoreEg = 216,
+    KnightScoreMg = 370,
+    KnightScoreEg = 260,
+    BishopScoreMg = 396,
+    BishopScoreEg = 253,
+    RookScoreMg = 596,
+    RookScoreEg = 657,
+    QueenScoreMg = 1175,
+    QueenScoreEg = 1175
 };
 
 constexpr int piece_scores[13]{
