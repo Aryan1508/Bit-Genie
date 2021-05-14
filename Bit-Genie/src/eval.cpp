@@ -129,16 +129,11 @@ static constexpr int safe_mobility_score(Position const& position, Color us, Squ
     return mobility_scores[pt - 1][popcount64(attacks)];
 }
 
-static constexpr int passed_pawn_scores[total_ranks] = {
-    S(0, 0),
-    S(-16, -16),
-    S(-24, -24),
-    S(2, 2),
-    S(55, 54),
-    S(162, 162),
-    S(228, 228),
-    S(0, 0),
+constexpr int passed_pawn_scores[total_ranks] = {
+    S(  0, 0 ),   S(  -12, -16 ), S(  -12, -10 ), S(  7, 6 ), 
+    S(  41, 42 ), S(  140, 148 ), S(  226, 228 ), S(  0, 0 ), 
 };
+
 
 static bool material_draw(Position const &position)
 {
