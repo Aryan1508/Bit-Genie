@@ -21,14 +21,7 @@
 #include "attacks.h"
 #include "board.h"
 
-enum
-{
-    PawnDoubled = S(-10, -10),
-    PawnIsolated = S(-15, -15)
-};
-
 // evaluation scores are taken from weiss - Terje Kirstihagen
-
 static constexpr int open_file_scores[2] = {S(28, 10), S(-9, 5)};
 static constexpr int semiopen_file_scores[2] = {S(9, 15), S(1, 5)};
 
@@ -94,11 +87,13 @@ static constexpr int queen_psqt[]
 
 static constexpr int mobility_scores[4][28] 
 {
-  { S(-58,-54), S(-24,-67), S( -4,-23), S(  6, 14), S( 15, 29), S( 18, 49), S( 26, 52), S( 36, 48),
-    S( 51, 28) },
+  {   S(  -125, -115 ), S(  -26, -77 ), S(  -13, -29 ),
+      S(  4, 9 ),       S(  21, 36 ),   S(  29, 55 ), 
+      S(  36, 59 ),     S(  44, 48 ),   S(  49, 13 ) },
   
-  { S(-55,-95), S(-19,-92), S( -1,-37), S(  6, -4), S( 14, 13), S( 21, 37), S( 25, 53), S( 23, 61),
-    S( 22, 69), S( 27, 69), S( 31, 66), S( 58, 52), S( 59, 68), S( 49, 51) },
+  { S( -80, -70 ),S(  -76, -67 ), S(  -18, -14 ), S(  -11, -11 ), S(  3, 4 ),   S(  12, 15 ), 
+    S(  23, 21 ), S(  28, 29 )  , S(  30, 31 ),   S(  41, 35 ),   S(  39, 40 ), S(  36, 30 ), 
+    S(  40, 34 ), S(  40, 39 )  , },
  
   { S( -57, -69 ), S( -28, -58 ), S( 0, -31 ), S( -13, -18 ), S( 5, 18 ), S( 5, 48 ), S( 15, 73 ),
     S( 30, 85 ),   S( 30, 82 ),   S( 32, 81 ), S( 36, 81 ),   S( 37, 82 ),S( 40, 84 ),S( 48, 66 ),
@@ -109,7 +104,6 @@ static constexpr int mobility_scores[4][28]
     S( 26, 69), S( 26, 69), S( 24, 73), S( 29, 72), S( 34, 74), S( 51, 63), S( 60, 69), S( 79, 66),
     S(106, 85), S(112, 84), S(104,111), S(108,131) }
 };
-
 template <PieceType type, typename Callable, typename... Args>
 static constexpr int mobility_score(Callable F, Args... args)
 {
@@ -129,16 +123,11 @@ static constexpr int safe_mobility_score(Position const& position, Color us, Squ
     return mobility_scores[pt - 1][popcount64(attacks)];
 }
 
-static constexpr int passed_pawn_scores[total_ranks] = {
-    S(0, 0),
-    S(-16, -16),
-    S(-24, -24),
-    S(2, 2),
-    S(55, 54),
-    S(162, 162),
-    S(228, 228),
-    S(0, 0),
+constexpr int passed_pawn_scores[total_ranks] = {
+    S(  0, 0 ),   S(  -12, -16 ), S(  -12, -10 ), S(  7, 6 ), 
+    S(  41, 42 ), S(  140, 148 ), S(  226, 228 ), S(  0, 0 ), 
 };
+
 
 static bool material_draw(Position const &position)
 {
@@ -184,20 +173,9 @@ static bool material_draw(Position const &position)
     return false;
 }
 
-static bool pawn_doubled(uint64_t friend_pawns, Square sq)
-{
-    uint64_t file = BitMask::files[sq];
-    return is_several(file & friend_pawns);
-}
-
 static bool pawn_passed(uint64_t enemy_pawns, Color us, Square sq)
 {
     return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
-}
-
-static bool pawn_isolated(uint64_t friend_pawns, Square sq)
-{
-    return !(friend_pawns & BitMask::neighbor_files[sq]);
 }
 
 static inline Square psqt_sq(Square sq, Color color)
@@ -213,11 +191,8 @@ static inline Square psqt_sq(Square sq, Color color)
 static int evaluate_pawn(Position const &position, Square sq, Color us)
 {
     int score = 0;
-    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
     uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
 
-    score += pawn_doubled(friend_pawns, sq) * PawnDoubled;
-    score += pawn_isolated(friend_pawns, sq) * PawnIsolated;
     score += pawn_passed(enemy_pawns, us, sq) * passed_pawn_scores[to_int(rank_of(sq, us))];
     score += pawn_psqt[psqt_sq(sq, us)];
 
