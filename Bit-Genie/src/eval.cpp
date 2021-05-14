@@ -21,14 +21,7 @@
 #include "attacks.h"
 #include "board.h"
 
-enum
-{
-    PawnDoubled = S(-10, -10),
-    PawnIsolated = S(-15, -15)
-};
-
 // evaluation scores are taken from weiss - Terje Kirstihagen
-
 static constexpr int open_file_scores[2] = {S(28, 10), S(-9, 5)};
 static constexpr int semiopen_file_scores[2] = {S(9, 15), S(1, 5)};
 
@@ -179,20 +172,9 @@ static bool material_draw(Position const &position)
     return false;
 }
 
-static bool pawn_doubled(uint64_t friend_pawns, Square sq)
-{
-    uint64_t file = BitMask::files[sq];
-    return is_several(file & friend_pawns);
-}
-
 static bool pawn_passed(uint64_t enemy_pawns, Color us, Square sq)
 {
     return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
-}
-
-static bool pawn_isolated(uint64_t friend_pawns, Square sq)
-{
-    return !(friend_pawns & BitMask::neighbor_files[sq]);
 }
 
 static inline Square psqt_sq(Square sq, Color color)
@@ -208,11 +190,8 @@ static inline Square psqt_sq(Square sq, Color color)
 static int evaluate_pawn(Position const &position, Square sq, Color us)
 {
     int score = 0;
-    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
     uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
 
-    score += pawn_doubled(friend_pawns, sq) * PawnDoubled;
-    score += pawn_isolated(friend_pawns, sq) * PawnIsolated;
     score += pawn_passed(enemy_pawns, us, sq) * passed_pawn_scores[to_int(rank_of(sq, us))];
     score += pawn_psqt[psqt_sq(sq, us)];
 
