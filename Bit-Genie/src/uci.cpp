@@ -177,6 +177,9 @@ void uci_input_loop(int argc, char **argv)
             uci_setoption(command, table);
 
         else if (command == UciCommands::bench)
+        {
+            table.reset();
             BenchMark::bench(position, table);
+        }
     }
 }
