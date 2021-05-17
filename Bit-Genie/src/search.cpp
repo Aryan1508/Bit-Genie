@@ -24,7 +24,7 @@
 #include <sstream>
 #include <cmath>
 
-int lmr_reductions_array[2][32]{0};
+int lmr_reductions_array[64][64]{0};
 
 std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);
 
@@ -183,9 +183,7 @@ namespace
 
             if (move_num > 3 && depth > 2)
             {
-                bool quiet = !move_is_capture(position, move);
-
-                int R = lmr_reductions_array[quiet][std::min(move_num, 31)];
+                int R = lmr_reductions_array[std::min(63, depth)][std::min(63, move_num)];
                 int new_depth = depth - 1;
 
                 R -= pv_node;
@@ -330,10 +328,12 @@ namespace
 
 void init_lmr_array()
 {
-    for (int i = 0; i < 32; i++)
+    for (int i = 0; i < 64; i++)
     {
-        lmr_reductions_array[0][i] = log(i) / 2.3 + 2;
-        lmr_reductions_array[1][i] = log(i) / 1.5 + 2;
+        for(int j = 0;j < 64;j++)
+        {
+            lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
+        }
     }
 }
 
@@ -351,7 +351,7 @@ void search_position(Position &position, Search search, TTable &tt)
 
         SearchResult result = pvs(position, search, tt, depth);
 
-        if (search.limits.stopped)
+    if (search.limits.stopped)
         {
             if (depth == 1)
                 std::cout << "stopped at depth 1\n";
@@ -372,7 +372,7 @@ uint64_t bench_search_position(Position &position, TTable &tt)
     SEARCH_ABORT = false;
 
     for (int depth = 1;
-         depth <= 10;
+         depth <= 11;
          depth++)
     {
         search.info.ply = 0;

@@ -87,7 +87,7 @@ inline Square &operator+=(Square &sq, int inc)
 
 inline bool is_ok(const Square sq)
 {
-    return sq >= Square::A1 && sq <= Square::H8;
+    return sq <= Square::H8;
 }
 bool is_valid_sq(std::string_view);
 std::ostream &operator<<(std::ostream &, const Square);
