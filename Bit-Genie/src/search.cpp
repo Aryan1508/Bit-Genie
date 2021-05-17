@@ -332,7 +332,7 @@ void init_lmr_array()
     {
         for(int j = 0;j < 64;j++)
         {
-            lmr_reductions_array[i][j] = log(i) * log(j) / 1.5;
+            lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
         }
     }
 }
@@ -351,7 +351,7 @@ void search_position(Position &position, Search search, TTable &tt)
 
         SearchResult result = pvs(position, search, tt, depth);
 
-        if (search.limits.stopped)
+    if (search.limits.stopped)
         {
             if (depth == 1)
                 std::cout << "stopped at depth 1\n";
@@ -372,7 +372,7 @@ uint64_t bench_search_position(Position &position, TTable &tt)
     SEARCH_ABORT = false;
 
     for (int depth = 1;
-         depth <= 10;
+         depth <= 11;
          depth++)
     {
         search.info.ply = 0;
