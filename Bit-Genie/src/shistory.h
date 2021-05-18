@@ -18,6 +18,7 @@
 #pragma once
 #include "move.h"
 #include "position.h"
+#include "movelist.h"
 #include <array>
 #include <cstring>
 
@@ -34,9 +35,22 @@ public:
         return history[position.side][move_from(move)][move_to(move)];
     }
 
-    void add(Position &position, Move move, int depth) noexcept
+    void add(Position &position, Move move, int bonus) noexcept
     {
-        get(position, move) += depth * depth;
+        // History bonus formula copied from weiss
+        auto& cur = get(position, move);
+        cur += 32 * bonus - cur * abs(bonus) / 512;
+    }
+
+    void penalty(Position& position, Movelist& quiet, Move good, int depth) 
+    {
+        for(auto move : quiet)
+        {
+            if (move_without_score(move) == move_without_score(good))
+                continue;
+
+            add(position, move, -(depth * depth));
+        }
     }
 
 private:

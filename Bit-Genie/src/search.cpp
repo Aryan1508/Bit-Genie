@@ -228,6 +228,7 @@ namespace
                 if (!move_is_capture(position, move))
                 {
                     search.history.add(position, move, depth);
+                    search.history.penalty(position, picker.gen.movelist, move, depth);
                     search.killers.add(search.info.ply, move);
                 }
 
