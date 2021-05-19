@@ -89,8 +89,8 @@ namespace BenchMark
             }
 
             uint64_t count = bench_search_position(position, tt);
-            std::cout << fen << ": " << nodes << std::endl;
             nodes += count;
+            std::cout << fen << ": " << nodes << std::endl;
         }
         watch.stop();
 

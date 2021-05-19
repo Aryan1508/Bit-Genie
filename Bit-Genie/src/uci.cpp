@@ -25,7 +25,7 @@
 #include "benchmark.h"
 #include "searchinit.h"
 
-const char *version = "4.5";
+const char *version = "4.5.5";
 
 namespace
 {
