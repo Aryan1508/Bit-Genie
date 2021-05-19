@@ -105,7 +105,7 @@ static void order_normal_movelist(Position &position, Movelist &movelist, Search
         else
             set_move_score(move, search.history.get(position, move));
     }
-    std::sort(movelist.begin(), movelist.end(),
+    std::stable_sort(movelist.begin(), movelist.end(),
               [](Move rhs, Move lhs) { return move_score(rhs) > move_score(lhs); });
 }
 
