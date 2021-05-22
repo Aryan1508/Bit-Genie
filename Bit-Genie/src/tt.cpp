@@ -31,8 +31,6 @@ TTable::TTable()
 void TTable::resize(int mb)
 {
     entries.resize(mb_to_b(mb) / sizeof(TEntry), TEntry());
-    std::cout << "Hash table initialized with " << mb << " MB. ";
-    std::cout << "Total entries: " << entries.size() << std::endl;
 }
 
 void TTable::add(Position const &position, Move move, int score, uint8_t depth, TEFlag flag)
