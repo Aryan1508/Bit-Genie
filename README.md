@@ -12,10 +12,14 @@ As of March 2020, Bit-Genie isn't a top-tier chess engine, but we're getting som
 
 The estimated strength over the different versions
 
+### CCRL Blitz (2'+1") 
+
 |   Version       |  Elo   |
 | -------------   | ------ |
 | Bit-Genie 1     |  1771  |
-| Bit-Genie 2     |  1860  |
+| Bit-Genie 2     |  1879  |
+| Bit-Genie 4     |  2217  |
+
 
 [Bit-Genie on the CCRL](https://ccrl.chessdom.com/ccrl/404/cgi/compare_engines.cgi?family=Bit-Genie&print=Rating+list&print=Results+table&print=LOS+table&print=Ponder+hit+table&print=Eval+difference+table&print=Comopp+gamenum+table&print=Overlap+table&print=Score+with+common+opponents)
 
