@@ -132,12 +132,6 @@ bool Position::parse_fen_ep(std::string_view sq)
 std::ostream &operator<<(std::ostream &o, Position const &position)
 {
     o << position.pieces << "\n";
-    o << "\nside to play : " << position.side;
-    o << "\ncastle rights: " << position.castle_rights;
-    o << "\nen-passant sq: " << position.ep_sq;
-    o << "\nhalf-moves   : " << position.half_moves;
-    o << "\nzobrist-key  : " << position.key;
-    o << "\nhistory-ply  : " << position.history.total;
     return o << '\n';
 }
 
