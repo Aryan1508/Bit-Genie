@@ -115,7 +115,7 @@ static constexpr int king_psqt[64]
     S( -16, -15 ), S( 2, 1 ), S( 11, 14 ), S( 16, 23 ), S( 17, 25 ), S( 11, 17 ), S( 9, 12 ), S( -13, -9 ),
     S( -17, -19 ), S( 1, 5 ), S( 5, 12 ), S( -9, 93 ), S( -2, 65 ), S( 2, 9 ), S( 3, 10 ), S( -8, -12 ), 
     S( -48, -58 ), S( 0, -56 ), S( 2, -47 ), S( -33, 42 ), S( -2, -75 ), S( -22, 12 ), S( 3, -118 ), S( -23, -83 ),
-}
+};
 
 
 template <PieceType type, typename Callable, typename... Args>
@@ -355,6 +355,12 @@ static int get_phase(Position const &position)
     return phase;
 }
 
+static int eval_king(Position const& position, Color us)
+{
+    Square sq = get_lsb(position.pieces.get_piece_bb<King>(us));
+    return king_psqt[psqt_sq(sq, us)];    
+}
+
 static inline int scale_score(Position const &position, int score)
 {
 #define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
@@ -376,6 +382,9 @@ int eval_position(Position const &position)
     score += evaluate_piece<Rook>(position, evaluate_rook);
     score += evaluate_piece<Bishop>(position, evaluate_bishop);
     score += evaluate_piece<Queen>(position, evaluate_queen);
+
+    score += eval_king(position, White);
+    score -= eval_king(position, Black);
 
     score = scale_score(position, score);
 
