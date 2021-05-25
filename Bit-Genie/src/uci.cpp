@@ -131,7 +131,7 @@ namespace
 
 void uci_input_loop(int argc, char **argv)
 {
-    printl("Bit-Genie ", version, " by Aryan Parekh");
+    printl("Bit-Genie by Aryan Parekh");
 
     UciParser command;
     Position position;

@@ -19,6 +19,7 @@
 #include "position.h"
 #include "stopwatch.h"
 #include "search.h"
+#include <iomanip>
 
 // Benchmark positions from Halogen
 const std::array<std::string, 35> benchmark_fens = {
@@ -69,8 +70,16 @@ namespace BenchMark
         position.perft(depth, nodes);
         watch.stop();
 
+        long long elapsed = std::max(1ll, (watch.elapsed_time()).count());
+        double elapsed_seconds = elapsed / 1000.0f;
+
         std::cout << "\nnodes: " << nodes;
-        std::cout << "\ttime: " << watch.elapsed_time().count() << " ms" << std::endl;
+        std::cout << "\ttime: " << std::setprecision(2) << std::fixed << elapsed_seconds << " seconds";
+        
+        if (elapsed_seconds >= 1)
+            std::cout << "\tnps: " << int(nodes / elapsed_seconds);
+        
+        std::cout << std::endl;
     }
 
     // Run through a list of positions and search a fixed depth at each
