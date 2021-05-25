@@ -90,6 +90,22 @@ static bool pawn_passed(uint64_t enemy_pawns, Color us, Square sq)
     return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
 }
 
+static bool pawn_is_isolated(uint64_t friend_pawns, Square sq)
+{
+    return !(friend_pawns & BitMask::neighbor_files[sq]);
+}
+
+static bool pawn_is_connected(uint64_t friend_pawns, Square sq)
+{
+    return friend_pawns & BitMask::king_attacks[sq];
+}
+
+static bool pawn_is_stacked(uint64_t friend_pawns, Square sq) 
+{
+    uint64_t sq_bb = 1ull << sq;
+    return (shift<Direction::north>(sq_bb) & friend_pawns) | (shift<Direction::south>(sq_bb) & friend_pawns);
+}
+
 static Square psqt_sq(Square sq, Color color)
 {
     return color == White ? flip_square(sq) : sq;
@@ -99,9 +115,12 @@ static int evaluate_pawn(Position const &position, Square sq, Color us)
 {
     int score = 0;
     uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
+    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
 
-    score += pawn_passed(enemy_pawns, us, sq) * PawnEval::passed[to_int(rank_of(sq, us))];
+    score += pawn_passed(enemy_pawns, us, sq) * PawnEval::passed[psqt_sq(sq, us)];
     score += PawnEval::psqt[psqt_sq(sq, us)];
+    score += pawn_is_isolated(friend_pawns, sq) * PawnEval::isolated;
+    score += pawn_is_stacked(friend_pawns, sq) * PawnEval::stacked;
 
     return score;
 }
