@@ -18,8 +18,6 @@
 #pragma once
 #include "misc.h"
 
-#define make_score(mg, eg) ((int)((unsigned int)(eg) << 16) + (mg))
-#define S(mg, eg) make_score((mg), (eg))
 
 enum
 {

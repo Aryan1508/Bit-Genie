@@ -20,6 +20,8 @@
 #include <type_traits>
 
 #define assert(x)
+#define make_score(mg, eg) ((int)((unsigned int)(eg) << 16) + (mg))
+#define S(mg, eg) make_score((mg), (eg))
 
 constexpr int total_pieces = 6;
 constexpr int total_colors = 2;
