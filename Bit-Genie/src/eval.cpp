@@ -95,11 +95,6 @@ static bool pawn_is_isolated(uint64_t friend_pawns, Square sq)
     return !(friend_pawns & BitMask::neighbor_files[sq]);
 }
 
-static bool pawn_is_connected(uint64_t friend_pawns, Square sq)
-{
-    return friend_pawns & BitMask::king_attacks[sq];
-}
-
 static bool pawn_is_stacked(uint64_t friend_pawns, Square sq) 
 {
     uint64_t sq_bb = 1ull << sq;

@@ -116,8 +116,8 @@ namespace RookEval
         S( 43, -10 )
     };
 
-    constexpr int open_file = S(20, 15);
-    constexpr int semi_open_file = S(9, 5);
+    constexpr int open_file = S(14, 8);
+    constexpr int semi_open_file = S(20, 23);
 }
 
 /********************** QUEEN EVALUATION SCORES ********************/
