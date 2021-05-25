@@ -131,8 +131,7 @@ bool Position::parse_fen_ep(std::string_view sq)
 
 std::ostream &operator<<(std::ostream &o, Position const &position)
 {
-    o << position.pieces << "\n";
-    return o << '\n';
+    return o << position.pieces;
 }
 
 static inline bool is_double_push(Square from, Square to)
