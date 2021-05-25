@@ -142,6 +142,9 @@ namespace QueenEval
         S( 26, 69), S( 26, 69), S( 24, 73), S( 29, 72), S( 34, 74), S( 51, 63), S( 60, 69), S( 79, 66),
         S(106, 85), S(112, 84), S(104,111), S(108,131)
     };
+
+    constexpr int open_file = S(2, 2);
+    constexpr int semi_open_file = S(8, 12);
 }
 
 /********************** KINg EVALUATION SCORES ********************/
