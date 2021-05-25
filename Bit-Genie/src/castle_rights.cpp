@@ -53,7 +53,8 @@ bool CastleRights::castle_path_is_clear(const Square rook, const uint64_t occupa
         return !(occupancy & 0x6000000000000000);
 
     default:
-        assert(false);
+        std::cerr << "Invalid rook in castle_path_is_clear\n";
+        std::terminate();
         return 0;
     }
 }
@@ -75,7 +76,8 @@ uint64_t CastleRights::get_castle_path(Square rook)
         return 0x2000000000000000;
 
     default:
-        assert(false);
+        std::cerr << "Invalid rook in get_castle_path\n";
+        std::terminate();
         return 0;
     }
 }
