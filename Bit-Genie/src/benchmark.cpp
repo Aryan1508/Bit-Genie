@@ -70,7 +70,7 @@ namespace BenchMark
         position.perft(depth, nodes);
         watch.stop();
 
-        long long elapsed = std::max(1ll, (watch.elapsed_time()).count());
+        long long elapsed = std::max(1ll, static_cast<long long>((watch.elapsed_time()).count()));
         double elapsed_seconds = elapsed / 1000.0f;
 
         std::cout << "\nnodes: " << nodes;
