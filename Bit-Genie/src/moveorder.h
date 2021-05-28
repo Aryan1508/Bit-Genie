@@ -20,6 +20,7 @@
 
 class MovePicker
 {
+public:
     enum class Stage
     {
         HashMove,
@@ -32,19 +33,19 @@ class MovePicker
         GiveQuiet
     };
 
-public:
+
     MovePicker(Position &, Search &, TTable &);
 
     bool next(Move &);
 
     MoveGenerator<true> gen;
+    Stage stage = Stage::HashMove;
 
 private:
     Position *position;
     Search *search;
     TTable *table;
 
-    Stage stage = Stage::HashMove;
     Movelist::iterator current;
 };
 
