@@ -670,6 +670,20 @@ bool Position::move_is_pseudolegal(Move move)
         Rank start_rank = side == White ? Rank::two : Rank::seven;
         Direction forward = side == White ? Direction::north : Direction::south;
         Square forward_sq = from + forward;
+        uint64_t prom_rank = side == White ? BitMask::rank7 : BitMask::rank2;
+        uint64_t from_sq_bb = 1ull << from;
+
+        if (flag == MoveFlag::promotion)
+        {
+            if ((prom_rank & from_sq_bb) == 0)
+                return false;
+        }
+
+        if (from_sq_bb & prom_rank)
+        {
+            if (flag != MoveFlag::promotion)
+                return false;
+        }
 
         // Normal and promotions
         if (flag == MoveFlag::normal || flag == MoveFlag::promotion)
