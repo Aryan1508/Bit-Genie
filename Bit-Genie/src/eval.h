@@ -48,6 +48,11 @@ constexpr int piece_scores[13]{
     0,
 };
 
+struct EvalData {
+    int kingAttackersCount[2], kingAttackersWeight[2];
+    uint64_t kingRing[2];
+};
+
 constexpr int get_score(Piece piece)
 {
     constexpr int pawn = S(PawnScoreMg, PawnScoreEg);
