@@ -277,6 +277,9 @@ static int eval_king(Position const& position, EvalData &data, Color us)
     if(data.kingAttackersCount[enemy] >= 2) {
       int weight = data.kingAttackersWeight[enemy];
 
+      if(!position.pieces.get_piece_bb<Queen>(enemy))
+        weight /= 2;
+
       score -= S(KingEval::SafetyTable[weight], KingEval::SafetyTable[weight]);
     }
 
