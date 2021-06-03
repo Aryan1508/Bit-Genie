@@ -249,7 +249,12 @@ static int get_phase(Position const &position)
 static int eval_king(Position const& position, Color us)
 {
     Square sq = get_lsb(position.pieces.get_piece_bb<King>(us));
-    return KingEval::psqt[psqt_sq(sq, us)];    
+    int score = 0;
+
+    score += KingEval::psqt[psqt_sq(sq, us)];    
+    score += calculate_moblity<Queen>(position, sq, us, KingEval::virtual_mobility);
+
+    return score;
 }
 
 static inline int scale_score(Position const &position, int score)
