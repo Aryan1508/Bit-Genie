@@ -46,7 +46,7 @@ static constexpr int calculate_moblity(Position const &position, EvalData &data,
     {
         if (attacks & data.king_ring[!us])
         {
-            data.king_attackers_weight[us] += KingEval::kingAttackWeight[pt] * popcount64(attacks & data.king_ring[!us]);
+            data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.king_ring[!us]);
             data.king_attackers_count[us]++;
         }
         return mobility_scores[popcount64(attacks)];
@@ -59,7 +59,7 @@ static constexpr int calculate_moblity(Position const &position, EvalData &data,
 
         if (attacks & data.king_ring[!us])
         {
-            data.king_attackers_weight[us] += KingEval::kingAttackWeight[pt] * popcount64(attacks & data.king_ring[!us]);
+            data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.king_ring[!us]);
             data.king_attackers_count[us]++;
         }
 
@@ -276,6 +276,7 @@ static int get_phase(Position const &position)
 static int eval_king(Position const &position, EvalData &data, Color us)
 {
     Square sq = get_lsb(position.pieces.get_piece_bb<King>(us));
+
     int score = KingEval::psqt[psqt_sq(sq, us)];
     Color enemy = !us;
 
@@ -286,7 +287,7 @@ static int eval_king(Position const &position, EvalData &data, Color us)
         if (!position.pieces.get_piece_bb<Queen>(enemy))
             weight /= 2;
 
-        score -= S(KingEval::SafetyTable[weight], KingEval::SafetyTable[weight]);
+        score += KingEval::safety_table[std::min(49, weight)];
     }
 
     return score;
