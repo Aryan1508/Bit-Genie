@@ -39,7 +39,7 @@ static constexpr int calculate_moblity(Position const& position, EvalData &data,
 
     if constexpr(!safe) {
         if(attacks & data.kingRing[!us]) {
-          data.kingAttackersWeight[us] += KingEval::kingAttackWeight[pt];
+          data.kingAttackersWeight[us] += KingEval::kingAttackWeight[pt] * popcount64(attacks & data.kingRing[!us]);
           data.kingAttackersCount[us]++;
         }
         return mobility_scores[popcount64(attacks)];
@@ -55,7 +55,7 @@ static constexpr int calculate_moblity(Position const& position, EvalData &data,
         printBB(data.kingRing[!us]);*/
 
         if(attacks & data.kingRing[!us]) {
-          data.kingAttackersWeight[us] += KingEval::kingAttackWeight[pt];
+          data.kingAttackersWeight[us] += KingEval::kingAttackWeight[pt] * popcount64(attacks & data.kingRing[!us]);
           data.kingAttackersCount[us]++;
         }
 
