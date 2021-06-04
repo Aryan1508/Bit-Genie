@@ -287,7 +287,7 @@ static int eval_king(Position const &position, EvalData &data, Color us)
         if (!position.pieces.get_piece_bb<Queen>(enemy))
             weight /= 2;
 
-        score += KingEval::safety_table[std::min(49, weight)];
+        score += KingEval::safety_table[weight];
     }
 
     return score;
