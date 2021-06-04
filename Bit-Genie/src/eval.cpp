@@ -21,29 +21,56 @@
 #include "attacks.h"
 #include "board.h"
 #include "evalscores.h"
+#include <cstring>
+struct EvalData
+{
+    int king_attackers_count[2] = {0};
+    int king_attackers_weight[2] = {0};
+    uint64_t king_ring[2] = {0};
 
-template<PieceType pt, bool safe = false>
-static constexpr int calculate_moblity(Position const& position, Square sq, Color us, const int* mobility_scores)
+    void init(Position const &position)
+    {
+        std::memset(this, 0, sizeof(EvalData));
+        king_ring[White] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
+        king_ring[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
+    }
+};
+
+template <PieceType pt, bool safe = false>
+static constexpr int calculate_moblity(Position const &position, EvalData &data, Square sq, Color us, const int *mobility_scores)
 {
     uint64_t occupancy = position.total_occupancy();
-    uint64_t attacks   = Attacks::generate(pt, sq, occupancy);
+    uint64_t attacks = Attacks::generate(pt, sq, occupancy);
 
-    if constexpr(!safe)
+    if constexpr (!safe)
+    {
+        if (attacks & data.king_ring[!us])
+        {
+            data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.king_ring[!us]);
+            data.king_attackers_count[us]++;
+        }
         return mobility_scores[popcount64(attacks)];
-
-    else 
+    }
+    else
     {
         uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
-        uint64_t forward     = us == White ? shift<Direction::south>(enemy_pawns) : shift<Direction::north>(enemy_pawns);
+        uint64_t forward = us == White ? shift<Direction::south>(enemy_pawns) : shift<Direction::north>(enemy_pawns);
         uint64_t enemy_pawn_attacks = shift<Direction::east>(forward) | shift<Direction::west>(forward);
 
-        return mobility_scores[popcount64(attacks & ~enemy_pawn_attacks)];       
+        if (attacks & data.king_ring[!us])
+        {
+            data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.king_ring[!us]);
+            data.king_attackers_count[us]++;
+        }
+
+        return mobility_scores[popcount64(attacks & ~enemy_pawn_attacks)];
     }
 }
 
 static bool material_draw(Position const &position)
 {
-    auto single = [](uint64_t bb) { return bb && !is_several(bb); };
+    auto single = [](uint64_t bb)
+    { return bb && !is_several(bb); };
 
     auto &pieces = position.pieces;
     auto &bitboards = position.pieces.bitboards;
@@ -95,7 +122,7 @@ static bool pawn_is_isolated(uint64_t friend_pawns, Square sq)
     return !(friend_pawns & BitMask::neighbor_files[sq]);
 }
 
-static bool pawn_is_stacked(uint64_t friend_pawns, Square sq) 
+static bool pawn_is_stacked(uint64_t friend_pawns, Square sq)
 {
     uint64_t sq_bb = 1ull << sq;
     return (shift<Direction::north>(sq_bb) & friend_pawns) | (shift<Direction::south>(sq_bb) & friend_pawns);
@@ -106,7 +133,7 @@ static Square psqt_sq(Square sq, Color color)
     return color == White ? flip_square(sq) : sq;
 }
 
-static int evaluate_pawn(Position const &position, Square sq, Color us)
+static int evaluate_pawn(Position const &position, EvalData, Square sq, Color us)
 {
     int score = 0;
     uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
@@ -120,12 +147,12 @@ static int evaluate_pawn(Position const &position, Square sq, Color us)
     return score;
 }
 
-static int evaluate_knight(Position const &position, Square sq, Color us)
+static int evaluate_knight(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
 
     score += KnightEval::psqt[psqt_sq(sq, us)];
-    score += calculate_moblity<Knight, true>(position, sq, us, KnightEval::mobility);
+    score += calculate_moblity<Knight, true>(position, data, sq, us, KnightEval::mobility);
 
     return score;
 }
@@ -145,62 +172,62 @@ static bool is_on_semiopen_file(Position const &position, Square sq)
     return !(file & white) || !(file & black);
 }
 
-static int evaluate_rook(Position const &position, Square sq, Color us)
+static int evaluate_rook(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
 
     score += RookEval::psqt[psqt_sq(sq, us)];
-    score += calculate_moblity<Rook>(position, sq, us, RookEval::mobility);
-    score += is_on_open_file(position, sq)     * RookEval::open_file;
+    score += calculate_moblity<Rook>(position, data, sq, us, RookEval::mobility);
+    score += is_on_open_file(position, sq) * RookEval::open_file;
     score += is_on_semiopen_file(position, sq) * RookEval::semi_open_file;
 
     return score;
 }
 
-static int evaluate_queen(Position const &position, Square sq, Color us)
+static int evaluate_queen(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
 
     score += QueenEval::psqt[psqt_sq(sq, us)];
-    score += calculate_moblity<Queen>(position, sq, us, QueenEval::mobility);
+    score += calculate_moblity<Queen>(position, data, sq, us, QueenEval::mobility);
     score += is_on_open_file(position, sq) * QueenEval::open_file;
     score += is_on_semiopen_file(position, sq) * QueenEval::semi_open_file;
 
     return score;
 }
 
-static int evaluate_bishop(Position const &position, Square sq, Color us)
+static int evaluate_bishop(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
 
     score += BishopEval::psqt[psqt_sq(sq, us)];
-    score += calculate_moblity<Bishop>(position, sq, us, BishopEval::mobility);
+    score += calculate_moblity<Bishop>(position, data, sq, us, BishopEval::mobility);
 
     return score;
 }
 
 template <typename Callable>
-static int evaluate_piece(Position const &position, Callable F, uint64_t pieces, Color us)
+static int evaluate_piece(Position const &position, EvalData &data, Callable F, uint64_t pieces, Color us)
 {
     int score = 0;
     while (pieces)
     {
         Square sq = pop_lsb(pieces);
-        score += F(position, sq, us);
+        score += F(position, data, sq, us);
     }
     return score;
 }
 
 template <PieceType type, typename Callable>
-static int evaluate_piece(Position const &position, Callable F)
+static int evaluate_piece(Position const &position, EvalData &data, Callable F)
 {
     int score = 0;
 
     uint64_t white = position.pieces.bitboards[type] & position.pieces.colors[White];
     uint64_t black = position.pieces.bitboards[type] & position.pieces.colors[Black];
 
-    score += evaluate_piece(position, F, white, Color::White);
-    score -= evaluate_piece(position, F, black, Color::Black);
+    score += evaluate_piece(position, data, F, white, Color::White);
+    score -= evaluate_piece(position, data, F, black, Color::Black);
     return score;
 }
 
@@ -246,10 +273,24 @@ static int get_phase(Position const &position)
     return phase;
 }
 
-static int eval_king(Position const& position, Color us)
+static int eval_king(Position const &position, EvalData &data, Color us)
 {
     Square sq = get_lsb(position.pieces.get_piece_bb<King>(us));
-    return KingEval::psqt[psqt_sq(sq, us)];    
+
+    int score = KingEval::psqt[psqt_sq(sq, us)];
+    Color enemy = !us;
+
+    if (data.king_attackers_count[enemy] >= 2)
+    {
+        int weight = data.king_attackers_weight[enemy];
+
+        if (!position.pieces.get_piece_bb<Queen>(enemy))
+            weight /= 2;
+
+        score += KingEval::safety_table[weight];
+    }
+
+    return score;
 }
 
 static inline int scale_score(Position const &position, int score)
@@ -267,15 +308,18 @@ int eval_position(Position const &position)
     if (material_draw(position))
         return 0;
 
-    score += material_balance(position);
-    score += evaluate_piece<Pawn>(position, evaluate_pawn);
-    score += evaluate_piece<Knight>(position, evaluate_knight);
-    score += evaluate_piece<Rook>(position, evaluate_rook);
-    score += evaluate_piece<Bishop>(position, evaluate_bishop);
-    score += evaluate_piece<Queen>(position, evaluate_queen);
+    EvalData data;
+    data.init(position);
 
-    score += eval_king(position, White);
-    score -= eval_king(position, Black);
+    score += material_balance(position);
+    score += evaluate_piece<Pawn>(position, data, evaluate_pawn);
+    score += evaluate_piece<Knight>(position, data, evaluate_knight);
+    score += evaluate_piece<Rook>(position, data, evaluate_rook);
+    score += evaluate_piece<Bishop>(position, data, evaluate_bishop);
+    score += evaluate_piece<Queen>(position, data, evaluate_queen);
+
+    score += eval_king(position, data, White);
+    score -= eval_king(position, data, Black);
 
     score = scale_score(position, score);
 
