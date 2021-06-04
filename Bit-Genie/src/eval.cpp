@@ -21,42 +21,46 @@
 #include "attacks.h"
 #include "board.h"
 #include "evalscores.h"
+#include <cstring>
+struct EvalData
+{
+    int king_attackers_count[2] = {0};
+    int king_attackers_weight[2] = {0};
+    uint64_t king_ring[2] = {0};
 
-void printBB(uint64_t bb) {
-  while(bb) {
-    int b = get_lsb(bb);
-    std::cout << b << " ";
-    bb ^= (1ULL << b);
-  }
-  std::cout << "\n";
-}
+    void init(Position const &position)
+    {
+        std::memset(this, 0, sizeof(EvalData));
+        king_ring[White] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
+        king_ring[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
+    }
+};
 
-template<PieceType pt, bool safe = false>
-static constexpr int calculate_moblity(Position const& position, EvalData &data, Square sq, Color us, const int* mobility_scores)
+template <PieceType pt, bool safe = false>
+static constexpr int calculate_moblity(Position const &position, EvalData &data, Square sq, Color us, const int *mobility_scores)
 {
     uint64_t occupancy = position.total_occupancy();
-    uint64_t attacks   = Attacks::generate(pt, sq, occupancy);
+    uint64_t attacks = Attacks::generate(pt, sq, occupancy);
 
-    if constexpr(!safe) {
-        if(attacks & data.kingRing[!us]) {
-          data.kingAttackersWeight[us] += KingEval::kingAttackWeight[pt] * popcount64(attacks & data.kingRing[!us]);
-          data.kingAttackersCount[us]++;
+    if constexpr (!safe)
+    {
+        if (attacks & data.king_ring[!us])
+        {
+            data.king_attackers_weight[us] += KingEval::kingAttackWeight[pt] * popcount64(attacks & data.king_ring[!us]);
+            data.king_attackers_count[us]++;
         }
         return mobility_scores[popcount64(attacks)];
     }
     else
     {
         uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
-        uint64_t forward     = us == White ? shift<Direction::south>(enemy_pawns) : shift<Direction::north>(enemy_pawns);
+        uint64_t forward = us == White ? shift<Direction::south>(enemy_pawns) : shift<Direction::north>(enemy_pawns);
         uint64_t enemy_pawn_attacks = shift<Direction::east>(forward) | shift<Direction::west>(forward);
 
-        /*std::cout << us << "\n";
-        printBB(attacks);
-        printBB(data.kingRing[!us]);*/
-
-        if(attacks & data.kingRing[!us]) {
-          data.kingAttackersWeight[us] += KingEval::kingAttackWeight[pt] * popcount64(attacks & data.kingRing[!us]);
-          data.kingAttackersCount[us]++;
+        if (attacks & data.king_ring[!us])
+        {
+            data.king_attackers_weight[us] += KingEval::kingAttackWeight[pt] * popcount64(attacks & data.king_ring[!us]);
+            data.king_attackers_count[us]++;
         }
 
         return mobility_scores[popcount64(attacks & ~enemy_pawn_attacks)];
@@ -65,7 +69,8 @@ static constexpr int calculate_moblity(Position const& position, EvalData &data,
 
 static bool material_draw(Position const &position)
 {
-    auto single = [](uint64_t bb) { return bb && !is_several(bb); };
+    auto single = [](uint64_t bb)
+    { return bb && !is_several(bb); };
 
     auto &pieces = position.pieces;
     auto &bitboards = position.pieces.bitboards;
@@ -128,7 +133,7 @@ static Square psqt_sq(Square sq, Color color)
     return color == White ? flip_square(sq) : sq;
 }
 
-static int evaluate_pawn(Position const &position, EvalData &data, Square sq, Color us)
+static int evaluate_pawn(Position const &position, EvalData, Square sq, Color us)
 {
     int score = 0;
     uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
@@ -173,7 +178,7 @@ static int evaluate_rook(Position const &position, EvalData &data, Square sq, Co
 
     score += RookEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Rook>(position, data, sq, us, RookEval::mobility);
-    score += is_on_open_file(position, sq)     * RookEval::open_file;
+    score += is_on_open_file(position, sq) * RookEval::open_file;
     score += is_on_semiopen_file(position, sq) * RookEval::semi_open_file;
 
     return score;
@@ -268,19 +273,20 @@ static int get_phase(Position const &position)
     return phase;
 }
 
-static int eval_king(Position const& position, EvalData &data, Color us)
+static int eval_king(Position const &position, EvalData &data, Color us)
 {
     Square sq = get_lsb(position.pieces.get_piece_bb<King>(us));
     int score = KingEval::psqt[psqt_sq(sq, us)];
     Color enemy = !us;
 
-    if(data.kingAttackersCount[enemy] >= 2) {
-      int weight = data.kingAttackersWeight[enemy];
+    if (data.king_attackers_count[enemy] >= 2)
+    {
+        int weight = data.king_attackers_weight[enemy];
 
-      if(!position.pieces.get_piece_bb<Queen>(enemy))
-        weight /= 2;
+        if (!position.pieces.get_piece_bb<Queen>(enemy))
+            weight /= 2;
 
-      score -= S(KingEval::SafetyTable[weight], KingEval::SafetyTable[weight]);
+        score -= S(KingEval::SafetyTable[weight], KingEval::SafetyTable[weight]);
     }
 
     return score;
@@ -302,14 +308,7 @@ int eval_position(Position const &position)
         return 0;
 
     EvalData data;
-
-    data.kingAttackersCount[White] = data.kingAttackersCount[Black] = 0;
-    data.kingAttackersWeight[White] = data.kingAttackersWeight[Black] = 0;
-    data.kingRing[White] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
-    data.kingRing[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
-
-    /*std::cout << get_lsb(position.pieces.get_piece_bb<King>(White)) << "\n";
-    printBB(data.kingRing[White]);*/
+    data.init(position);
 
     score += material_balance(position);
     score += evaluate_piece<Pawn>(position, data, evaluate_pawn);
