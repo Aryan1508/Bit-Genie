@@ -138,11 +138,18 @@ static int evaluate_pawn(Position const &position, EvalData, Square sq, Color us
     int score = 0;
     uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
     uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
+    uint64_t enemy = position.pieces.get_occupancy(!us);
+    uint64_t ahead_squares = BitMask::passed_pawn[us][sq] & BitMask::files[sq];
 
-    score += pawn_passed(enemy_pawns, us, sq) * PawnEval::passed[psqt_sq(sq, us)];
     score += PawnEval::psqt[psqt_sq(sq, us)];
     score += pawn_is_isolated(friend_pawns, sq) * PawnEval::isolated;
     score += pawn_is_stacked(friend_pawns, sq) * PawnEval::stacked;
+
+    if (ahead_squares & enemy)
+        score += pawn_passed(enemy_pawns, us, sq) * PawnEval::passer_blocked[psqt_sq(sq, us)];
+    else 
+        score += pawn_passed(enemy_pawns, us, sq) * PawnEval::passed[psqt_sq(sq, us)];
+
 
     return score;
 }
