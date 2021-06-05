@@ -174,6 +174,8 @@ namespace
 
         MovePicker picker(position, search, tt);
 
+        depth += in_check;
+
         for (Move move; picker.next(move);)
         {
             move_num++;
