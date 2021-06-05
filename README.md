@@ -1,4 +1,7 @@
-# Bit-Genie
+# Bit-Genie 
+
+[![Latest Github release](https://img.shields.io/badge/Latest--Release-v5-blue)](https://github.com/Aryan1508/Bit-Genie/releases/latest)
+
 [Bit-Genie](https://github.com/Aryan1508/Bit-Genie "Bit-Genie") is an open-source [chess engine](https://en.wikipedia.org/wiki/Chess_engine "chess engine") written in C++ by [Aryan Parekh](https://github.com/Aryan1508 "Aryan Parekh"). It has support for the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol.
 
 # About
