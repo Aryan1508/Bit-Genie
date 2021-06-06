@@ -145,10 +145,18 @@ static int evaluate_pawn(Position const &position, EvalData, Square sq, Color us
     score += pawn_is_isolated(friend_pawns, sq) * PawnEval::isolated;
     score += pawn_is_stacked(friend_pawns, sq) * PawnEval::stacked;
 
-    if (ahead_squares & enemy)
-        score += pawn_passed(enemy_pawns, us, sq) * PawnEval::passer_blocked[psqt_sq(sq, us)];
-    else 
-        score += pawn_passed(enemy_pawns, us, sq) * PawnEval::passed[psqt_sq(sq, us)];
+    bool passed = pawn_passed(enemy_pawns, us, sq);
+
+    if (passed)
+    {
+        if (ahead_squares & enemy)
+            score += PawnEval::passer_blocked[psqt_sq(sq, us)];
+        else 
+            score += PawnEval::passed[psqt_sq(sq, us)];
+
+        if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
+            score += PawnEval::passed_connected;
+    }
 
 
     return score;
