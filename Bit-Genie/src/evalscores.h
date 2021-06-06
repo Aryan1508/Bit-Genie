@@ -73,6 +73,12 @@ namespace PawnEval
         S(   0,   0), S(   0,   0), S(   0,   0), S(   0,   0),
     };
 
+    constexpr int passed_king_distance[8]
+    {
+        S(   0,   0), S( -45, -42), S(  13,  17), S(   3, 176),
+        S( -16, 436), S( -21, 513), S( -23, 549), S( -32, 594),
+    };
+
     constexpr int passed_connected = S(18, 45);
 
     constexpr int isolated = S(-10, -10);

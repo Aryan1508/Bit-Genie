@@ -22,6 +22,8 @@
 #include "board.h"
 #include "evalscores.h"
 #include <cstring>
+#include <math.h>
+
 struct EvalData
 {
     int king_attackers_count[2] = {0};
@@ -133,6 +135,13 @@ static Square psqt_sq(Square sq, Color color)
     return color == White ? flip_square(sq) : sq;
 }
 
+static int get_distance(int a, int b)
+{
+    auto rank = [](int x) { return x / 8; };
+    auto file = [](int x) { return x % 8; };
+    return std::max(std::abs(rank(a) - rank(b)), std::abs(file(a) - file(b)));
+}
+
 static int evaluate_pawn(Position const &position, EvalData, Square sq, Color us)
 {
     int score = 0;
@@ -156,8 +165,11 @@ static int evaluate_pawn(Position const &position, EvalData, Square sq, Color us
 
         if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
             score += PawnEval::passed_connected;
-    }
 
+        uint64_t enemy_king = position.pieces.get_piece_bb<PieceType::King>(!us);
+        int dist = get_distance(get_lsb(enemy_king), sq);
+        score += PawnEval::passed_king_distance[dist];
+    }
 
     return score;
 }
