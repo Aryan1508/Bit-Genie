@@ -73,6 +73,8 @@ namespace PawnEval
         S(   0,   0), S(   0,   0), S(   0,   0), S(   0,   0),
     };
 
+    constexpr int passed_connected = S(18, 45);
+
     constexpr int isolated = S(-10, -10);
     constexpr int stacked = S(-10, -11);
 }
