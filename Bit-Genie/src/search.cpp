@@ -181,7 +181,7 @@ namespace
 
             int score = 0;
 
-            if (move_num > 3 && depth > 2)
+            if (move_num > 1 && depth > 1)
             {
                 int R = lmr_reductions_array[std::min(63, depth)][std::min(63, move_num)];
                 int new_depth = depth - 1;
