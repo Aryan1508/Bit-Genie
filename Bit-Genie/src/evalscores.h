@@ -227,3 +227,7 @@ namespace KingEval
         S(-400, -400), S(-400, -400), S(-400, -400), S(-400, -400),
     };
 }
+namespace MiscEval
+{
+    constexpr int control = S(0, 27);
+}
