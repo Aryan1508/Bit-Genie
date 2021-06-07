@@ -305,6 +305,16 @@ static int eval_king(Position const &position, EvalData &data, Color us)
         score += KingEval::safety_table[weight];
     }
 
+    Direction forward = us == White ? Direction::north : Direction::south;
+
+    uint64_t shield_mask = BitMask::pawn_attacks[us][sq] | shift(1ull << sq, forward);
+    shield_mask |= shift(shield_mask, forward);
+
+    if (popcount64(shield_mask) < 2)
+        score += KingEval::no_shield;
+
+    return score;
+
     return score;
 }
 
