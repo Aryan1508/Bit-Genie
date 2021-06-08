@@ -77,6 +77,8 @@ namespace PawnEval
 
     constexpr int isolated = S(-10, -10);
     constexpr int stacked = S(-10, -11);
+
+    constexpr int passer_far_king = 0;
 }
 
 /********************** KNIGHT EVALUATION SCORES ********************/

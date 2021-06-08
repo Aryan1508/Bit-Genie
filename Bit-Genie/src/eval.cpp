@@ -142,6 +142,13 @@ static Square psqt_sq(Square sq, Color color)
     return color == White ? flip_square(sq) : sq;
 }
 
+static int get_distance(int a, int b)
+{
+    auto rank = [](int x) { return x / 8; };
+    auto file = [](int x) { return x % 8; };
+    return std::max(std::abs(rank(a) - rank(b)), std::abs(file(a) - file(b)));
+}
+
 static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Color us)
 {
     int score = 0;
@@ -167,7 +174,14 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
 
         if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
             score += PawnEval::passed_connected;
+
+        int distance_to_enemy_king = get_distance(sq, get_lsb(position.pieces.get_piece_bb<King>(!us)));
+        int distance_to_promotion  = 7 - (int)rank_of(sq);
+
+        if (distance_to_enemy_king - distance_to_promotion >= 1)
+            score += PawnEval::passer_far_king;
     }
+
     return score;
 }
 
