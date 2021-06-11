@@ -214,8 +214,6 @@ static int evaluate_queen(Position const &position, EvalData &data, Square sq, C
 
     score += QueenEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Queen>(position, data, sq, us, QueenEval::mobility);
-    score += is_on_open_file(position, sq) * QueenEval::open_file;
-    score += is_on_semiopen_file(position, sq) * QueenEval::semi_open_file;
 
     return score;
 }
