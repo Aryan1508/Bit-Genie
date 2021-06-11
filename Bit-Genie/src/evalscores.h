@@ -25,8 +25,6 @@ namespace PawnEval
 
     constexpr int passed_connected = S( 13,  41);
 
-    constexpr int value = S(112, 215);
-
     constexpr int psqt[64]
     {
         S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), 
@@ -66,8 +64,6 @@ namespace PawnEval
 
 namespace KnightEval
 {
-    constexpr int value = S(368, 250);
-
     constexpr int psqt[64]
     {
         S(-94, -82), S(-37, -36), S( -5,  -7), S(-22, -19), S( -6,  -2), S(-46, -45), S(-46, -47), S(-101, -101), 
@@ -89,8 +85,6 @@ namespace KnightEval
 
 namespace BishopEval
 {
-    constexpr int value = S(401, 133);
-
     constexpr int psqt[64]
     {
         S(-20, -10), S(-13, -12), S(-30, -17), S(-14,  -2), S(-13, -14), S(-12,  -7), S( -4,  -1), S(-19, -14), 
@@ -112,8 +106,6 @@ namespace BishopEval
 
 namespace RookEval
 {
-    constexpr int value = S(603, 679);
-
     constexpr int psqt[64]
     {
         S( 17,  15), S( 14,  10), S( 13,   8), S( 14,  11), S( 16,  13), S( 10,  10), S( 14,  15), S( 11,   8), 
@@ -139,8 +131,6 @@ namespace RookEval
 
 namespace QueenEval
 {
-    constexpr int value = S(1222, 1197);
-
     constexpr int psqt[64]
     {
         S( -3,   3), S( 36,  38), S( 41,  49), S( 41,  42), S( 64,  66), S( 49,  48), S( 43,  41), S( 58,  57), 
