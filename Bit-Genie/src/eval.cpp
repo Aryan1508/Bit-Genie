@@ -291,6 +291,7 @@ static int get_phase(Position const &position)
     phase -= popcount64(bishops);
     phase -= popcount64(queens) * queen_phase;
     phase -= popcount64(rooks) * rook_phase;
+    phase = (phase * 256 + 12) / 24;
 
     return phase;
 }
