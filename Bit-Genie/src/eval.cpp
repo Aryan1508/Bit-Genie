@@ -168,6 +168,9 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
         if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
             score += PawnEval::passed_connected;
     }
+
+    score += PawnEval::value;
+
     return score;
 }
 
@@ -177,6 +180,7 @@ static int evaluate_knight(Position const &position, EvalData &data, Square sq, 
 
     score += KnightEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Knight, true>(position, data, sq, us, KnightEval::mobility);
+    score += KnightEval::value;
 
     return score;
 }
@@ -204,6 +208,7 @@ static int evaluate_rook(Position const &position, EvalData &data, Square sq, Co
     score += calculate_moblity<Rook>(position, data, sq, us, RookEval::mobility);
     score += is_on_open_file(position, sq) * RookEval::open_file;
     score += is_on_semiopen_file(position, sq) * RookEval::semi_open_file;
+    score += RookEval::value;
 
     return score;
 }
@@ -214,6 +219,7 @@ static int evaluate_queen(Position const &position, EvalData &data, Square sq, C
 
     score += QueenEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Queen>(position, data, sq, us, QueenEval::mobility);
+    score += QueenEval::value;
 
     return score;
 }
@@ -224,6 +230,7 @@ static int evaluate_bishop(Position const &position, EvalData &data, Square sq, 
 
     score += BishopEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Bishop>(position, data, sq, us, BishopEval::mobility);
+    score += BishopEval::value;
 
     return score;
 }
@@ -253,34 +260,12 @@ static int evaluate_piece(Position const &position, EvalData &data, Callable F)
     return score;
 }
 
-static int material_balance(uint64_t pieces, PieceType piece)
-{
-    return popcount64(pieces) * get_score(Piece(piece));
-}
-
-static int material_balance(Position const &position)
-{
-    auto &pieces = position.pieces;
-    int score = 0;
-
-    for (int i = 0; i < total_pieces; i++)
-    {
-        PieceType type = PieceType(i);
-        uint64_t white = pieces.bitboards[i] & pieces.colors[White];
-        uint64_t black = pieces.bitboards[i] & pieces.colors[Black];
-
-        score += material_balance(white, type);
-        score -= material_balance(black, type);
-    }
-    return score;
-}
-
 static int get_phase(Position const &position)
 {
     constexpr int rook_phase = 2;
     constexpr int queen_phase = 4;
 
-    int phase = 24;
+    int phase = 19;
 
     uint64_t knights = position.pieces.bitboards[Knight];
     uint64_t bishops = position.pieces.bitboards[Bishop];
@@ -342,7 +327,6 @@ int eval_position(Position const &position)
     EvalData data;
     data.init(position);
 
-    score += material_balance(position);
     score += evaluate_piece<Pawn>(position, data, evaluate_pawn);
     score += evaluate_piece<Knight>(position, data, evaluate_knight);
     score += evaluate_piece<Rook>(position, data, evaluate_rook);

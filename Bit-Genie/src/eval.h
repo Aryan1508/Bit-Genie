@@ -18,32 +18,4 @@
 #pragma once
 #include "misc.h"
 
-enum
-{
-    PawnScoreMg = 114,
-    PawnScoreEg = 216,
-    KnightScoreMg = 370,
-    KnightScoreEg = 260,
-    BishopScoreMg = 396,
-    BishopScoreEg = 253,
-    RookScoreMg = 596,
-    RookScoreEg = 657,
-    QueenScoreMg = 1175,
-    QueenScoreEg = 1175
-};
-
-constexpr int get_score(Piece piece)
-{
-    constexpr int pawn = S(PawnScoreMg, PawnScoreEg);
-    constexpr int knight = S(KnightScoreMg, KnightScoreEg);
-    constexpr int bishop = S(BishopScoreMg, BishopScoreEg);
-    constexpr int rook = S(RookScoreMg, RookScoreEg);
-    constexpr int queen = S(QueenScoreMg, QueenScoreEg);
-
-    constexpr int scores[13]{
-        pawn, knight, bishop, rook, queen, 0, -pawn, -knight, -bishop, -rook, -queen, 0, 0};
-
-    return scores[piece];
-}
-
 int eval_position(Position const &);
