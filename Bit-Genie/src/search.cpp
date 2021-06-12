@@ -22,6 +22,7 @@
 #include "moveorder.h"
 #include "tt.h"
 #include <sstream>
+#include "evalscores.h"
 #include <cmath>
 
 int lmr_reductions_array[64][64]{0};
@@ -278,8 +279,9 @@ namespace
             o << "mate " << mate_distance(score);
         }
         else
+#define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
         {
-            o << "cp " << int(score * 100 / PawnScoreMg);
+            o << "cp " << int(score * 100 / mg_score(PawnEval::value));
         }
         return o.str();
     }
