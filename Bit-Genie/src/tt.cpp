@@ -38,7 +38,8 @@ void TTable::add(Position const &position, Move move, int score, uint8_t depth, 
     uint64_t hash = position.key.data();
     uint64_t index = hash % entries.size();
 
-    entries[index] = TEntry(hash, score, move, depth, flag);
+    if (entries[index].depth <= depth)
+        entries[index] = TEntry(hash, score, move, depth, flag);
 }
 
 TEntry &TTable::retrieve(Position const &position)
