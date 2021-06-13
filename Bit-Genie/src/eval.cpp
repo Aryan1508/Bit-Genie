@@ -226,11 +226,18 @@ static int evaluate_queen(Position const &position, EvalData &data, Square sq, C
 
 static int evaluate_bishop(Position const &position, EvalData &data, Square sq, Color us)
 {
+    constexpr uint64_t light_squares= 0x55AA55AA55AA55AA;
+    constexpr uint64_t dark_squares = 0xAA55AA55AA55AA55;
+
+    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
+    uint64_t pawns_on_same_color = ((1ull << sq) & light_squares) ? friend_pawns & light_squares : friend_pawns & dark_squares;
+
     int score = 0;
 
     score += BishopEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Bishop>(position, data, sq, us, BishopEval::mobility);
     score += BishopEval::value;
+    score += popcount64(pawns_on_same_color) * BishopEval::pawns_of_same_color;
 
     return score;
 }
