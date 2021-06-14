@@ -150,7 +150,7 @@ namespace
 
         if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null && position.should_do_null())
         {
-            int R = depth / 7 + 4;
+            int R = depth / 4 + 4;
 
             position.apply_null_move(search.info.ply);
             int score = -pvs(position, search, tt, depth - R, -beta, -beta + 1, false, false).score;
