@@ -230,7 +230,7 @@ static int evaluate_bishop(Position const &position, EvalData &data, Square sq, 
 
     score += BishopEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Bishop>(position, data, sq, us, BishopEval::mobility);
-    score += BishopEval::value;
+    score += BishopEval::value; 
 
     return score;
 }
