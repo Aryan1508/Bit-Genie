@@ -158,7 +158,19 @@ namespace
                 return 0;
 
             if (score >= beta)
-                return beta;
+            {
+                // Verified null move pruning
+                // Based on paper http://www.elidavid.com/pubs/nmr.pdf
+                if (depth >= 7)
+                {
+                    int score = -pvs(position, search, tt, depth - 4, -beta, -beta + 1, false, false).score;
+
+                    if (score >= beta)
+                        return score;
+                }
+                else 
+                    return beta;
+            }
         }
 
         SearchResult result;
