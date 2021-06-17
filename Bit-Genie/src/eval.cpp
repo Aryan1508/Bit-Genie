@@ -177,10 +177,12 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
 static int evaluate_knight(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
+    int friend_pawn_count = popcount64(position.pieces.get_piece_bb<Pawn>(us));
 
     score += KnightEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Knight, true>(position, data, sq, us, KnightEval::mobility);
     score += KnightEval::value;
+    score += KnightEval::value_pawn_adjustment[friend_pawn_count];
 
     return score;
 }
