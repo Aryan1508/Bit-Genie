@@ -21,8 +21,8 @@
 #include "attacks.h"
 #include "board.h"
 #include "evalscores.h"
+#include "evaleg.h"
 #include <cstring>
-#include <math.h>
 
 struct EvalData
 {
@@ -323,6 +323,13 @@ int eval_position(Position const &position)
 
     if (material_draw(position))
         return 0;
+
+    if (EndGameEval::is_king_pawn_king(position))
+    {
+        int s = EndGameEval::eval_king_pawn_king(position);
+        if (s != -1)
+            return scale_score(position, s);
+    }
 
     EvalData data;
     data.init(position);
