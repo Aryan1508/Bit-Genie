@@ -25,7 +25,7 @@
 #include "benchmark.h"
 #include "searchinit.h"
 
-const char *version = "5.45";
+const char *version = "5.5";
 
 namespace
 {
@@ -180,6 +180,12 @@ void uci_input_loop(int argc, char **argv)
         {
             table.reset();
             BenchMark::bench(position, table);
+        }
+
+        else if (command == UciCommands::ucinewgame)
+        {
+            uci_stop(worker);
+            table.reset();
         }
     }
 }
