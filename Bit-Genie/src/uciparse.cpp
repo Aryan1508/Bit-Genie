@@ -74,6 +74,9 @@ bool UciParser::operator==(UciCommands type) const
     case UciCommands::bench:
         return command == "bench";
 
+    case UciCommands::ucinewgame:
+        return command == "ucinewgame";
+
     default:
         return false;
         break;

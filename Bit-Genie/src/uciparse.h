@@ -29,6 +29,7 @@ enum class UciCommands
     go,
     stop,
     setoption,
+    ucinewgame,
 
     // *debugging/other purpose commands*
     print,
