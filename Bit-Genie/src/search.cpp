@@ -175,7 +175,7 @@ namespace
 
         for (Move move; picker.next(move);)
         {
-            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_quiet_num > int(picker.gen.movelist.size() / (3 - pv_node) + depth))
+            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_quiet_num > int(picker.gen.movelist.size() / (3 - pv_node) + depth * 2))
                 break;
 
             move_num++;
