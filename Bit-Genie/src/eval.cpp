@@ -339,6 +339,8 @@ int eval_position(Position const &position)
     score += evaluate_control<White>(data);
     score -= evaluate_control<Black>(data);
 
+    score += (position.side == White ? MiscEval::tempo : -MiscEval::tempo);
+
     score = scale_score(position, score);
 
     return position.side == White ? score : -score;
