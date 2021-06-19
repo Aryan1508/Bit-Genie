@@ -165,6 +165,8 @@ namespace
 
         int move_num = 0;
         int original = alpha;
+        int move_quiet_num = 0;
+
 
         if (search.limits.stopped)
             return 0;
@@ -173,7 +175,13 @@ namespace
 
         for (Move move; picker.next(move);)
         {
+            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_quiet_num > int(picker.gen.movelist.size() / (3 - pv_node) + depth))
+                break;
+
             move_num++;
+            if (picker.stage == MovePicker::Stage::GiveQuiet)
+                move_quiet_num++;
+
             position.apply_move(move, search.info.ply);
 
             int score = 0;
