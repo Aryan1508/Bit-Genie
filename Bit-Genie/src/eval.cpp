@@ -163,7 +163,10 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
         if (ahead_squares & enemy)
             score += PawnEval::passer_blocked[psqt_sq(sq, us)];
         else 
+        {
             score += PawnEval::passed[psqt_sq(sq, us)];
+            score += PawnEval::passed_tempo * (us == position.side);
+        }
 
         if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
             score += PawnEval::passed_connected;
