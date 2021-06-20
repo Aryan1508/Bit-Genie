@@ -301,6 +301,9 @@ static int eval_king(Position const &position, EvalData &data, Color us)
             weight /= 2;
 
         score += KingEval::safety_table[weight];
+
+        if (us != position.side)
+            score += KingEval::danger_tempo;
     }
 
     return score;
