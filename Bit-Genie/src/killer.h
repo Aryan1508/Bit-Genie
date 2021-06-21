@@ -35,6 +35,7 @@ public:
 
     void add(int ply, Move move)
     {
+        if (moves[ply][0] == move) return;
         moves[ply][1] = moves[ply][0];
         moves[ply][0] = move;
     }
