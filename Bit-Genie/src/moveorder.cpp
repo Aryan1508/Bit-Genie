@@ -88,11 +88,6 @@ static int16_t see(Position &position, Move move)
     return scores[0];
 }
 
-static Move get_hash_move(Position &position, TTable &tt)
-{
-    return (Move)tt.retrieve(position).move;
-}
-
 template <bool quiet = false>
 static void order_normal_movelist(Position &position, Movelist &movelist, Search &search)
 {
@@ -129,11 +124,11 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::HashMove)
     {
         stage = Stage::GenNoisy;
-        Move hash_move = get_hash_move(*position, *table);
-
-        if (can_move(hash_move))
+        auto& entry = table->retrieve(*position);
+        
+        if (entry.hash == position->key.data() && can_move((Move)entry.move))
         {
-            move = hash_move;
+            move = (Move)entry.move;
             return true;
         }
     }
