@@ -119,9 +119,7 @@ namespace
         if (search.limits.stopped)
             return 0;
 
-        search.info.total_nodes++;
-        search.info.nodes++;
-
+        
         if ((search.info.nodes & 2047) == 0)
             search.limits.update();
 
@@ -129,6 +127,9 @@ namespace
 
         if (depth <= 0)
             return qsearch(position, search, tt, alpha, beta);
+
+        search.info.total_nodes++;
+        search.info.nodes++;
 
         if (search.info.ply >= MaxPly)
             return eval_position(position);
