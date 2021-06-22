@@ -20,12 +20,12 @@
 
 static inline int mb_to_b(int mb)
 {
-    return mb * 1000000;
+    return mb * 1024 * 1024;
 }
 
 TTable::TTable()
 {
-    resize(32);
+    resize(8);
 }
 
 void TTable::resize(int mb)
@@ -36,7 +36,7 @@ void TTable::resize(int mb)
 void TTable::add(Position const &position, Move move, int score, uint8_t depth, TEFlag flag)
 {
     uint64_t hash = position.key.data();
-    uint64_t index = hash % entries.size();
+    uint64_t index = hash % entries.size(); 
 
     entries[index] = TEntry(hash, score, move, depth, flag);
 }

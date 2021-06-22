@@ -25,7 +25,7 @@
 #include "benchmark.h"
 #include "searchinit.h"
 
-const char *version = "5.75";
+const char *version = "5.6";
 
 namespace
 {
@@ -135,7 +135,7 @@ void uci_input_loop(int argc, char **argv)
 
     UciParser command;
     Position position;
-    TTable table(2);
+    TTable table(8);
     SearchInit worker;
 
     if (argc > 1 && !strncmp(argv[1], "bench", 5))
