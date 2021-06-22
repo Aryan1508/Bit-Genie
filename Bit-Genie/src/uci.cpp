@@ -39,7 +39,7 @@ namespace
     {
         printl("id name Bit-Genie ", version);
         printl("id author Aryan Parekh");
-        printl("option name Hash type spin default 2 min 2 max 3000");
+        printl("option name Hash type spin default 8 min 2 max 3000");
         printl("option name Clear Hash type button");
         printl("uciok");
     }
