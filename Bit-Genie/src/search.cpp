@@ -140,7 +140,7 @@ namespace
 
         TEntry& entry = tt.retrieve(position);
 
-        if (entry.depth >= depth && entry.hash == position.key.data())
+        if (!pv_node && entry.depth >= depth && entry.hash == position.key.data())
         {
             if (entry.flag == TEFlag::exact || 
                (entry.flag == TEFlag::lower && entry.score >= beta) || 
