@@ -155,6 +155,7 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
     score += PawnEval::psqt[psqt_sq(sq, us)];
     score += pawn_is_isolated(friend_pawns, sq) * PawnEval::isolated;
     score += pawn_is_stacked(friend_pawns, sq) * PawnEval::stacked;
+    score += PawnEval::value;
 
     bool passed = pawn_passed(enemy_pawns, us, sq);
 
@@ -172,18 +173,23 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
             score += PawnEval::passed_connected;
     }
 
-    score += PawnEval::value;
-
     return score;
 }
 
 static int evaluate_knight(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
+    uint64_t enemy_mask = BitMask::passed_pawn[us][sq] & ~BitMask::files[sq];
+    uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
+    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
+
 
     score += KnightEval::psqt[psqt_sq(sq, us)];
     score += calculate_moblity<Knight, true>(position, data, sq, us, KnightEval::mobility);
     score += KnightEval::value;
+
+    if (!(enemy_mask & enemy_pawns) && rank_of(sq, us) >= Rank::five && (BitMask::pawn_attacks[!us][sq] & friend_pawns))
+        score += KnightEval::outpost;
 
     return score;
 }
