@@ -114,11 +114,12 @@ namespace
     }
 
     SearchResult pvs(Position &position, Search &search, TTable &tt,
-                     int depth, int alpha = MinEval, int beta = MaxEval, bool pv_node = false, bool do_null = true)
+                     int depth, int alpha = MinEval, int beta = MaxEval, bool do_null = true)
     {
         if (search.limits.stopped)
             return 0;
 
+        bool pv_node = std::abs(alpha - beta) > 1;
         
         if ((search.info.nodes & 2047) == 0)
             search.limits.update();
@@ -152,7 +153,7 @@ namespace
         if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null && position.should_do_null())
         {
             position.apply_null_move(search.info.ply);
-            int score = -pvs(position, search, tt, depth - 4, -beta, -beta + 1, false, false).score;
+            int score = -pvs(position, search, tt, depth - 4, -beta, -beta + 1, false).score;
             position.revert_null_move(search.info.ply);
 
             if (search.limits.stopped)
@@ -197,15 +198,15 @@ namespace
 
                 int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
 
-                score = -pvs(position, search, tt, RDepth, -alpha - 1, -alpha, false, false).score;
+                score = -pvs(position, search, tt, RDepth, -alpha - 1, -alpha).score;
 
                 if (score > alpha)
-                    score = -pvs(position, search, tt, depth - 1, -beta, -alpha, false).score;
+                    score = -pvs(position, search, tt, depth - 1, -beta, -alpha).score;
             }
             else
             {
                 if (move_num == 1)
-                    score = -pvs(position, search, tt, depth - 1, -beta, -alpha, true).score;
+                    score = -pvs(position, search, tt, depth - 1, -beta, -alpha).score;
                 else
                 {
                     score = -pvs(position, search, tt, depth - 1, -alpha - 1, -alpha).score;
