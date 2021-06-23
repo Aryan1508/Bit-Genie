@@ -25,7 +25,7 @@
 #include "benchmark.h"
 #include "searchinit.h"
 
-const char *version = "6";
+const char *version = "6.05";
 
 namespace
 {
@@ -62,6 +62,9 @@ namespace
 
         else if (name == "clear hash")
             tt.reset();
+
+        else if (name == "delta_prune_margin")
+            DELTA_PRUNE_MARGIN = std::stoi(value);
     }
 
     void uci_stop(SearchInit &worker)

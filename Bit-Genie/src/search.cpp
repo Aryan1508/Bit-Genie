@@ -55,8 +55,6 @@ namespace
 
     int qsearch(Position &position, Search &search, TTable &tt, int alpha, int beta)
     {
-        constexpr int delta_margin = 300;
-
         if (search.limits.stopped)
             return 0;
 
@@ -92,7 +90,7 @@ namespace
             if (move_score(move) < 0)
                 break;
 
-            if (move_score(move) + delta_margin < alpha)
+            if (move_score(move) + DELTA_PRUNE_MARGIN + stand_pat < alpha)
                 break;
 
             position.apply_move(move, search.info.ply);

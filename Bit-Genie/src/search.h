@@ -35,3 +35,5 @@ void search_position(Position &, Search, TTable &tt);
 uint64_t bench_search_position(Position &, TTable &);
 
 extern std::atomic_bool SEARCH_ABORT;
+
+inline int DELTA_PRUNE_MARGIN = 260;
