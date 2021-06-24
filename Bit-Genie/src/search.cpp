@@ -195,7 +195,7 @@ namespace
                 int new_depth = depth - 1;
 
                 R -= pv_node;
-                R -= (picker.stage == MovePicker::Stage::Killer1 || picker.stage == MovePicker::Stage::Killer2);
+                R -= (picker.move_stage == MovePicker::Stage::Killer1 || picker.move_stage == MovePicker::Stage::Killer2);
 
                 int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
 

@@ -144,6 +144,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GiveGoodNoisy)
     {
+        move_stage = Stage::GiveGoodNoisy;
         if (current != gen.movelist.end() && move_score(*current) > 0)
         {
             move = *current++;
@@ -154,6 +155,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::Killer1)
     {
+        move_stage = Stage::Killer1;
         stage = Stage::Killer2;
         Move killer = search->killers.first(search->info.ply);
 
@@ -166,6 +168,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::Killer2)
     {
+        move_stage = Stage::Killer2;
         stage = Stage::GiveBadNoisy;
         Move killer = search->killers.second(search->info.ply);
 
@@ -178,6 +181,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GiveBadNoisy)
     {
+        move_stage = Stage::GiveBadNoisy;
         if (current != gen.movelist.end())
         {
             move = *current++;
@@ -198,6 +202,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GiveQuiet)
     {
+        move_stage = Stage::GiveQuiet;
         if (current != gen.movelist.end())
         {
             move = *current++;

@@ -39,6 +39,7 @@ public:
 
     MoveGenerator<true> gen;
     Stage stage = Stage::HashMove;
+    Stage move_stage = Stage::HashMove;
 private:
     Position *position;
     Search *search;
