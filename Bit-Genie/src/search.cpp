@@ -196,6 +196,7 @@ namespace
 
                 R -= pv_node;
                 R -= (picker.stage == MovePicker::Stage::Killer1 || picker.stage == MovePicker::Stage::Killer2);
+                R -= (picker.stage == MovePicker::Stage::GiveGoodNoisy || picker.stage == MovePicker::Stage::GiveBadNoisy);
 
                 int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
 
