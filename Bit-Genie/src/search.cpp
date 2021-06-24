@@ -20,6 +20,7 @@
 #include "position.h"
 #include "eval.h"
 #include "moveorder.h"
+#include "polyglot.h"
 #include "tt.h"
 #include <sstream>
 #include "evalscores.h"
@@ -344,6 +345,16 @@ void init_lmr_array()
 
 void search_position(Position &position, Search search, TTable &tt)
 {
+    if (PolyGlot::book.enabled && !search.limits.time_set)
+    {
+        Move bookmove = PolyGlot::book.probe(position);
+        if (bookmove)
+        {
+            std::cout << "bestmove " << print_move(bookmove) << std::endl;
+            return;
+        }
+    }
+
     SEARCH_ABORT = false;
 
     Move best_move = NullMove;
@@ -356,7 +367,7 @@ void search_position(Position &position, Search search, TTable &tt)
 
         SearchResult result = pvs(position, search, tt, depth);
 
-    if (search.limits.stopped)
+        if (search.limits.stopped)
         {
             if (depth == 1)
                 std::cout << "stopped at depth 1\n";
