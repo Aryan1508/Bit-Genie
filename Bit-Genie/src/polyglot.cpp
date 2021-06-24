@@ -20,7 +20,7 @@
 #include "board.h"
 #include <fstream>
 
-constexpr uint64_t keys_64[781]
+std::vector<uint64_t> keys_64
 {
 #include "polyglotkeys.txt"
 };
