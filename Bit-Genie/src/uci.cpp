@@ -24,6 +24,7 @@
 #include "stringparse.h"
 #include "benchmark.h"
 #include "searchinit.h"
+#include "polyglot.h"
 
 const char *version = "6.1";
 
@@ -62,6 +63,12 @@ namespace
 
         else if (name == "clear hash")
             tt.reset();
+
+        else if (name == "ownbook")
+            PolyGlot::book.enabled = (value == "true");
+
+        else if (name == "bookpath")
+            PolyGlot::book.open(value);
     }
 
     void uci_stop(SearchInit &worker)
