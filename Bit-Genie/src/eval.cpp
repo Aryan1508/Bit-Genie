@@ -145,9 +145,9 @@ static Square psqt_sq(Square sq, Color color)
 static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Color us)
 {
     int score = 0;
-    uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
-    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
-    uint64_t enemy = position.pieces.get_occupancy(!us);
+    uint64_t enemy_pawns   = position.pieces.get_piece_bb<Pawn>(!us);
+    uint64_t friend_pawns  = position.pieces.get_piece_bb<Pawn>(us);
+    uint64_t enemy         = position.pieces.get_occupancy(!us);
     uint64_t ahead_squares = BitMask::passed_pawn[us][sq] & BitMask::files[sq];
 
     data.update_attackers_count(BitMask::pawn_attacks[us][sq], us);
@@ -170,6 +170,18 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
 
         if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
             score += PawnEval::passed_connected;
+    }
+
+    uint64_t backward_mask = BitMask::passed_pawn[!us][sq] & ~BitMask::files[sq];
+    backward_mask |= shift<Direction::east>(1ull << sq);
+    backward_mask |= shift<Direction::west>(1ull << sq);
+
+    if (!(friend_pawns & backward_mask))
+    {
+        uint64_t enemy_pawn_attacked = Attacks::pawn(enemy_pawns, !us);
+
+        if (enemy_pawn_attacked & Attacks::pawn_pushes(sq, us))
+            score += PawnEval::backward;
     }
 
     score += PawnEval::value;

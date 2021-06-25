@@ -42,6 +42,19 @@ namespace Attacks
         return BitMask::king_attacks[sq];
     }
 
+    inline uint64_t pawn(uint64_t pawns, Color side)
+    {
+        uint64_t forward = side == White ? shift<Direction::north>(pawns) : shift<Direction::south>(pawns);
+        return shift<Direction::east>(forward) | shift<Direction::west>(forward);
+    }
+
+    inline uint64_t pawn_pushes(Square sq, Color side)
+    {
+        return side == Color::White 
+        ? shift<Direction::north>(1ull << sq)
+        : shift<Direction::south>(1ull << sq);
+    }
+
     // Return a bitboard of the bishop attacks for a
     // bishop situated on the given square
     // Diagonal and anti-diagonal attacks with respect to the current occupancy
