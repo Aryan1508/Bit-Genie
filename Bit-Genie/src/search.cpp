@@ -149,7 +149,10 @@ namespace
                 return { entry.score, (Move)entry.move };
         }
 
-        bool in_check = position.king_in_check();
+        int stat_score =  search.eval_history[search.info.ply] = eval_position(position);
+        bool improving =  search.eval_history[std::max(0, search.info.ply - 2)] < stat_score;
+        bool in_check  = position.king_in_check();
+
         if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null && position.should_do_null())
         {
             position.apply_null_move(search.info.ply);
@@ -198,6 +201,8 @@ namespace
 
                 R -= pv_node;
                 R -= (picker.stage == MovePicker::Stage::Killer1 || picker.stage == MovePicker::Stage::Killer2);
+
+                R += !improving;
 
                 if (picker.stage == MovePicker::Stage::GiveQuiet)
                     R -= (search.history.get(position, move) / 14000);

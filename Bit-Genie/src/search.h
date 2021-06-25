@@ -24,11 +24,12 @@
 
 struct Search
 {
-    SearchInfo info;
+    SearchInfo   info;
     SearchLimits limits;
-    Killers killers;
-    SHistory history;
-};
+    Killers      killers;
+    SHistory     history;
+    int          eval_history[64];
+};  
 
 void init_lmr_array();
 void search_position(Position &, Search);
