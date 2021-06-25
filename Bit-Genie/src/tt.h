@@ -63,3 +63,5 @@ public:
 private:
     std::vector<TEntry> entries;
 };
+
+inline TTable TT(8);

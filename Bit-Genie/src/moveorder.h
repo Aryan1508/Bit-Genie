@@ -33,7 +33,7 @@ public:
         GiveQuiet
     };
 
-    MovePicker(Position &, Search &, TTable &);
+    MovePicker(Position &, Search &);
 
     bool next(Move &);
 
@@ -42,7 +42,6 @@ public:
 private:
     Position *position;
     Search *search;
-    TTable *table;
 
     Movelist::iterator current;
 };

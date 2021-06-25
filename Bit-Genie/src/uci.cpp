@@ -52,7 +52,7 @@ namespace
         printl("readyok");
     }
 
-    void uci_setoption(UciParser const &parser, TTable &tt)
+    void uci_setoption(UciParser const &parser)
     {
         auto [name, value] = parser.parse_setoption();
 
@@ -60,11 +60,11 @@ namespace
         {
             if (!string_is_number(value))
                 return;
-            tt.resize(std::stoi(value));
+            TT.resize(std::stoi(value));
         }
 
         else if (name == "clear hash")
-            tt.reset();
+            TT.reset();
 
         else if (name == "ownbook")
             PolyGlot::book.enabled = (value == "true");
@@ -79,7 +79,7 @@ namespace
             worker.end();
     }
 
-    void uci_go(UciParser const &parser, Position &position, TTable &tt, SearchInit &worker)
+    void uci_go(UciParser const &parser, Position &position, SearchInit &worker)
     {
         UciGo options = parser.parse_go(position.side);
 
@@ -108,7 +108,7 @@ namespace
             search.limits.time_set = true;
         }
 
-        worker.begin(search, position, tt);
+        worker.begin(search, position);
     }
 
     void uci_setposition(UciParser const &parser, Position &position)
@@ -142,14 +142,13 @@ void uci_input_loop(int argc, char **argv)
 {
     printl("Bit-Genie by Aryan Parekh");
 
-    UciParser command;
-    Position position;
-    TTable table(8);
+    UciParser  command;
+    Position   position;
     SearchInit worker;
 
     if (argc > 1 && !strncmp(argv[1], "bench", 5))
     {
-        BenchMark::bench(position, table);
+        BenchMark::bench(position);
         return;
     }
 
@@ -177,24 +176,24 @@ void uci_input_loop(int argc, char **argv)
             BenchMark::perft(position, command.parse_perft());
 
         else if (command == UciCommands::go)
-            uci_go(command, position, table, worker);
+            uci_go(command, position, worker);
 
         else if (command == UciCommands::stop)
             uci_stop(worker);
 
         else if (command == UciCommands::setoption)
-            uci_setoption(command, table);
+            uci_setoption(command);
 
         else if (command == UciCommands::bench)
         {
-            table.reset();
-            BenchMark::bench(position, table);
+            TT.reset();
+            BenchMark::bench(position);
         }
 
         else if (command == UciCommands::ucinewgame)
         {
             uci_stop(worker);
-            table.reset();
+            TT.reset();
         }
     }
 }
