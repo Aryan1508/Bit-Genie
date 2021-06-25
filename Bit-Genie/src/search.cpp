@@ -175,7 +175,7 @@ namespace
 
         MovePicker picker(position, search);
         
-        if (!tthit && depth > 4) 
+        if (!tthit && depth > 3) 
             depth--;
 
         for (Move move; picker.next(move);)
