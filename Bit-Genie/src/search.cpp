@@ -197,8 +197,10 @@ namespace
                 R -= pv_node;
                 R -= (picker.stage == MovePicker::Stage::Killer1 || picker.stage == MovePicker::Stage::Killer2);
 
-                int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
+                if (picker.stage == MovePicker::Stage::GiveQuiet)
+                    R -= (search.history.get(position, move) / 14000);
 
+                int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
                 score = -pvs(position, search, tt, RDepth, -alpha - 1, -alpha).score;
 
                 if (score > alpha)
