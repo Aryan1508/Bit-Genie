@@ -139,8 +139,9 @@ namespace
             return 0;
 
         TEntry& entry = TT.retrieve(position);
+        bool tthit = entry.hash == position.key.data();
 
-        if (entry.depth >= depth && entry.hash == position.key.data())
+        if (entry.depth >= depth && tthit)
         {
             if (entry.flag == TEFlag::exact || 
                (entry.flag == TEFlag::lower && entry.score >= beta) || 
@@ -149,7 +150,6 @@ namespace
         }
 
         bool in_check = position.king_in_check();
-
         if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null && position.should_do_null())
         {
             position.apply_null_move(search.info.ply);
@@ -174,6 +174,9 @@ namespace
             return 0;
 
         MovePicker picker(position, search);
+        
+        if (!tthit && depth > 4) 
+            depth--;
 
         for (Move move; picker.next(move);)
         {
