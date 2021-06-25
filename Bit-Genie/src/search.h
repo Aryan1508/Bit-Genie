@@ -31,7 +31,7 @@ struct Search
 };
 
 void init_lmr_array();
-void search_position(Position &, Search, TTable &tt);
-uint64_t bench_search_position(Position &, TTable &);
+void search_position(Position &, Search);
+uint64_t bench_search_position(Position &);
 
 extern std::atomic_bool SEARCH_ABORT;

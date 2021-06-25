@@ -54,7 +54,7 @@ namespace
         }
     };
 
-    int qsearch(Position &position, Search &search, TTable &tt, int alpha, int beta)
+    int qsearch(Position &position, Search &search, int alpha, int beta)
     {
         constexpr int delta_margin = 300;
 
@@ -98,7 +98,7 @@ namespace
 
             position.apply_move(move, search.info.ply);
 
-            int score = -qsearch(position, search, tt, -beta, -alpha);
+            int score = -qsearch(position, search, -beta, -alpha);
 
             position.revert_move(search.info.ply);
 
@@ -114,8 +114,7 @@ namespace
         return alpha;
     }
 
-    SearchResult pvs(Position &position, Search &search, TTable &tt,
-                     int depth, int alpha = MinEval, int beta = MaxEval, bool do_null = true)
+    SearchResult pvs(Position &position, Search &search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
             return 0;
@@ -128,7 +127,7 @@ namespace
         search.info.update_seldepth();
 
         if (depth <= 0)
-            return qsearch(position, search, tt, alpha, beta);
+            return qsearch(position, search, alpha, beta);
 
         search.info.total_nodes++;
         search.info.nodes++;
@@ -139,7 +138,7 @@ namespace
         if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
             return 0;
 
-        TEntry& entry = tt.retrieve(position);
+        TEntry& entry = TT.retrieve(position);
 
         if (entry.depth >= depth && entry.hash == position.key.data())
         {
@@ -154,7 +153,7 @@ namespace
         if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null && position.should_do_null())
         {
             position.apply_null_move(search.info.ply);
-            int score = -pvs(position, search, tt, depth - 4, -beta, -beta + 1, false).score;
+            int score = -pvs(position, search, depth - 4, -beta, -beta + 1, false).score;
             position.revert_null_move(search.info.ply);
 
             if (search.limits.stopped)
@@ -174,7 +173,7 @@ namespace
         if (search.limits.stopped)
             return 0;
 
-        MovePicker picker(position, search, tt);
+        MovePicker picker(position, search);
 
         for (Move move; picker.next(move);)
         {
@@ -201,21 +200,21 @@ namespace
                     R -= (search.history.get(position, move) / 14000);
 
                 int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
-                score = -pvs(position, search, tt, RDepth, -alpha - 1, -alpha).score;
+                score = -pvs(position, search, RDepth, -alpha - 1, -alpha).score;
 
                 if (score > alpha)
-                    score = -pvs(position, search, tt, depth - 1, -beta, -alpha).score;
+                    score = -pvs(position, search, depth - 1, -beta, -alpha).score;
             }
             else
             {
                 if (move_num == 1)
-                    score = -pvs(position, search, tt, depth - 1, -beta, -alpha).score;
+                    score = -pvs(position, search, depth - 1, -beta, -alpha).score;
                 else
                 {
-                    score = -pvs(position, search, tt, depth - 1, -alpha - 1, -alpha).score;
+                    score = -pvs(position, search, depth - 1, -alpha - 1, -alpha).score;
 
                     if (alpha < score && score < beta)
-                        score = -pvs(position, search, tt, depth - 1, -beta, -score).score;
+                        score = -pvs(position, search, depth - 1, -beta, -score).score;
                 }
             }
 
@@ -259,7 +258,7 @@ namespace
             return 0;
 
         TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::upper;
-        tt.add(position, result.best_move, result.score, depth, flag);
+        TT.add(position, result.best_move, result.score, depth, flag);
 
         return result;
     }
@@ -291,11 +290,11 @@ namespace
         return o.str();
     }
 
-    std::vector<Move> get_pv(Position position, TTable &tt, int depth)
+    std::vector<Move> get_pv(Position position, int depth)
     {
         std::vector<Move> pv;
 
-        TEntry *entry = &tt.retrieve(position);
+        TEntry *entry = &TT.retrieve(position);
 
         while (entry->hash == position.key.data() && depth != 0)
         {
@@ -308,13 +307,13 @@ namespace
             else
                 break;
 
-            entry = &tt.retrieve(position);
+            entry = &TT.retrieve(position);
         }
 
         return pv;
     }
 
-    void print_info_string(Position &position, SearchResult &result, TTable &tt, Search &search, int depth)
+    void print_info_string(Position &position, SearchResult &result, Search &search, int depth)
     {
         using namespace std::chrono;
         std::cout << "info";
@@ -325,7 +324,7 @@ namespace
         std::cout << " time " << duration_cast<milliseconds>(search.limits.stopwatch.elapsed_time()).count();
         std::cout << " pv ";
 
-        for (auto m : get_pv(position, tt, depth))
+        for (auto m : get_pv(position, depth))
         {
             std::cout << print_move(m) << ' ';
         }
@@ -345,7 +344,7 @@ void init_lmr_array()
     }
 }
 
-void search_position(Position &position, Search search, TTable &tt)
+void search_position(Position &position, Search search)
 {
     if (PolyGlot::book.enabled && !search.limits.time_set)
     {
@@ -367,7 +366,7 @@ void search_position(Position &position, Search search, TTable &tt)
         search.info.ply = 0;
         search.info.nodes = 0;
 
-        SearchResult result = pvs(position, search, tt, depth);
+        SearchResult result = pvs(position, search, depth, MinEval, MaxEval);
 
         if (search.limits.stopped)
         {
@@ -376,13 +375,13 @@ void search_position(Position &position, Search search, TTable &tt)
             break;
         }
 
-        print_info_string(position, result, tt, search, depth);
+        print_info_string(position, result, search, depth);
         best_move = result.best_move;
     }
     std::cout << "bestmove " << print_move(best_move) << std::endl;
 }
 
-uint64_t bench_search_position(Position &position, TTable &tt)
+uint64_t bench_search_position(Position &position)
 {
     Search search;
     search.limits.stopped = false;
@@ -395,7 +394,7 @@ uint64_t bench_search_position(Position &position, TTable &tt)
     {
         search.info.ply = 0;
         search.info.nodes = 0;
-        pvs(position, search, tt, depth);
+        pvs(position, search, depth, MinEval, MaxEval);
     }
     return search.info.total_nodes;
 }

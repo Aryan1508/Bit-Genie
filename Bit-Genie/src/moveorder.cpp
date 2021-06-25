@@ -109,8 +109,8 @@ void sort_qmovelist(Movelist &movelist, Position &position, Search &search)
     order_normal_movelist<false>(position, movelist, search);
 }
 
-MovePicker::MovePicker(Position &p, Search &s, TTable &tt)
-    : position(&p), search(&s), table(&tt)
+MovePicker::MovePicker(Position &p, Search &s)
+    : position(&p), search(&s)
 {
     stage = Stage::HashMove;
 }
@@ -124,7 +124,7 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::HashMove)
     {
         stage = Stage::GenNoisy;
-        auto& entry = table->retrieve(*position);
+        auto& entry = TT.retrieve(*position);
         
         if (entry.hash == position->key.data() && can_move((Move)entry.move))
         {

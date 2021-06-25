@@ -84,7 +84,7 @@ namespace BenchMark
 
     // Run through a list of positions and search a fixed depth at each
     // position. Print out the total nodes search and the nodes per second ( nodes / time)
-    void bench(Position position, TTable &tt) // copy on purpose
+    void bench(Position position) // copy on purpose
     {
         StopWatch<> watch;
         watch.go();
@@ -97,7 +97,7 @@ namespace BenchMark
                 throw std::runtime_error("Invalid fen in bench");
             }
 
-            uint64_t count = bench_search_position(position, tt);
+            uint64_t count = bench_search_position(position);
             nodes += count;
             std::cout << fen << ": " << nodes << std::endl;
         }

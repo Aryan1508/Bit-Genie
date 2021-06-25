@@ -24,7 +24,7 @@ class SearchInit
 public:
     SearchInit() = default;
 
-    void begin(Search &, Position &, TTable &);
+    void begin(Search &, Position &);
     void end();
     bool is_searching() const noexcept
     {
