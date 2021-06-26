@@ -89,8 +89,9 @@ static int16_t see(Position &position, Move move)
 }
 
 template <bool quiet = false>
-static void order_normal_movelist(Position &position, Movelist &movelist, Search &search)
+static void order_normal_movelist(Movelist &movelist, Search::Info &search)
 {
+    Position& position = *search.position;
     for (auto &move : movelist)
     {
         if constexpr (!quiet)
@@ -104,29 +105,31 @@ static void order_normal_movelist(Position &position, Movelist &movelist, Search
               [](Move rhs, Move lhs) { return move_score(rhs) > move_score(lhs); });
 }
 
-void sort_qmovelist(Movelist &movelist, Position &position, Search &search)
+void sort_qmovelist(Movelist &movelist, Search::Info& search)
 {
-    order_normal_movelist<false>(position, movelist, search);
+    order_normal_movelist<false>(movelist, search);
 }
 
-MovePicker::MovePicker(Position &p, Search &s)
-    : position(&p), search(&s)
+MovePicker::MovePicker(Search::Info& s)
+    : search(&s)
 {
     stage = Stage::HashMove;
 }
 
 bool MovePicker::next(Move &move)
 {
+    Position& position = *search->position;
+
     auto can_move = [&](Move m) {
-        return position->move_is_pseudolegal(m) && position->move_is_legal(m);
+        return position.move_is_pseudolegal(m) && position.move_is_legal(m);
     };
 
     if (stage == Stage::HashMove)
     {
         stage = Stage::GenNoisy;
-        auto& entry = TT.retrieve(*position);
+        auto& entry = TT.retrieve(position);
         
-        if (entry.hash == position->key.data() && can_move((Move)entry.move))
+        if (entry.hash == position.key.data() && can_move((Move)entry.move))
         {
             move = (Move)entry.move;
             return true;
@@ -135,8 +138,8 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GenNoisy)
     {
-        gen.generate<MoveGenType::noisy>(*position);
-        order_normal_movelist(*position, gen.movelist, *search);
+        gen.generate<MoveGenType::noisy>(position);
+        order_normal_movelist(gen.movelist, *search);
 
         current = gen.movelist.begin();
         stage = Stage::GiveGoodNoisy;
@@ -155,7 +158,7 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::Killer1)
     {
         stage = Stage::Killer2;
-        Move killer = search->killers.first(search->info.ply);
+        Move killer = search->killers.first(search->stats.ply);
 
         if (can_move(killer))
         {
@@ -167,7 +170,7 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::Killer2)
     {
         stage = Stage::GiveBadNoisy;
-        Move killer = search->killers.second(search->info.ply);
+        Move killer = search->killers.second(search->stats.ply);
 
         if (can_move(killer))
         {
@@ -189,9 +192,9 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::GenQuiet)
     {
         gen.movelist.clear();
-        gen.generate<MoveGenType::quiet>(*position);
+        gen.generate<MoveGenType::quiet>(position);
 
-        order_normal_movelist<true>(*position, gen.movelist, *search);
+        order_normal_movelist<true>(gen.movelist, *search);
         current = gen.movelist.begin();
         stage = Stage::GiveQuiet;
     }

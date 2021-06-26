@@ -52,9 +52,6 @@ class SHistory;
 class TTable;
 class ZobristKey;
 
-struct SearchInfo;
-struct SearchLimits;
-struct Search;
 struct TEntry;
 
 template <typename E>

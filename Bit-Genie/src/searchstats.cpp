@@ -15,21 +15,22 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once
+#include "searchstats.h"
 #include <algorithm>
-#include <stdint.h>
 
-struct SearchInfo
+namespace Search 
 {
-    uint64_t total_nodes = 0;
-    uint64_t nodes = 0;
-    uint64_t total_cutoffs = 0;
-    int ply = 0;
-    int depth = 0;
-    int seldepth = 0;
-
-    void update_seldepth()
+    void Stats::update()
     {
+        iter_nodes++;
+        total_nodes++;
         seldepth = std::max(seldepth, ply);
     }
-};
+
+    void Stats::reset_iteration()
+    {
+        iter_nodes = 0;
+        ply = 0;
+        seldepth = 0;
+    }
+}

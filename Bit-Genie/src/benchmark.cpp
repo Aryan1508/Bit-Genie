@@ -97,7 +97,7 @@ namespace BenchMark
                 throw std::runtime_error("Invalid fen in bench");
             }
 
-            uint64_t count = bench_search_position(position);
+            uint64_t count = Search::bench(position);
             nodes += count;
             std::cout << fen << ": " << nodes << std::endl;
         }

@@ -25,6 +25,7 @@
 #include <sstream>
 #include "evalscores.h"
 #include <cmath>
+#include <algorithm>
 
 int lmr_reductions_array[64][64]{0};
 
@@ -54,26 +55,23 @@ namespace
         }
     };
 
-    int qsearch(Position &position, Search &search, int alpha, int beta)
+    int qsearch(Search::Info& search, int alpha, int beta)
     {
-        constexpr int delta_margin = 300;
-
         if (search.limits.stopped)
             return 0;
 
-        search.info.total_nodes++;
-        search.info.nodes++;
+        search.update();
+        Position& position = *search.position;
+        bool      at_root   = search.stats.ply == 0;
 
-        if ((search.info.nodes & 2047) == 0)
-            search.limits.update();
+        if (!at_root)
+        {
+            if (search.stats.ply >= MaxPly)
+                return eval_position(position);
 
-        search.info.update_seldepth();
-
-        if (search.info.ply >= MaxPly)
-            return eval_position(position);
-
-        if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
-            return 0;
+            if (position.history.is_drawn(position.key) || position.half_moves >= 100)
+                return 0;
+        }
 
         int stand_pat = eval_position(position);
 
@@ -82,25 +80,24 @@ namespace
 
         alpha = std::max(alpha, stand_pat);
 
-        SearchResult result;
         MoveGenerator<true> gen;
         gen.generate<MoveGenType::noisy>(position);
 
-        sort_qmovelist(gen.movelist, position, search);
+        sort_qmovelist(gen.movelist, search);
 
         for (auto move : gen.movelist)
         {
             if (move_score(move) < 0)
                 break;
 
-            if (move_score(move) + delta_margin < alpha)
+            if (move_score(move) + 300 < alpha)
                 break;
 
-            position.apply_move(move, search.info.ply);
+            position.apply_move(move, search.stats.ply);
 
-            int score = -qsearch(position, search, -beta, -alpha);
+            int score = -qsearch(search, -beta, -alpha);
 
-            position.revert_move(search.info.ply);
+            position.revert_move(search.stats.ply);
 
             if (search.limits.stopped)
                 return 0;
@@ -114,29 +111,28 @@ namespace
         return alpha;
     }
 
-    SearchResult pvs(Position &position, Search &search, int depth, int alpha, int beta, bool do_null = true)
+    SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
             return 0;
 
-        bool pv_node = std::abs(alpha - beta) > 1;
-        
-        if ((search.info.nodes & 2047) == 0)
-            search.limits.update();
-
-        search.info.update_seldepth();
-
         if (depth <= 0)
-            return qsearch(position, search, alpha, beta);
+            return qsearch(search, alpha, beta);
 
-        search.info.total_nodes++;
-        search.info.nodes++;
+        Position& position = *search.position;
+        bool      pv_node = std::abs(alpha - beta) > 1;
+        bool      at_root = search.stats.ply == 0;
+        
+        search.update();
 
-        if (search.info.ply >= MaxPly)
-            return eval_position(position);
+        if (!at_root)
+        {
+            if (search.stats.ply >= MaxPly)
+                return eval_position(position);
 
-        if ((position.history.is_drawn(position.key) || position.half_moves >= 100) && search.info.ply)
-            return 0;
+            if (position.history.is_drawn(position.key) || position.half_moves >= 100)
+                return 0;
+        }
 
         TEntry& entry = TT.retrieve(position);
         bool tthit = entry.hash == position.key.data();
@@ -150,11 +146,11 @@ namespace
         }
 
         bool in_check = position.king_in_check();
-        if (!pv_node && !in_check && depth > 4 && search.info.ply && do_null && position.should_do_null())
+        if (!pv_node && !in_check && depth > 4 && !at_root && do_null && position.should_do_null())
         {
-            position.apply_null_move(search.info.ply);
-            int score = -pvs(position, search, depth - 4, -beta, -beta + 1, false).score;
-            position.revert_null_move(search.info.ply);
+            position.apply_null_move(search.stats.ply);
+            int score = -pvs(search, depth - 4, -beta, -beta + 1, false).score;
+            position.revert_null_move(search.stats.ply);
 
             if (search.limits.stopped)
                 return 0;
@@ -164,16 +160,11 @@ namespace
         }
 
         SearchResult result;
-
         int move_num = 0;
         int original = alpha;
         int move_quiet_num = 0;
 
-
-        if (search.limits.stopped)
-            return 0;
-
-        MovePicker picker(position, search);
+        MovePicker picker(search);
         
         if (!tthit && depth > 3) 
             depth--;
@@ -187,7 +178,7 @@ namespace
             if (picker.stage == MovePicker::Stage::GiveQuiet)
                 move_quiet_num++;
 
-            position.apply_move(move, search.info.ply);
+            position.apply_move(move, search.stats.ply);
 
             int score = 0;
 
@@ -203,25 +194,25 @@ namespace
                     R -= (search.history.get(position, move) / 14000);
 
                 int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
-                score = -pvs(position, search, RDepth, -alpha - 1, -alpha).score;
+                score = -pvs(search, RDepth, -alpha - 1, -alpha).score;
 
                 if (score > alpha)
-                    score = -pvs(position, search, depth - 1, -beta, -alpha).score;
+                    score = -pvs(search, depth - 1, -beta, -alpha).score;
             }
             else
             {
                 if (move_num == 1)
-                    score = -pvs(position, search, depth - 1, -beta, -alpha).score;
+                    score = -pvs(search, depth - 1, -beta, -alpha).score;
                 else
                 {
-                    score = -pvs(position, search, depth - 1, -alpha - 1, -alpha).score;
+                    score = -pvs(search, depth - 1, -alpha - 1, -alpha).score;
 
                     if (alpha < score && score < beta)
-                        score = -pvs(position, search, depth - 1, -beta, -score).score;
+                        score = -pvs(search, depth - 1, -beta, -score).score;
                 }
             }
 
-            position.revert_move(search.info.ply);
+            position.revert_move(search.stats.ply);
 
             if (search.limits.stopped)
                 return 0;
@@ -236,13 +227,11 @@ namespace
 
             if (alpha >= beta)
             {
-                search.info.total_cutoffs++;
-
                 if (!move_is_capture(position, move))
                 {
                     search.history.add(position, move, depth * depth);
                     search.history.penalty(position, picker.gen.movelist, move, depth);
-                    search.killers.add(search.info.ply, move);
+                    search.killers.add(search.stats.ply, move);
                 }
                 break;
             }
@@ -251,7 +240,7 @@ namespace
         if (move_num == 0)
         {
             if (in_check)
-                return search.info.ply - MateEval;
+                return search.stats.ply - MateEval;
 
             else
                 return 0;
@@ -269,13 +258,9 @@ namespace
     int mate_distance(int score)
     {
         if (score > 0)
-        {
             return (MateEval - score) / 2 + 1;
-        }
         else
-        {
-            return (MateEval + score) / 2 + 1;
-        }
+            return -((MateEval + score) / 2 + 1);
     }
 
     std::string print_score(int score)
@@ -316,15 +301,15 @@ namespace
         return pv;
     }
 
-    void print_info_string(Position &position, SearchResult &result, Search &search, int depth)
+    void print_info_string(Position &position, SearchResult &result, Search::Info &search, int depth)
     {
         using namespace std::chrono;
         std::cout << "info";
         std::cout << " depth " << depth;
-        std::cout << " seldepth " << search.info.seldepth;
-        std::cout << " nodes " << search.info.nodes;
+        std::cout << " seldepth " << search.stats.seldepth;
+        std::cout << " nodes " << search.stats.iter_nodes;
         std::cout << " score " << print_score(result.score);
-        std::cout << " time " << duration_cast<milliseconds>(search.limits.stopwatch.elapsed_time()).count();
+        std::cout << " time " << search.limits.stopwatch.elapsed_time().count();
         std::cout << " pv ";
 
         for (auto m : get_pv(position, depth))
@@ -336,68 +321,71 @@ namespace
     }
 }
 
-void init_lmr_array()
+namespace Search 
 {
-    for (int i = 0; i < 64; i++)
+    void Info::update()
     {
-        for(int j = 0;j < 64;j++)
+        stats.update();
+        
+        if ((stats.iter_nodes & 2047) == 0)
+            limits.update();
+    }
+
+    void init()
+    {
+        for (int i = 0; i < 64; i++)
         {
-            lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
+            for(int j = 0;j < 64;j++)
+            {
+                lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
+            }
         }
     }
-}
 
-void search_position(Position &position, Search search)
-{
-    if (PolyGlot::book.enabled && !search.limits.time_set)
+    void bestmove(Info search)
     {
-        Move bookmove = PolyGlot::book.probe(position);
-        if (bookmove)
+        Position& position = *search.position;
+        if (PolyGlot::book.enabled)
         {
-            std::cout << "bestmove " << print_move(bookmove) << std::endl;
-            return;
-        }
-    }
-
-    SEARCH_ABORT = false;
-
-    Move best_move = NullMove;
-    for (int depth = 1;
-         depth <= search.limits.max_depth;
-         depth++)
-    {
-        search.info.ply = 0;
-        search.info.nodes = 0;
-
-        SearchResult result = pvs(position, search, depth, MinEval, MaxEval);
-
-        if (search.limits.stopped)
-        {
-            if (depth == 1)
-                std::cout << "stopped at depth 1\n";
-            break;
+            Move bookmove = PolyGlot::book.probe(position);
+            if (bookmove)
+            {
+                std::cout << "bestmove " << print_move(bookmove) << std::endl;
+                return;
+            }
         }
 
-        print_info_string(position, result, search, depth);
-        best_move = result.best_move;
+        SEARCH_ABORT = false;
+
+        Move best_move = NullMove;
+        for (int depth = 1;
+            depth <= search.limits.max_depth;
+            depth++)
+        {
+            search.stats.reset_iteration();
+
+            SearchResult result = pvs(search, depth, MinEval, MaxEval);
+
+            if (search.limits.stopped)
+                break;
+
+            print_info_string(position, result, search, depth);
+            best_move = result.best_move;
+        }
+        std::cout << "bestmove " << print_move(best_move) << std::endl;
     }
-    std::cout << "bestmove " << print_move(best_move) << std::endl;
-}
 
-uint64_t bench_search_position(Position &position)
-{
-    Search search;
-    search.limits.stopped = false;
-    search.limits.time_set = false;
-    SEARCH_ABORT = false;
-
-    for (int depth = 1;
-         depth <= 12;
-         depth++)
+    uint64_t bench(Position &position)
     {
-        search.info.ply = 0;
-        search.info.nodes = 0;
-        pvs(position, search, depth, MinEval, MaxEval);
+        SEARCH_ABORT = false;
+        Info search;
+        search.position = &position;
+
+        for (int depth = 1;
+            depth <= 12;
+            depth++)
+            pvs(search, depth, MinEval, MaxEval);
+
+        return search.stats.total_nodes;
     }
-    return search.info.total_nodes;
 }

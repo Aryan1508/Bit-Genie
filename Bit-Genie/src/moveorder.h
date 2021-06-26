@@ -16,8 +16,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "search.h"
 #include "movegen.h"
-
 class MovePicker
 {
 public:
@@ -33,17 +33,16 @@ public:
         GiveQuiet
     };
 
-    MovePicker(Position &, Search &);
+    MovePicker(Search::Info&);
 
     bool next(Move &);
 
     MoveGenerator<true> gen;
     Stage stage = Stage::HashMove;
+    
 private:
-    Position *position;
-    Search *search;
-
+    Search::Info *search;
     Movelist::iterator current;
 };
 
-void sort_qmovelist(Movelist &, Position &, Search &search);
+void sort_qmovelist(Movelist &, Search::Info& );

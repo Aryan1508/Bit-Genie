@@ -83,11 +83,10 @@ namespace
     {
         UciGo options = parser.parse_go(position.side);
 
-        Search search;
+        Search::Info search;
+        search.position = &position;
         search.limits.stopwatch.go();
         search.limits.max_depth = std::min(options.depth, 64);
-        search.limits.stopped = false;
-        search.limits.time_set = false;
 
         if (options.movetime == -1)
         {
@@ -108,7 +107,7 @@ namespace
             search.limits.time_set = true;
         }
 
-        worker.begin(search, position);
+        worker.begin(search);
     }
 
     void uci_setposition(UciParser const &parser, Position &position)

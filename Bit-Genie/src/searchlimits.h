@@ -19,13 +19,20 @@
 #include "misc.h"
 #include "stopwatch.h"
 
-struct SearchLimits
+namespace Search 
 {
-    StopWatch<std::chrono::nanoseconds> stopwatch;
-    int64_t movetime = -1;
-    bool time_set = false;
-    bool stopped = false;
-    int max_depth = 1;
+    class Limits 
+    {
+    public:
+        Limits() = default;
+        
+        void set_movetime(int64_t);
+        void update();
 
-    void update();
-};
+        StopWatch<> stopwatch;
+        int64_t movetime  = -1;
+        int     max_depth = 64;
+        bool    stopped   = false;
+        bool    time_set  = false;
+    };
+}
