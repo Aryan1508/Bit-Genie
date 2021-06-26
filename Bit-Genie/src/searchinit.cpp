@@ -6,7 +6,7 @@ void SearchInit::begin(Search::Info& search)
         end();
 
     using std::ref;
-    worker = std::thread(Search::bestmove, search);
+    worker = std::thread(Search::bestmove, search, true);
 }
 
 void SearchInit::end()

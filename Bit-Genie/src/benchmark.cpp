@@ -96,10 +96,13 @@ namespace BenchMark
                 std::cout << fen;
                 throw std::runtime_error("Invalid fen in bench");
             }
+            Search::Info info;
+            info.position = &position;
+            info.limits.max_depth = 12;
 
-            uint64_t count = Search::bench(position);
+            auto count = Search::bestmove(info, false);
+            std::cout << fen << ": " << count << '\n';
             nodes += count;
-            std::cout << fen << ": " << nodes << std::endl;
         }
         watch.stop();
 

@@ -321,7 +321,7 @@ namespace Search
         }
     }
 
-    void bestmove(Info search)
+    uint64_t bestmove(Info search, bool log)
     {
         Position& position = *search.position;
         if (PolyGlot::book.enabled)
@@ -330,7 +330,7 @@ namespace Search
             if (bookmove)
             {
                 std::cout << "bestmove " << print_move(bookmove) << std::endl;
-                return;
+                return 0;
             }
         }
 
@@ -348,23 +348,15 @@ namespace Search
             if (search.limits.stopped)
                 break;
 
-            print_info_string(result, search, depth);
+            if (log)
+                print_info_string(result, search, depth);
             best_move = result.best_move;
         }
-        std::cout << "bestmove " << print_move(best_move) << std::endl;
-    }
-
-    uint64_t bench(Position &position)
-    {
-        SEARCH_ABORT = false;
-        Info search;
-        search.position = &position;
-
-        for (int depth = 1;
-            depth <= 12;
-            depth++)
-            pvs(search, depth, MinEval, MaxEval);
+        
+        if (log)    
+            std::cout << "bestmove " << print_move(best_move) << std::endl;
 
         return search.stats.total_nodes;
     }
+
 }

@@ -36,8 +36,7 @@ namespace Search
     };
 
     void init();
-    void bestmove(Info);
-    uint64_t bench(Position &);
+    uint64_t bestmove(Info, bool log);
 }
 
 extern std::atomic_bool SEARCH_ABORT;
