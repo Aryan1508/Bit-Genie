@@ -25,5 +25,5 @@ int main(int argc, char **argv)
     Attacks::init();
     ZobristKey::init();
     init_lmr_array();
-    uci_input_loop(argc, argv);
+    UCI::init(argc, argv);
 }

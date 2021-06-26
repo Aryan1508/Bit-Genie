@@ -138,62 +138,65 @@ namespace
     }
 }
 
-void uci_input_loop(int argc, char **argv)
+namespace UCI 
 {
-    printl("Bit-Genie by Aryan Parekh");
-
-    UciParser  command;
-    Position   position;
-    SearchInit worker;
-
-    if (argc > 1 && !strncmp(argv[1], "bench", 5))
+    void init(int argc, char **argv)
     {
-        BenchMark::bench(position);
-        return;
-    }
+        printl("Bit-Genie by Aryan Parekh");
 
-    while (command.take_input())
-    {
-        if (command == UciCommands::quit)
+        UciParser  command;
+        Position   position;
+        SearchInit worker;
+
+        if (argc > 1 && !strncmp(argv[1], "bench", 5))
         {
-            uci_stop(worker);
-            break;
-        }
-
-        else if (command == UciCommands::isready)
-            uci_ready();
-
-        else if (command == UciCommands::uci)
-            uci_ok();
-
-        else if (command == UciCommands::position)
-            uci_setposition(command, position);
-
-        else if (command == UciCommands::print)
-            printl(position);
-
-        else if (command == UciCommands::perft)
-            BenchMark::perft(position, command.parse_perft());
-
-        else if (command == UciCommands::go)
-            uci_go(command, position, worker);
-
-        else if (command == UciCommands::stop)
-            uci_stop(worker);
-
-        else if (command == UciCommands::setoption)
-            uci_setoption(command);
-
-        else if (command == UciCommands::bench)
-        {
-            TT.reset();
             BenchMark::bench(position);
+            return;
         }
 
-        else if (command == UciCommands::ucinewgame)
+        while (command.take_input())
         {
-            uci_stop(worker);
-            TT.reset();
+            if (command == UciCommands::quit)
+            {
+                uci_stop(worker);
+                break;
+            }
+
+            else if (command == UciCommands::isready)
+                uci_ready();
+
+            else if (command == UciCommands::uci)
+                uci_ok();
+
+            else if (command == UciCommands::position)
+                uci_setposition(command, position);
+
+            else if (command == UciCommands::print)
+                printl(position);
+
+            else if (command == UciCommands::perft)
+                BenchMark::perft(position, command.parse_perft());
+
+            else if (command == UciCommands::go)
+                uci_go(command, position, worker);
+
+            else if (command == UciCommands::stop)
+                uci_stop(worker);
+
+            else if (command == UciCommands::setoption)
+                uci_setoption(command);
+
+            else if (command == UciCommands::bench)
+            {
+                TT.reset();
+                BenchMark::bench(position);
+            }
+
+            else if (command == UciCommands::ucinewgame)
+            {
+                uci_stop(worker);
+                TT.reset();
+            }
         }
     }
 }
