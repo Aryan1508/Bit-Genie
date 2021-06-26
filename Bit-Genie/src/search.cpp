@@ -111,6 +111,11 @@ namespace
         return alpha;
     }
 
+    bool is_pv_node(int alpha, int beta)
+    {
+        return std::abs(alpha - beta) > 1;
+    }
+
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
@@ -119,11 +124,19 @@ namespace
         if (depth <= 0)
             return qsearch(search, alpha, beta);
 
-        Position& position = *search.position;
-        bool      pv_node = std::abs(alpha - beta) > 1;
-        bool      at_root = search.stats.ply == 0;
-        
         search.update();
+
+        SearchResult result;
+        MovePicker   picker    = MovePicker(search);
+        Position&    position  = *search.position;
+        TEntry&      entry     = TT.retrieve(position);
+        bool         pv_node   = is_pv_node(alpha, beta);
+        bool         in_check  = position.king_in_check();
+        bool         at_root   = search.stats.ply == 0;
+        bool         tthit     = entry.hash == position.key.data();
+        int          move_num  = 0;
+        int          qmove_num = 0;
+        int          original  = alpha;
 
         if (!at_root)
         {
@@ -134,9 +147,6 @@ namespace
                 return 0;
         }
 
-        TEntry& entry = TT.retrieve(position);
-        bool tthit = entry.hash == position.key.data();
-
         if (entry.depth >= depth && tthit)
         {
             if (entry.flag == TEFlag::exact || 
@@ -145,7 +155,6 @@ namespace
                 return { entry.score, (Move)entry.move };
         }
 
-        bool in_check = position.king_in_check();
         if (!pv_node && !in_check && depth > 4 && !at_root && do_null && position.should_do_null())
         {
             position.apply_null_move(search.stats.ply);
@@ -159,29 +168,22 @@ namespace
                 return beta;
         }
 
-        SearchResult result;
-        int move_num = 0;
-        int original = alpha;
-        int move_quiet_num = 0;
-
-        MovePicker picker(search);
-        
         if (!tthit && depth > 3) 
             depth--;
 
         for (Move move; picker.next(move);)
         {
-            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_quiet_num > int(picker.gen.movelist.size() / (3 - pv_node) + depth * 2))
+            if (picker.stage >= MovePicker::Stage::GiveQuiet && qmove_num > int(picker.gen.movelist.size() / (3 - pv_node) + depth * 2))
                 break;
 
             move_num++;
             if (picker.stage == MovePicker::Stage::GiveQuiet)
-                move_quiet_num++;
+                qmove_num++;
 
             position.apply_move(move, search.stats.ply);
 
             int score = 0;
-
+            
             if (move_num > 3 && depth > 2)
             {
                 int R = lmr_reductions_array[std::min(63, depth)][std::min(63, move_num)];
@@ -278,30 +280,7 @@ namespace
         return o.str();
     }
 
-    std::vector<Move> get_pv(Position position, int depth)
-    {
-        std::vector<Move> pv;
-
-        TEntry *entry = &TT.retrieve(position);
-
-        while (entry->hash == position.key.data() && depth != 0)
-        {
-            if (position.move_exists((Move)entry->move))
-            {
-                position.apply_move((Move)entry->move);
-                pv.push_back((Move)entry->move);
-                depth--;
-            }
-            else
-                break;
-
-            entry = &TT.retrieve(position);
-        }
-
-        return pv;
-    }
-
-    void print_info_string(Position &position, SearchResult &result, Search::Info &search, int depth)
+    void print_info_string(SearchResult &result, Search::Info &search, int depth)
     {
         using namespace std::chrono;
         std::cout << "info";
@@ -312,7 +291,7 @@ namespace
         std::cout << " time " << search.limits.stopwatch.elapsed_time().count();
         std::cout << " pv ";
 
-        for (auto m : get_pv(position, depth))
+        for (auto m : TT.extract_pv(*search.position, depth))
         {
             std::cout << print_move(m) << ' ';
         }
@@ -369,7 +348,7 @@ namespace Search
             if (search.limits.stopped)
                 break;
 
-            print_info_string(position, result, search, depth);
+            print_info_string(result, search, depth);
             best_move = result.best_move;
         }
         std::cout << "bestmove " << print_move(best_move) << std::endl;
