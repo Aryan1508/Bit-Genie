@@ -333,7 +333,7 @@ namespace Search
                 return 0;
             }
         }
-        constexpr int window = 30;
+        constexpr int window = 20;
 
         SEARCH_ABORT = false;
         Move best_move = NullMove;
@@ -345,7 +345,7 @@ namespace Search
 
             int alpha = MinEval;
             int beta  = MaxEval;
-            int delta = 30;
+            int delta = window;
 
             if (depth > 5) 
             {
