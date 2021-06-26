@@ -349,8 +349,9 @@ namespace Search
 
             if (depth > 5) 
             {
-                alpha = std::max(score - window, (int)MinEval);
-                beta  = std::min(score + window, (int)MaxEval);
+                int adj = window - depth / 2;
+                alpha = std::max(score - adj, (int)MinEval);
+                beta  = std::min(score + adj, (int)MaxEval);
             }
 
             while(true)
