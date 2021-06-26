@@ -155,6 +155,7 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
     score += PawnEval::psqt[psqt_sq(sq, us)];
     score += pawn_is_isolated(friend_pawns, sq) * PawnEval::isolated;
     score += pawn_is_stacked(friend_pawns, sq) * PawnEval::stacked;
+    score += PawnEval::value;
 
     bool passed = pawn_passed(enemy_pawns, us, sq);
 
@@ -171,8 +172,6 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
         if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
             score += PawnEval::passed_connected;
     }
-
-    score += PawnEval::value;
 
     return score;
 }
@@ -236,6 +235,17 @@ static int evaluate_bishop(Position const &position, EvalData &data, Square sq, 
     score += BishopEval::value;
 
     return score;
+}
+
+template<Color us>
+static int evaluate_bishop_pair(Position const& position)
+{
+    constexpr int light_squares = 0x55AA55AA55AA55AA;
+    constexpr int dark_squares = 0xAA55AA55AA55AA55;
+
+    uint64_t bishops = position.pieces.get_piece_bb<Bishop>(us);
+
+    return MiscEval::bishop_pair * ((bishops & light_squares) && (bishops & dark_squares));
 }
 
 template <typename Callable>
@@ -341,6 +351,9 @@ int eval_position(Position const &position)
 
     score += evaluate_control<White>(data);
     score -= evaluate_control<Black>(data);
+
+    score += evaluate_bishop_pair<White>(position);
+    score -= evaluate_bishop_pair<Black>(position);
 
     score = scale_score(position, score);
 
