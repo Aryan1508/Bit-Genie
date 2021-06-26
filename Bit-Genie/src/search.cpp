@@ -345,7 +345,7 @@ namespace Search
 
             int alpha = MinEval;
             int beta  = MaxEval;
-            int delta = 15;
+            int delta = 30;
 
             if (depth > 5) 
             {
@@ -368,7 +368,7 @@ namespace Search
                 else 
                     break;
 
-                delta *= 2;
+                delta *= 1.5;
             }
 
             if (log)
