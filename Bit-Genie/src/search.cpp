@@ -35,9 +35,9 @@ namespace
 {
     enum
     {
-        MinEval = -std::numeric_limits<int>::max(),
+        MinEval = -32001,
         MaxEval = -MinEval,
-        MateEval = MaxEval - 1,
+        MateEval = 32000,
         MaxPly = 64,
         MinMateScore = MateEval - MaxPly,
     };
@@ -280,7 +280,7 @@ namespace
         return o.str();
     }
 
-    void print_info_string(SearchResult &result, Search::Info &search, int depth)
+    void print_info_string(SearchResult result, Search::Info &search, int depth)
     {
         using namespace std::chrono;
         std::cout << "info";
@@ -333,26 +333,49 @@ namespace Search
                 return 0;
             }
         }
+        constexpr int window = 30;
 
         SEARCH_ABORT = false;
-
         Move best_move = NullMove;
-        for (int depth = 1;
-            depth <= search.limits.max_depth;
-            depth++)
+        int score = 0;
+
+        for (int depth = 1; depth <= search.limits.max_depth; depth++)
         {
             search.stats.reset_iteration();
 
-            SearchResult result = pvs(search, depth, MinEval, MaxEval);
+            int alpha = MinEval;
+            int beta  = MaxEval;
+            int delta = 15;
 
-            if (search.limits.stopped)
-                break;
+            if (depth > 5) 
+            {
+                alpha = std::max(score - window, (int)MinEval);
+                beta  = std::min(score + window, (int)MaxEval);
+            }
+
+            while(true)
+            {
+                auto result = pvs(search, depth, alpha, beta);
+                if (search.limits.stopped) goto conc;
+
+                best_move = result.best_move;
+                score     = result.score;
+
+                if (score <= alpha)
+                    alpha = std::max(alpha - delta, (int)MinEval);
+                else if (score >= beta)
+                    beta = std::min(beta + delta, (int)MaxEval);
+                else 
+                    break;
+
+                delta *= 2;
+            }
 
             if (log)
-                print_info_string(result, search, depth);
-            best_move = result.best_move;
+                print_info_string({ score, best_move }, search, depth);
         }
-        
+        conc:
+
         if (log)    
             std::cout << "bestmove " << print_move(best_move) << std::endl;
 
