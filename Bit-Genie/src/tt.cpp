@@ -47,3 +47,30 @@ TEntry &TTable::retrieve(Position const &position)
     uint64_t index = hash % entries.size();
     return entries[index];
 }
+
+std::vector<Move> TTable::extract_pv(Position& position, int depth) 
+{
+    std::vector<Move> pv;
+    int distance = 0;
+    TEntry *entry = &retrieve(position);
+
+    while (entry->hash == position.key.data() && depth != 0)
+    {
+        if (position.move_exists((Move)entry->move))
+        {
+            distance++;
+            position.apply_move((Move)entry->move);
+            pv.push_back((Move)entry->move);
+            depth--;
+        }
+        else
+            break;
+
+        entry = &retrieve(position);
+    }
+
+    while(distance--)
+        position.revert_move();
+
+    return pv;
+}

@@ -16,22 +16,27 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "searchinfo.h"
+#include "searchstats.h"
 #include "searchlimits.h"
 #include "killer.h"
 #include "shistory.h"
 #include <atomic>
 
-struct Search
+namespace Search 
 {
-    SearchInfo info;
-    SearchLimits limits;
-    Killers killers;
-    SHistory history;
-};
+    struct Info
+    {
+        Position*  position;
+        Stats      stats;
+        Limits     limits;
+        Killers    killers;
+        SHistory   history;
 
-void init_lmr_array();
-void search_position(Position &, Search);
-uint64_t bench_search_position(Position &);
+        void update();
+    };
+
+    void init();
+    uint64_t bestmove(Info, bool log);
+}
 
 extern std::atomic_bool SEARCH_ABORT;

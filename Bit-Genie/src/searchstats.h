@@ -15,15 +15,20 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "attacks.h"
-#include "uci.h"
-#include "zobrist.h"
-#include "search.h"
+#pragma once
+#include <stdint.h>
 
-int main(int argc, char **argv)
+namespace Search 
 {
-    Attacks::init();
-    ZobristKey::init();
-    Search::init();
-    UCI::init(argc, argv);
+    struct Stats
+    {
+        void update();
+        void reset_iteration();
+
+        uint64_t total_nodes = 0;
+        uint64_t iter_nodes = 0;
+        int ply = 0;
+        int depth = 0;
+        int seldepth = 0;
+    };
 }

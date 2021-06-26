@@ -17,6 +17,7 @@
 */
 #pragma once
 #include "misc.h"
+#include "search.h"
 #include <thread>
 
 class SearchInit
@@ -24,7 +25,7 @@ class SearchInit
 public:
     SearchInit() = default;
 
-    void begin(Search &, Position &);
+    void begin(Search::Info&);
     void end();
     bool is_searching() const noexcept
     {

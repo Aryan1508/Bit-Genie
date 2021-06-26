@@ -17,4 +17,7 @@
 */
 #pragma once
 
-void uci_input_loop(int argc, char **argv);
+namespace UCI 
+{
+    void init(int argc, char **argv); 
+}
