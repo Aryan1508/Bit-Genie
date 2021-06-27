@@ -171,7 +171,10 @@ namespace
         }
 
         if (!tthit && depth > 3) 
+        {
+            depth -= pv_node;
             depth--;
+        }
 
         for (Move move; picker.next(move);)
         {
