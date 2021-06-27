@@ -149,10 +149,16 @@ namespace
 
         if (entry.depth >= depth && tthit)
         {
+            Move move = Move(entry.move);
             if (entry.flag == TEFlag::exact || 
                (entry.flag == TEFlag::lower && entry.score >= beta) || 
                (entry.flag == TEFlag::upper && entry.score <= alpha))
-                return { entry.score, (Move)entry.move };
+               {
+                    if (!move_is_capture(position, move) && entry.score >= beta)
+                        search.history.add(position, move, depth * depth);
+                        
+                    return { entry.score, move };
+               }
         }
 
         if (!pv_node && !in_check && depth > 4 && !at_root && do_null && position.should_do_null())
