@@ -161,7 +161,9 @@ namespace
                }
         }
 
-        if (!pv_node && !in_check && depth > 4 && !at_root && do_null && position.should_do_null())
+        int eval = eval_position(position);
+
+        if (!pv_node && !in_check && eval >= beta && depth > 4 && !at_root && do_null && position.should_do_null())
         {
             int R = std::max(4, 3 + depth / 5);
 
