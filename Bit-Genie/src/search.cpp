@@ -161,7 +161,7 @@ namespace
                }
         }
 
-        if (!pv_node && !in_check && depth > 4 && !at_root && do_null && position.should_do_null())
+        if (!pv_node && !in_check && depth >= 4 && !at_root && do_null && position.should_do_null())
         {
             int R = std::max(4, 3 + depth / 5);
 

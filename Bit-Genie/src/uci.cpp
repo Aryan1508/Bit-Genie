@@ -26,7 +26,7 @@
 #include "searchinit.h"
 #include "polyglot.h"
 
-const char *version = "6.55";
+const char *version = "6.6";
 
 namespace
 {
