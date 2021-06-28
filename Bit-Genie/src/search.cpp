@@ -135,7 +135,6 @@ namespace
         bool         at_root   = search.stats.ply == 0;
         bool         tthit     = entry.hash == position.key.data();
         int          move_num  = 0;
-        int          qmove_num = 0;
         int          original  = alpha;
 
         if (!at_root)
@@ -181,12 +180,10 @@ namespace
 
         for (Move move; picker.next(move);)
         {
-            if (picker.stage >= MovePicker::Stage::GiveQuiet && qmove_num > int(picker.gen.movelist.size() / (3 - pv_node) + depth * 2))
+            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > depth * depth * 2 + 2)
                 break;
 
             move_num++;
-            if (picker.stage == MovePicker::Stage::GiveQuiet)
-                qmove_num++;
 
             position.apply_move(move, search.stats.ply);
 
