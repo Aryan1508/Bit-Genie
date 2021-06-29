@@ -98,7 +98,7 @@ namespace BenchMark
             }
             Search::Info info;
             info.position = &position;
-            info.limits.max_depth = 12;
+            info.limits.max_depth = 14;
 
             auto count = Search::bestmove(info, false);
             std::cout << fen << ": " << count << '\n';
