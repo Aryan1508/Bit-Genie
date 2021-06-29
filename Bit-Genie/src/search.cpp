@@ -315,7 +315,7 @@ namespace Search
         {
             for(int j = 0;j < 64;j++)
             {
-                lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
+                lmr_reductions_array[i][j] = log(i) * log(j);
             }
         }
     }
