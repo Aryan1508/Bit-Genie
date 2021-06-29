@@ -120,24 +120,7 @@ bool MovePicker::qnext(Move &move)
 {
     Position& position = *search->position;
 
-    auto can_move = [&](Move m) {
-        return position.move_is_pseudolegal(m) && position.move_is_legal(m);
-    };
-
-    if (stage == Stage::HashMove)
-    {
-        stage = Stage::GenNoisy;
-        auto& entry = TT.retrieve(position);
-        Move m = (Move)entry.move;
-        
-        if (entry.hash == position.key.data() && move_is_capture(position, m) && can_move(m))
-        {
-            move = m;
-            return true;
-        }
-    }
-
-    if (stage == Stage::GenNoisy)
+    if (stage == Stage::HashMove) 
     {
         gen.generate<MoveGenType::noisy>(position);
         
