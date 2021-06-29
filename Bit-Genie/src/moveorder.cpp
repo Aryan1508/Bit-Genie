@@ -89,7 +89,7 @@ static int16_t see(Position &position, Move move)
 }
 
 template <bool quiet = false>
-static void order_normal_movelist(Movelist &movelist, Search::Info &search)
+static void score_movelist(Movelist &movelist, Search::Info &search)
 {
     Position& position = *search.position;
     for (auto &move : movelist)
@@ -101,13 +101,19 @@ static void order_normal_movelist(Movelist &movelist, Search::Info &search)
         else
             set_move_score(move, search.history.get(position, move));
     }
-    std::stable_sort(movelist.begin(), movelist.end(),
-              [](Move rhs, Move lhs) { return move_score(rhs) > move_score(lhs); });
+}
+
+void bubble_top_move(Movelist::iterator begin, Movelist::iterator end)
+{  
+    auto best = std::max_element(begin, end ,
+        [](Move lhs, Move rhs){return move_score(lhs) < move_score(rhs); });
+    std::iter_swap(best, begin);
 }
 
 void sort_qmovelist(Movelist &movelist, Search::Info& search)
 {
-    order_normal_movelist<false>(movelist, search);
+    score_movelist<false>(movelist, search);
+    std::stable_sort(movelist.begin(), movelist.end(), [](Move lhs, Move rhs){ return move_score(lhs) > move_score(rhs); });
 }
 
 MovePicker::MovePicker(Search::Info& s)
@@ -139,9 +145,11 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::GenNoisy)
     {
         gen.generate<MoveGenType::noisy>(position);
-        order_normal_movelist(gen.movelist, *search);
-
+        
+        score_movelist(gen.movelist, *search);
+        bubble_top_move(gen.movelist.begin(), gen.movelist.end());
         current = gen.movelist.begin();
+
         stage = Stage::GiveGoodNoisy;
     }
 
@@ -150,6 +158,7 @@ bool MovePicker::next(Move &move)
         if (current != gen.movelist.end() && move_score(*current) > 0)
         {
             move = *current++;
+            bubble_top_move(current, gen.movelist.end());
             return true;
         }
         stage = Stage::Killer1;
@@ -184,6 +193,7 @@ bool MovePicker::next(Move &move)
         if (current != gen.movelist.end())
         {
             move = *current++;
+            bubble_top_move(current, gen.movelist.end());
             return true;
         }
         stage = Stage::GenQuiet;
@@ -194,7 +204,8 @@ bool MovePicker::next(Move &move)
         gen.movelist.clear();
         gen.generate<MoveGenType::quiet>(position);
 
-        order_normal_movelist<true>(gen.movelist, *search);
+        score_movelist<true>(gen.movelist, *search);
+        bubble_top_move(gen.movelist.begin(), gen.movelist.end());
         current = gen.movelist.begin();
         stage = Stage::GiveQuiet;
     }
@@ -204,6 +215,7 @@ bool MovePicker::next(Move &move)
         if (current != gen.movelist.end())
         {
             move = *current++;
+            bubble_top_move(current, gen.movelist.end());
             return true;
         }
         return false;
