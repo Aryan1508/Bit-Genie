@@ -80,16 +80,10 @@ namespace
 
         alpha = std::max(alpha, stand_pat);
 
-        MoveGenerator<true> gen;
-        gen.generate<MoveGenType::noisy>(position);
+        MovePicker picker(search);
 
-        sort_qmovelist(gen.movelist, search);
-
-        for (auto move : gen.movelist)
+        for (Move move; picker.qnext(move);)
         {
-            if (move_score(move) < 0)
-                break;
-
             if (move_score(move) + 300 < alpha)
                 break;
 

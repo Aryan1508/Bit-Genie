@@ -36,6 +36,7 @@ public:
     MovePicker(Search::Info&);
 
     bool next(Move &);
+    bool qnext(Move &);
 
     MoveGenerator<true> gen;
     Stage stage = Stage::HashMove;
@@ -44,5 +45,3 @@ private:
     Search::Info *search;
     Movelist::iterator current;
 };
-
-void sort_qmovelist(Movelist &, Search::Info& );

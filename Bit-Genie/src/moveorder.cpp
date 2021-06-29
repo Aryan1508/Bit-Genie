@@ -89,7 +89,7 @@ static int16_t see(Position &position, Move move)
 }
 
 template <bool quiet = false>
-static void score_movelist(Movelist &movelist, Search::Info &search)
+static void score_movelist(Movelist &movelist, Search::Info& search)
 {
     Position& position = *search.position;
     for (auto &move : movelist)
@@ -110,16 +110,39 @@ void bubble_top_move(Movelist::iterator begin, Movelist::iterator end)
     std::iter_swap(best, begin);
 }
 
-void sort_qmovelist(Movelist &movelist, Search::Info& search)
-{
-    score_movelist<false>(movelist, search);
-    std::stable_sort(movelist.begin(), movelist.end(), [](Move lhs, Move rhs){ return move_score(lhs) > move_score(rhs); });
-}
-
 MovePicker::MovePicker(Search::Info& s)
     : search(&s)
 {
     stage = Stage::HashMove;
+}
+
+bool MovePicker::qnext(Move &move)
+{
+    Position& position = *search->position;
+
+    if (stage == Stage::HashMove) 
+    {
+        gen.generate<MoveGenType::noisy>(position);
+        
+        score_movelist<false>(gen.movelist, *search);
+        bubble_top_move(gen.movelist.begin(), gen.movelist.end());
+        current = gen.movelist.begin();
+
+        stage = Stage::GiveGoodNoisy;
+    }
+
+    if (stage == Stage::GiveGoodNoisy)
+    {
+        stage = Stage::GenQuiet;
+        if (current != gen.movelist.end() && move_score(*current) >= 0)
+        {
+            move = *current++;
+            bubble_top_move(current, gen.movelist.end());
+            return true;
+        }
+        return false;
+    }
+    return false;
 }
 
 bool MovePicker::next(Move &move)
