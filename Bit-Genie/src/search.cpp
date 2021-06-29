@@ -190,6 +190,7 @@ namespace
 
                 R -= pv_node;
                 R -= (picker.stage == MovePicker::Stage::Killer1 || picker.stage == MovePicker::Stage::Killer2);
+                R -= (move_flag(move) == MoveFlag::promotion);
 
                 if (picker.stage == MovePicker::Stage::GiveQuiet)
                     R -= (search.history.get(position, move) / 14000);
