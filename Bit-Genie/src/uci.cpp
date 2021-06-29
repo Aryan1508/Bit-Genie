@@ -26,7 +26,7 @@
 #include "searchinit.h"
 #include "polyglot.h"
 
-const char *version = "6.65";
+const char *version = "7.1";
 
 namespace
 {
@@ -42,7 +42,7 @@ namespace
         printl("id author Aryan Parekh");
         printl("option name Hash type spin default 8 min 2 max 3000");
         printl("option name Clear Hash type button");
-        printl("option name OwnBoon type check default false");
+        printl("option name OwnBook type check default false");
         printl("option name BookPath type string");
         printl("uciok");
     }
