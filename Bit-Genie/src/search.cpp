@@ -31,6 +31,10 @@ int lmr_reductions_array[64][64]{0};
 
 std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);
 
+constexpr int see_pruning_margins[5] {
+    0, -100, -100, -300, -325
+};
+
 namespace
 {
     enum
@@ -176,6 +180,9 @@ namespace
         {
             if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > depth * depth * 2 + 2)
                 break;
+
+            if (depth < 5 && move_is_capture(position, move) && move_score(move) < see_pruning_margins[depth])
+                continue;
 
             move_num++;
 
