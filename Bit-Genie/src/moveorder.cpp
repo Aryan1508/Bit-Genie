@@ -113,6 +113,7 @@ void bubble_top_move(Movelist::iterator begin, Movelist::iterator end)
 void sort_qmovelist(Movelist &movelist, Search::Info& search)
 {
     score_movelist<false>(movelist, search);
+    std::stable_sort(movelist.begin(), movelist.end(), [](Move lhs, Move rhs){ return move_score(lhs) > move_score(rhs); });
 }
 
 MovePicker::MovePicker(Search::Info& s)
