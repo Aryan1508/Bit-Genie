@@ -29,7 +29,7 @@
 #define K (2.97f)
 
 TTuple *TUPLE_STACK;
-int TUPLE_STACK_SIZE;
+int TUPLE_STACK_SIZE = STACKSIZE;
 
 double sigmoid(double E) 
 {
@@ -86,7 +86,6 @@ void init_tuner_tuples(TPos *entry, TCoeffs coeffs) {
         TUPLE_STACK_SIZE = STACKSIZE;
         TUPLE_STACK = (TTuple*)calloc(STACKSIZE, sizeof(TTuple));
         int ttupleMB = STACKSIZE * sizeof(TTuple) / (1 << 20);
-        printf("Allocating [%dMB] x%d\r", ttupleMB, ++allocs);
     }
 
     entry->tuples   = TUPLE_STACK;
@@ -130,6 +129,11 @@ void init_tuner_entries(TPos* entries)
     int i = 0;
     for(std::string line; std::getline(fil, line);)
     {
+        if (i % (1 << 14) == 0 || i >= NPOSITIONS)
+            std::cout << "\rLoading entries... " << i;
+
+        if (i >= NPOSITIONS) break;
+
         if (line.find("White") != line.npos)      entries[i].result = 1.0;
         else if (line.find("Black") != line.npos) entries[i].result = 0.0;
         else                                      entries[i].result = 0.5;
@@ -140,7 +144,7 @@ void init_tuner_entries(TPos* entries)
         init_tuner_entry(&entries[i++], &position);
     }
     
-    std::cout << "Initialized " << i << " entries successfully. (" << (sizeof(TPos) * i) / 1e+6 << " Mb)\n";
+    std::cout << "\nInitialized " << i << " entries successfully. (" << (sizeof(TPos) * i) / 1e+6 << " Mb)\n";
 }
 
 void init_param(double param[2], int value)
@@ -191,6 +195,7 @@ void init_base_params(TVector params)
         std::cerr << "init_base_params failed, got " << c << " expeceted " << NTERMS << '\n';
         std::terminate();
     }
+    std::cout << "Initialized " << c << " terms successfully\n";
 }
 
 void tune()
