@@ -299,7 +299,6 @@ void tune()
         error = tune_evaluation_error(entries, params);
         printf("\rEpoch [%d] Error = [%.8f], Rate = [%g]", epoch, error, rate);
 
-        // Pre-scheduled Learning Rate drops
         if (epoch % 250 == 0) rate = rate / LRDROPRATE;
     }
 }

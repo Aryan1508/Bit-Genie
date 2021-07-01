@@ -19,7 +19,7 @@
 #include "misc.h"
 
 #define DATASET     ("C:/tuning/lichess-quiet.txt")
-#define NPOSITIONS  (10000)
+#define NPOSITIONS  (2000000)
 #define LRRATE      (0.01) 
 #define REPORTING   (25)
 #define LRDROPRATE  (1.00)
