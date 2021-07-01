@@ -32,9 +32,6 @@
 #define MG (0)
 #define EG (1)
 
-TTuple *TUPLE_STACK;
-int TUPLE_STACK_SIZE = STACKSIZE;
-
 double sigmoid(double E) 
 {
     return 1.0 / (1.0 + exp(-K * E / 400.0));
@@ -91,22 +88,12 @@ void init_tuner_tuples(TPos *entry, TCoeffs coeffs) {
     for (int i = 0; i < NTERMS; i++)
         length += coeffs[i] != 0.0;
 
-    if (length > TUPLE_STACK_SIZE) 
-    {
-        TUPLE_STACK_SIZE = STACKSIZE;
-        TUPLE_STACK = (TTuple*)calloc(STACKSIZE, sizeof(TTuple));
-    }
-
-    entry->tuples   = TUPLE_STACK;
+    entry->tuples   = (TTuple*)malloc(sizeof(TTuple) * length);
     entry->ntuples  = length;
-    TUPLE_STACK      += length;
-    TUPLE_STACK_SIZE -= length;
 
     for (int i = 0; i < NTERMS; i++)
-    {
         if (coeffs[i] != 0.0)
             entry->tuples[tidx++] = { (int16_t)i, (int16_t)coeffs[i] };
-    }
 }
 
 void init_tuner_entry(TPos* entry, Position* position)
@@ -240,7 +227,6 @@ double linear_evaluation(TPos *entry, TVector params)
 
 void update_single_gradient(TPos *entry, TVector gradient, TVector params) 
 {
-
     double E = linear_evaluation(entry, params);
     double S = sigmoid(E);
     double X = (entry->result - S) * S * (1 - S);
@@ -388,10 +374,9 @@ void tune()
 {
     TVector current_params = {0};   
     TVector params = {0}, momentum = {0}, velocity = {0};  
-    double error, rate = LRRATE;
+    double error, rate = 0.01;
 
     TPos* entries = (TPos*)calloc(NPOSITIONS, sizeof(TPos));  
-    TUPLE_STACK = (TTuple*)calloc(STACKSIZE, sizeof(TTuple));
 
     init_tuner_entries(entries);
     init_base_params(current_params);
@@ -418,7 +403,7 @@ void tune()
         }
 
         error = tune_evaluation_error(entries, params);
-        std::cout << "Epoch " << epoch << " Error " << error;
+        std::cout << "\rEpoch " << epoch << " Error " << error;
         if (epoch % 64 == 0) save_params(params, current_params);    
     }
 }
