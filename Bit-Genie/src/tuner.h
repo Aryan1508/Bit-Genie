@@ -23,7 +23,6 @@
 #define ADAM_BETA1  (0.9)
 #define ADAM_BETA2  (0.999)
 #define NTERMS      (689)
-#define NPARTITIONS (32)
 #define CHUNK       (NPOSITIONS / 8)
 #define STACKSIZE  ((int)((double)NPOSITIONS * NTERMS / 64))
 

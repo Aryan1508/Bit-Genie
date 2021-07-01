@@ -103,8 +103,10 @@ void init_tuner_tuples(TPos *entry, TCoeffs coeffs) {
     TUPLE_STACK_SIZE -= length;
 
     for (int i = 0; i < NTERMS; i++)
+    {
         if (coeffs[i] != 0.0)
             entry->tuples[tidx++] = { (int16_t)i, (int16_t)coeffs[i] };
+    }
 }
 
 void init_tuner_entry(TPos* entry, Position* position)
@@ -261,11 +263,12 @@ void compute_gradient(TPos *entries, TVector gradient, TVector params)
     #pragma omp parallel shared(gradient)
     {
         TVector local = {0};
-        #pragma omp for schedule(static, NPOSITIONS / NPARTITIONS)
+        #pragma omp for schedule(static, CHUNK)
         for (int i = 0; i < NPOSITIONS; i++)
             update_single_gradient(&entries[i], local, params);
 
-        for (int i = 0; i < NTERMS; i++) {
+        for (int i = 0; i < NTERMS; i++) 
+        {
             gradient[i][MG] += local[i][MG];
             gradient[i][EG] += local[i][EG];
         }
@@ -278,7 +281,7 @@ double tune_evaluation_error(TPos *entries, TVector params)
 
     #pragma omp parallel shared(total)
     {
-        #pragma omp for schedule(static, NPOSITIONS / NPARTITIONS) reduction(+:total)
+        #pragma omp for schedule(static, CHUNK) reduction(+:total)
         for (int i = 0; i < NPOSITIONS; i++)
             total += pow(entries[i].result - sigmoid(linear_evaluation(&entries[i], params)), 2);
     }
