@@ -18,8 +18,8 @@
 #pragma once 
 #include "misc.h"
 
-#define DATASET     ("C:/tuning/berserk.book")
-#define NPOSITIONS  (5000000)
+#define DATASET     ("C:/tuning/lichess-quiet.txt")
+#define NPOSITIONS  (2000005)
 #define ADAM_BETA1  (0.9)
 #define ADAM_BETA2  (0.999)
 #define NTERMS      (690)

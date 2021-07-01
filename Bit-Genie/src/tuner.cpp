@@ -140,11 +140,11 @@ void init_tuner_entries(TPos* entries)
 
         if (i >= NPOSITIONS) break;
 
-        if (line.find("1.000") != line.npos)      entries[i].result = 1.0;
-        else if (line.find("0.000") != line.npos) entries[i].result = 0.0;
+        if (line.find("White") != line.npos)      entries[i].result = 1.0;
+        else if (line.find("Black") != line.npos) entries[i].result = 0.0;
         else                                      entries[i].result = 0.5;
 
-        std::string fen = line.substr(0, line.find("c2") - 1);
+        std::string fen = line.substr(0, line.find("|") - 1);
 
         position.set_fen(fen);
         init_tuner_entry(&entries[i++], &position);
@@ -319,6 +319,32 @@ void save_params(TVector params, TVector current_params)
     std::ofstream fil("tuned.txt");
     int c = 0;
 
+    fil <<
+    R"~(
+/*
+  Bit-Genie is an open-source, UCI-compliant chess engine written by
+  Aryan Parekh - https://github.com/Aryan1508/Bit-Genie
+
+  Bit-Genie is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Bit-Genie is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#pragma once 
+#include "misc.h"
+
+#define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
+#define eg_score(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
+)~";
+
     fil << "\nnamespace PawnEval\n{";
     print_single(tparams, "value", fil, c);
     print_single(tparams, "stacked", fil, c);
@@ -359,6 +385,15 @@ void save_params(TVector params, TVector current_params)
     fil << "\nnamespace KingEval\n{";
     print_array(tparams, 64, "psqt", fil, c);
     print_array(tparams, 100, "safety_table", fil, c);
+
+fil << 
+R"~(
+    constexpr int attack_weight[5]
+    {
+        0, 2, 2, 3, 5
+    };
+)~";
+
     fil << "}\n";
 
     fil << "\nnamespace MiscEval\n{";
