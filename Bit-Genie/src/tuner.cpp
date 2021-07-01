@@ -27,6 +27,8 @@
 #include <string>
 
 #define K (2.97f)
+#define MG (0)
+#define EG (1)
 
 TTuple *TUPLE_STACK;
 int TUPLE_STACK_SIZE = STACKSIZE;
@@ -75,7 +77,6 @@ void init_coeffs(TCoeffs coeffs)
 
 void init_tuner_tuples(TPos *entry, TCoeffs coeffs) {
 
-    static int allocs = 0;
     int length = 0, tidx = 0;
 
     for (int i = 0; i < NTERMS; i++)
@@ -85,7 +86,6 @@ void init_tuner_tuples(TPos *entry, TCoeffs coeffs) {
     {
         TUPLE_STACK_SIZE = STACKSIZE;
         TUPLE_STACK = (TTuple*)calloc(STACKSIZE, sizeof(TTuple));
-        int ttupleMB = STACKSIZE * sizeof(TTuple) / (1 << 20);
     }
 
     entry->tuples   = TUPLE_STACK;
@@ -198,6 +198,73 @@ void init_base_params(TVector params)
     std::cout << "Initialized " << c << " terms successfully\n";
 }
 
+double linear_evaluation(TPos *entry, TVector params)
+ {
+
+    double midgame = mg_score(entry->eval);
+    double endgame = eg_score(entry->eval);
+
+    for (int i = 0; i < entry->ntuples; i++) {
+        midgame += (double) entry->tuples[i].coeff * params[entry->tuples[i].index][MG];
+        endgame += (double) entry->tuples[i].coeff * params[entry->tuples[i].index][EG];
+    }
+
+    double mixed =  (midgame * entry->phase
+                  +  endgame * (256 - entry->phase))
+                  / 256;
+
+    return mixed;
+}
+
+void update_single_gradient(TPos *entry, TVector gradient, TVector params) 
+{
+
+    double E = linear_evaluation(entry, params);
+    double S = sigmoid(E);
+    double X = (entry->result - S) * S * (1 - S);
+
+    double mgBase = X * entry->pfactors[MG];
+    double egBase = X * entry->pfactors[EG];
+
+    for (int i = 0; i < entry->ntuples; i++) {
+        int index = entry->tuples[i].index;
+        int coeff = entry->tuples[i].coeff;
+
+        gradient[index][MG] += mgBase * coeff;
+        gradient[index][EG] += egBase * coeff;
+    }
+}
+
+void compute_gradient(TPos *entries, TVector gradient, TVector params)
+{
+    #pragma omp parallel shared(gradient)
+    {
+        TVector local = {0};
+        #pragma omp for schedule(static, NPOSITIONS / NPARTITIONS)
+        for (int i = 0; i < NPOSITIONS; i++)
+            update_single_gradient(&entries[i], local, params);
+
+        for (int i = 0; i < NTERMS; i++) {
+            gradient[i][MG] += local[i][MG];
+            gradient[i][EG] += local[i][EG];
+        }
+    }
+}
+
+double tune_evaluation_error(TPos *entries, TVector params) 
+{
+    double total = 0.0;
+
+    #pragma omp parallel shared(total)
+    {
+        #pragma omp for schedule(static, NPOSITIONS / NPARTITIONS) reduction(+:total)
+        for (int i = 0; i < NPOSITIONS; i++)
+            total += pow(entries[i].result - sigmoid(linear_evaluation(&entries[i], params)), 2);
+    }
+
+    return total / (double) NPOSITIONS;
+}
+
 void tune()
 {
     TVector current_params = {0};   
@@ -209,4 +276,30 @@ void tune()
 
     init_tuner_entries(entries);
     init_base_params(current_params);
+
+    for (int epoch = 1; epoch <= 1000; epoch++) {
+
+        TVector gradient = {0};
+        compute_gradient(entries, gradient, params);
+
+        for (int i = 0; i < NTERMS; i++) {
+            double mg_grad = (-K / 200.0) * gradient[i][MG] / NPOSITIONS;
+            double eg_grad = (-K / 200.0) * gradient[i][EG] / NPOSITIONS;
+
+            momentum[i][MG] = ADAM_BETA1 * momentum[i][MG] + (1.0 - ADAM_BETA1) * mg_grad;
+            momentum[i][EG] = ADAM_BETA1 * momentum[i][EG] + (1.0 - ADAM_BETA1) * eg_grad;
+
+            velocity[i][MG] = ADAM_BETA2 * velocity[i][MG] + (1.0 - ADAM_BETA2) * pow(mg_grad, 2);
+            velocity[i][EG] = ADAM_BETA2 * velocity[i][EG] + (1.0 - ADAM_BETA2) * pow(eg_grad, 2);
+
+            params[i][MG] -= rate * momentum[i][MG] / (1e-8 + sqrt(velocity[i][MG]));
+            params[i][EG] -= rate * momentum[i][EG] / (1e-8 + sqrt(velocity[i][EG]));
+        }
+
+        error = tune_evaluation_error(entries, params);
+        printf("\rEpoch [%d] Error = [%.8f], Rate = [%g]", epoch, error, rate);
+
+        // Pre-scheduled Learning Rate drops
+        if (epoch % 250 == 0) rate = rate / LRDROPRATE;
+    }
 }

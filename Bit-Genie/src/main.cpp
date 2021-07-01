@@ -21,7 +21,7 @@
 #include "search.h"
 #include "tuner.h"
 
-int main(int argc, char **argv)
+int main()
 {
     Attacks::init();
     ZobristKey::init();

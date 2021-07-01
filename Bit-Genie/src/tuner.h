@@ -18,12 +18,15 @@
 #pragma once 
 #include "misc.h"
 
-#define DATASET    ("C:/tuning/lichess-quiet.txt")
-#define NPOSITIONS (2000000)
-#define LRRATE     (0.01) 
-#define ADAM_BETA1 (0.9)
-#define ADAM_BETA2 (0.999)
-#define NTERMS     (689)
+#define DATASET     ("C:/tuning/lichess-quiet.txt")
+#define NPOSITIONS  (10000)
+#define LRRATE      (0.01) 
+#define REPORTING   (25)
+#define LRDROPRATE  (1.00)
+#define ADAM_BETA1  (0.9)
+#define ADAM_BETA2  (0.999)
+#define NTERMS      (689)
+#define NPARTITIONS (16)
 
 #define STACKSIZE  ((int)((double)NPOSITIONS * NTERMS / 64))
 
