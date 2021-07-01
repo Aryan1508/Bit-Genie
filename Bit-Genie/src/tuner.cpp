@@ -23,8 +23,10 @@
 
 #include <cmath>
 #include <vector>
-#include <fstream>
 #include <string>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 
 #define K (2.97f)
 #define MG (0)
@@ -100,16 +102,23 @@ void init_tuner_tuples(TPos *entry, TCoeffs coeffs) {
 
 void init_tuner_entry(TPos* entry, Position* position)
 {
-    int phase = get_phase(*position);
+    uint64_t knights = position->pieces.bitboards[Knight];
+    uint64_t bishops = position->pieces.bitboards[Bishop];
+    uint64_t rooks   = position->pieces.bitboards[Rook];
+    uint64_t queens  = position->pieces.bitboards[Queen];
 
-    TCoeffs coeffs;
-    entry->phase = phase;
-    entry->pfactors[0] = phase / 24.0f;
-    entry->pfactors[1] = 1 - phase / 24.0f;
+    int phase = 24 - 4 * popcount64(queens)
+                   - 2 * popcount64(rooks) 
+                   - 1 * popcount64(bishops | knights);
+
+    entry->pfactors[MG] = 0 + phase / 24.0f;
+    entry->pfactors[EG] = 1 - phase / 24.0f;
+    entry->phase        = (phase * 256 + 12) / 24.0f;
 
     ET.reset();
     entry->seval = position->side == White ? eval_position(*position) : -eval_position(*position);
 
+    TCoeffs coeffs;
     init_coeffs(coeffs);
     init_tuner_tuples(entry, coeffs);
 
@@ -145,6 +154,7 @@ void init_tuner_entries(TPos* entries)
     }
     
     std::cout << "\nInitialized " << i << " entries successfully. (" << (sizeof(TPos) * i) / 1e+6 << " Mb)\n";
+    fil.close();
 }
 
 void init_param(double param[2], int value)
@@ -157,37 +167,42 @@ void init_base_params(TVector params)
 {
     int c = 0;
 
+    // Pawn eval
     init_param(params[c++], PawnEval::value);
-    init_param(params[c++], KnightEval::value);
-    init_param(params[c++], BishopEval::value);
-    init_param(params[c++], RookEval::value);
-    init_param(params[c++], QueenEval::value);
-
-    for(int i = 0;i < 64;i++)
-    {
-        init_param(params[c++], PawnEval::psqt[i]);
-        init_param(params[c++], PawnEval::passed[i]);
-        init_param(params[c++], PawnEval::passer_blocked[i]);
-        init_param(params[c++], KnightEval::psqt[i]);
-        init_param(params[c++], BishopEval::psqt[i]);
-        init_param(params[c++], RookEval::psqt[i]);
-        init_param(params[c++], QueenEval::psqt[i]);
-        init_param(params[c++], KingEval::psqt[i]);
-    }
-
-    for(int i = 0;i < 9;i++)   init_param(params[c++], KnightEval::mobility[i]);
-    for(int i = 0;i < 14;i++)  init_param(params[c++], BishopEval::mobility[i]);
-    for(int i = 0;i < 15;i++)  init_param(params[c++], RookEval::mobility[i]);
-    for(int i = 0;i < 28;i++)  init_param(params[c++], QueenEval::mobility[i]);
-    for(int i = 0;i < 100;i++) init_param(params[c++], KingEval::safety_table[i]);
-
     init_param(params[c++], PawnEval::stacked);
     init_param(params[c++], PawnEval::isolated);
     init_param(params[c++], PawnEval::passed_connected);
+    for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::psqt[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passed[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passer_blocked[i]);
 
+    // Knight eval 
+    init_param(params[c++], KnightEval::value);
+    for(int i = 0;i < 9;i++)  init_param(params[c++], KnightEval::mobility[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], KnightEval::psqt[i]);
+
+    // Bishop eval
+    init_param(params[c++], BishopEval::value);
+    for(int i = 0;i < 14;i++)  init_param(params[c++], BishopEval::mobility[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], BishopEval::psqt[i]);
+
+    // Rook eval 
+    init_param(params[c++], RookEval::value);
     init_param(params[c++], RookEval::open_file);
     init_param(params[c++], RookEval::semi_open_file);
+    for(int i = 0;i < 15;i++)  init_param(params[c++], RookEval::mobility[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], RookEval::psqt[i]);
 
+    // Queen eval 
+    init_param(params[c++], QueenEval::value);
+    for(int i = 0;i < 28;i++)  init_param(params[c++], QueenEval::mobility[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], QueenEval::psqt[i]);
+
+    // King eval
+    for(int i = 0;i < 64;i++) init_param(params[c++], KingEval::psqt[i]);
+    for(int i = 0;i < 100;i++) init_param(params[c++], KingEval::safety_table[i]);
+
+    // Misc eval
     init_param(params[c++], MiscEval::control);
 
     if (c != NTERMS)
@@ -265,6 +280,100 @@ double tune_evaluation_error(TPos *entries, TVector params)
     return total / (double) NPOSITIONS;
 }
 
+std::string print_param(double param[2])
+{
+    std::stringstream o;
+    o << "S(" << std::setw(4) << (int)round(param[MG]) << ", " << std::setw(4) << (int)round(param[EG]) << ")";
+    return o.str();
+}
+
+void print_single(double param[2], std::string_view name, std::ostream& o)
+{
+    o << "\n    constexpr int " << name << " = " << print_param(param) << ";\n";
+}
+
+void print_array(TVector params, int count, std::string_view name, std::ostream& o, int& offset)
+{
+    o << "\n    constexpr int " << name << "[" << count << "]\n    {";
+
+    for(int i = 0;i < count;i++)
+    {
+        if (i % 8 == 0)
+            o << "\n        ";
+        
+        o << print_param(params[offset + i]) << ", ";
+    }
+    o << "\n    };\n";
+    offset += count;
+}
+
+void save_params(TVector params, TVector current_params)    
+{
+    TVector tparams;
+
+    for(int i = 0;i < NTERMS;i++)
+    {
+        tparams[i][MG] = round(params[i][MG] + current_params[i][MG]);
+        tparams[i][EG] = round(params[i][EG] + current_params[i][EG]);
+    }
+
+    std::ofstream fil("tuned.txt");
+    int c = 0;
+
+    fil << "\nnamespace PawnEval\n{";
+    print_single(tparams[c++], "value", fil);
+    print_single(tparams[c++], "stacked", fil);
+    print_single(tparams[c++], "isolated", fil);
+    print_single(tparams[c++], "passed_connected", fil);
+    print_array(tparams, 64, "psqt", fil, c);
+    print_array(tparams, 64, "passed", fil, c);
+    print_array(tparams, 64, "passer_blocked", fil, c);
+    fil << "}\n";
+
+    fil << "\nnamespace KnightEval\n{";
+    print_single(tparams[c++], "value", fil);
+    print_array(tparams, 9, "mobility", fil, c);
+    print_array(tparams, 64, "psqt", fil, c);
+    fil << "}\n";
+
+    fil << "\nnamespace BishopEval\n{";
+    print_single(tparams[c++], "value", fil);
+    print_array(tparams, 14, "mobility", fil, c);
+    print_array(tparams, 64, "psqt", fil, c);
+    fil << "}\n";
+
+    fil << "\nnamespace RookEval\n{";
+    print_single(tparams[c++], "value", fil);
+    print_single(tparams[c++], "open_file", fil);
+    print_single(tparams[c++], "semi_open_file", fil);
+    print_array(tparams, 15, "mobility", fil, c);
+    print_array(tparams, 64, "psqt", fil, c);
+    fil << "}\n";
+
+    fil << "\nnamespace QueenEval\n{";
+    print_single(tparams[c++], "value", fil);
+    print_array(tparams, 28, "mobility", fil, c);
+    print_array(tparams, 64, "psqt", fil, c);
+    fil << "}\n";
+
+    fil << "\nnamespace KingEval\n{";
+    print_array(tparams, 64, "psqt", fil, c);
+    print_array(tparams, 100, "safety_table", fil, c);
+    fil << "}\n";
+
+    fil << "\nnamespace MiscEval\n{";
+    print_single(tparams[c++], "control", fil);
+    fil << "}\n";
+
+    if (c != NTERMS)
+    {
+        std::cerr << "Error in printing the params. Got " << c << " expceted " << NTERMS << '\n';
+        std::terminate();
+    }
+
+    fil.close();
+}
+
 void tune()
 {
     TVector current_params = {0};   
@@ -276,13 +385,15 @@ void tune()
 
     init_tuner_entries(entries);
     init_base_params(current_params);
+    save_params(current_params, params);
 
     for (int epoch = 1; epoch <= 1000; epoch++) {
 
         TVector gradient = {0};
         compute_gradient(entries, gradient, params);
 
-        for (int i = 0; i < NTERMS; i++) {
+        for (int i = 0; i < NTERMS; i++) 
+        {
             double mg_grad = (-K / 200.0) * gradient[i][MG] / NPOSITIONS;
             double eg_grad = (-K / 200.0) * gradient[i][EG] / NPOSITIONS;
 
@@ -299,6 +410,6 @@ void tune()
         error = tune_evaluation_error(entries, params);
         printf("\rEpoch [%d] Error = [%.8f], Rate = [%g]", epoch, error, rate);
 
-        if (epoch % 250 == 0) rate = rate / LRDROPRATE;
+        if (epoch % 64 == 0) save_params(params, current_params);    
     }
 }
