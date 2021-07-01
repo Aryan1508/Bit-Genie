@@ -287,9 +287,10 @@ std::string print_param(double param[2])
     return o.str();
 }
 
-void print_single(double param[2], std::string_view name, std::ostream& o)
+void print_single(TVector params, std::string_view name, std::ostream& o, int& offset)
 {
-    o << "\n    constexpr int " << name << " = " << print_param(param) << ";\n";
+    o << "\n    constexpr int " << name << " = " << print_param(params[offset]) << ";\n";
+    offset++;
 }
 
 void print_array(TVector params, int count, std::string_view name, std::ostream& o, int& offset)
@@ -321,37 +322,37 @@ void save_params(TVector params, TVector current_params)
     int c = 0;
 
     fil << "\nnamespace PawnEval\n{";
-    print_single(tparams[c++], "value", fil);
-    print_single(tparams[c++], "stacked", fil);
-    print_single(tparams[c++], "isolated", fil);
-    print_single(tparams[c++], "passed_connected", fil);
+    print_single(tparams, "value", fil, c);
+    print_single(tparams, "stacked", fil, c);
+    print_single(tparams, "isolated", fil, c);
+    print_single(tparams, "passed_connected", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     print_array(tparams, 64, "passed", fil, c);
     print_array(tparams, 64, "passer_blocked", fil, c);
     fil << "}\n";
 
     fil << "\nnamespace KnightEval\n{";
-    print_single(tparams[c++], "value", fil);
+    print_single(tparams, "value", fil, c);
     print_array(tparams, 9, "mobility", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     fil << "}\n";
 
     fil << "\nnamespace BishopEval\n{";
-    print_single(tparams[c++], "value", fil);
+    print_single(tparams, "value", fil, c);
     print_array(tparams, 14, "mobility", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     fil << "}\n";
 
     fil << "\nnamespace RookEval\n{";
-    print_single(tparams[c++], "value", fil);
-    print_single(tparams[c++], "open_file", fil);
-    print_single(tparams[c++], "semi_open_file", fil);
+    print_single(tparams, "value", fil, c);
+    print_single(tparams, "open_file", fil, c);
+    print_single(tparams, "semi_open_file", fil, c);
     print_array(tparams, 15, "mobility", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     fil << "}\n";
 
     fil << "\nnamespace QueenEval\n{";
-    print_single(tparams[c++], "value", fil);
+    print_single(tparams, "value", fil, c);
     print_array(tparams, 28, "mobility", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     fil << "}\n";
@@ -362,7 +363,7 @@ void save_params(TVector params, TVector current_params)
     fil << "}\n";
 
     fil << "\nnamespace MiscEval\n{";
-    print_single(tparams[c++], "control", fil);
+    print_single(tparams, "control", fil, c);
     fil << "}\n";
 
     if (c != NTERMS)
