@@ -15,16 +15,32 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "attacks.h"
-#include "uci.h"
-#include "zobrist.h"
-#include "search.h"
-#include "tuner.h"
+#pragma once 
+#include "misc.h"
 
-int main(int argc, char **argv)
+#define DATASET    ("C:/tuning/lichess-quiet.txt")
+#define NPOSITIONS (2000000)
+#define LRRATE     (0.01) 
+#define ADAM_BETA1 (0.9)
+#define ADAM_BETA2 (0.999)
+#define NTERMS     (689)
+
+#define STACKSIZE  ((int)((double)NPOSITIONS * NTERMS / 64))
+
+struct TTuple 
 {
-    Attacks::init();
-    ZobristKey::init();
-    Search::init();
-    tune();
-}
+    int16_t index, coeff;
+};
+
+struct TPos 
+{
+    int16_t seval, phase, turn, ntuples;
+    int eval;
+    double result, pfactors[2];
+    TTuple* tuples;
+};
+
+typedef double TCoeffs[NTERMS];
+typedef double TVector[NTERMS][2];
+
+void tune();

@@ -15,16 +15,26 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "attacks.h"
-#include "uci.h"
-#include "zobrist.h"
-#include "search.h"
-#include "tuner.h"
+#pragma once 
+#include "misc.h"
 
-int main(int argc, char **argv)
+struct EvalTrace 
 {
-    Attacks::init();
-    ZobristKey::init();
-    Search::init();
-    tune();
-}
+    int psqt[6][64];
+    int mobility[4][28];
+    int safety_table[100];
+    int passed[64];
+    int passer_blocked[64];
+    int material[5];
+    int stacked;
+    int isolated;
+    int passed_connected;
+    int open_file;
+    int semi_open_file;
+    int control;
+    int eval;
+
+    EvalTrace();
+
+    void reset();
+};

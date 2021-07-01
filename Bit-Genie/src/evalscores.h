@@ -16,6 +16,11 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once 
+#include "misc.h"
+
+#define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
+#define eg_score(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
 
 namespace PawnEval
 {
@@ -62,8 +67,6 @@ namespace PawnEval
         S( -6, -19), S( -4, -12), S(-13,  -5), S( -6,  15), S(  6,  14), S( -7,  -6), S( -1, -10), S( -2, -17), 
         S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), 
     };
-
-    constexpr int passed_tempo = S(21, 40);
 }
 
 namespace KnightEval

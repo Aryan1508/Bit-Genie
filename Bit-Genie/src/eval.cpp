@@ -22,7 +22,12 @@
 #include "board.h"
 #include "evalscores.h"
 #include <cstring>
-#include <math.h>
+
+constexpr int SIDE_SCALAR[] = {1, -1};
+
+#define TRACE_1(term) (ET.term += SIDE_SCALAR[us])
+#define TRACE_2(term, i) (ET.term[(i)] += SIDE_SCALAR[us])
+#define TRACE_3(term, i, j) (ET.term[(i)][(j)] += SIDE_SCALAR[us])
 
 struct EvalData
 {
@@ -37,6 +42,7 @@ struct EvalData
         king_ring[White] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
         king_ring[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
     }
+
     void update_attackers_count(uint64_t attacks, Color by)
     {
         attackers_count[by] += popcount64(attacks);
@@ -58,7 +64,10 @@ static constexpr int calculate_moblity(Position const &position, EvalData &data,
             data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.king_ring[!us]);
             data.king_attackers_count[us]++;
         }
-        return mobility_scores[popcount64(attacks)];
+        int count = popcount64(attacks);
+        TRACE_3(mobility, pt, count);
+
+        return mobility_scores[count];
     }
     else
     {
@@ -72,7 +81,10 @@ static constexpr int calculate_moblity(Position const &position, EvalData &data,
             data.king_attackers_count[us]++;
         }
 
-        return mobility_scores[popcount64(attacks & ~enemy_pawn_attacks)];
+        int count = popcount64(attacks & ~enemy_pawn_attacks);
+        TRACE_3(mobility, pt, count);
+
+        return mobility_scores[count];
     }
 }
 
@@ -149,30 +161,47 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
     uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
     uint64_t enemy = position.pieces.get_occupancy(!us);
     uint64_t ahead_squares = BitMask::passed_pawn[us][sq] & BitMask::files[sq];
+    Square relative_sq = psqt_sq(sq, us);
 
     data.update_attackers_count(BitMask::pawn_attacks[us][sq], us);
 
-    score += PawnEval::psqt[psqt_sq(sq, us)];
-    score += pawn_is_isolated(friend_pawns, sq) * PawnEval::isolated;
-    score += pawn_is_stacked(friend_pawns, sq) * PawnEval::stacked;
+    score += PawnEval::psqt[relative_sq];
+    TRACE_3(psqt, Pawn, relative_sq);
 
-    bool passed = pawn_passed(enemy_pawns, us, sq);
+    if (pawn_is_isolated(friend_pawns, sq))
+    {
+        TRACE_1(isolated);
+        score += PawnEval::isolated;
+    }
 
-    if (passed)
+    if (pawn_is_stacked(friend_pawns, sq))
+    {
+        TRACE_1(stacked);
+        score += PawnEval::stacked;
+    }
+
+    if (pawn_passed(enemy_pawns, us, sq))
     {
         if (ahead_squares & enemy)
-            score += PawnEval::passer_blocked[psqt_sq(sq, us)];
+        {
+            score += PawnEval::passer_blocked[relative_sq];
+            TRACE_2(passer_blocked, relative_sq);
+        }
         else 
         {
-            score += PawnEval::passed[psqt_sq(sq, us)];
-            score += PawnEval::passed_tempo * (us == position.side);
+            score += PawnEval::passed[relative_sq];
+            TRACE_2(passed, relative_sq);
         }
 
         if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
+        {
             score += PawnEval::passed_connected;
+            TRACE_1(passed_connected);
+        }
     }
 
     score += PawnEval::value;
+    TRACE_2(material, Pawn);
 
     return score;
 }
@@ -180,10 +209,16 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
 static int evaluate_knight(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
+    Square relative_sq = psqt_sq(sq, us);
 
-    score += KnightEval::psqt[psqt_sq(sq, us)];
+    score += KnightEval::psqt[relative_sq];
+    TRACE_3(psqt, Knight, relative_sq);
+    
+
     score += calculate_moblity<Knight, true>(position, data, sq, us, KnightEval::mobility);
+
     score += KnightEval::value;
+    TRACE_2(material, Knight);
 
     return score;
 }
@@ -206,12 +241,27 @@ static bool is_on_semiopen_file(Position const &position, Square sq)
 static int evaluate_rook(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
+    Square relative_sq = psqt_sq(sq, us);
 
-    score += RookEval::psqt[psqt_sq(sq, us)];
+    score += RookEval::psqt[relative_sq];
+    TRACE_3(psqt, Rook, relative_sq);
+
     score += calculate_moblity<Rook>(position, data, sq, us, RookEval::mobility);
-    score += is_on_open_file(position, sq) * RookEval::open_file;
-    score += is_on_semiopen_file(position, sq) * RookEval::semi_open_file;
+
+    if (is_on_open_file(position, sq))
+    {
+        TRACE_1(open_file);
+        score += RookEval::open_file;
+    }
+
+    if (is_on_semiopen_file(position, sq))
+    {
+        TRACE_1(semi_open_file);
+        score += RookEval::semi_open_file;
+    }
+
     score += RookEval::value;
+    TRACE_2(material, Rook);
 
     return score;
 }
@@ -219,10 +269,15 @@ static int evaluate_rook(Position const &position, EvalData &data, Square sq, Co
 static int evaluate_queen(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
+    Square relative_sq = psqt_sq(sq, us);
 
-    score += QueenEval::psqt[psqt_sq(sq, us)];
+    score += QueenEval::psqt[relative_sq];
+    TRACE_3(psqt, Queen, relative_sq);
+
     score += calculate_moblity<Queen>(position, data, sq, us, QueenEval::mobility);
+
     score += QueenEval::value;
+    TRACE_2(material, Queen);
 
     return score;
 }
@@ -230,10 +285,15 @@ static int evaluate_queen(Position const &position, EvalData &data, Square sq, C
 static int evaluate_bishop(Position const &position, EvalData &data, Square sq, Color us)
 {
     int score = 0;
+    Square relative_sq = psqt_sq(sq, us);
 
-    score += BishopEval::psqt[psqt_sq(sq, us)];
+    score += BishopEval::psqt[relative_sq];
+    TRACE_3(psqt, Bishop, relative_sq);
+
     score += calculate_moblity<Bishop>(position, data, sq, us, BishopEval::mobility);
+
     score += BishopEval::value;
+    TRACE_2(material, Bishop);
 
     return score;
 }
@@ -263,12 +323,12 @@ static int evaluate_piece(Position const &position, EvalData &data, Callable F)
     return score;
 }
 
-static int get_phase(Position const &position)
+int get_phase(Position const &position)
 {
     constexpr int rook_phase = 2;
     constexpr int queen_phase = 4;
 
-    int phase = 19;
+    int phase = 24;
 
     uint64_t knights = position.pieces.bitboards[Knight];
     uint64_t bishops = position.pieces.bitboards[Bishop];
@@ -284,11 +344,13 @@ static int get_phase(Position const &position)
     return phase;
 }
 
-static int eval_king(Position const &position, EvalData &data, Color us)
+static int evaluate_king(Position const &position, EvalData &data, Square sq, Color us)
 {
-    Square sq = get_lsb(position.pieces.get_piece_bb<King>(us));
+    Square relative_sq = psqt_sq(sq, us);
 
-    int score = KingEval::psqt[psqt_sq(sq, us)];
+    int score = KingEval::psqt[relative_sq];    
+    TRACE_3(psqt, King, relative_sq);
+
     Color enemy = !us;
 
     data.update_attackers_count(BitMask::king_attacks[sq], us);
@@ -301,6 +363,7 @@ static int eval_king(Position const &position, EvalData &data, Color us)
             weight /= 2;
 
         score += KingEval::safety_table[weight];
+        TRACE_2(safety_table, weight);
     }
 
     return score;
@@ -309,13 +372,15 @@ static int eval_king(Position const &position, EvalData &data, Color us)
 template<Color us>
 static inline int evaluate_control(EvalData& data)
 {
-    return MiscEval::control * (data.attackers_count[us] - data.attackers_count[!us]);    
+    int count = data.attackers_count[us] - data.attackers_count[!us];
+
+    ET.control += SIDE_SCALAR[us] * count;
+
+    return MiscEval::control * count;    
 }
 
 static inline int scale_score(Position const &position, int score)
 {
-#define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
-#define eg_score(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
     int phase = get_phase(position);
     return ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase)) / 256;
 }
@@ -330,17 +395,17 @@ int eval_position(Position const &position)
     EvalData data;
     data.init(position);
 
-    score += evaluate_piece<Pawn>(position, data, evaluate_pawn);
+    score += evaluate_piece<Pawn  >(position, data, evaluate_pawn);
     score += evaluate_piece<Knight>(position, data, evaluate_knight);
-    score += evaluate_piece<Rook>(position, data, evaluate_rook);
+    score += evaluate_piece<Rook  >(position, data, evaluate_rook);
     score += evaluate_piece<Bishop>(position, data, evaluate_bishop);
-    score += evaluate_piece<Queen>(position, data, evaluate_queen);
-
-    score += eval_king(position, data, White);
-    score -= eval_king(position, data, Black);
+    score += evaluate_piece<Queen >(position, data, evaluate_queen);
+    score += evaluate_piece<King  >(position, data, evaluate_king);
 
     score += evaluate_control<White>(data);
     score -= evaluate_control<Black>(data);
+
+    ET.eval = score;
 
     score = scale_score(position, score);
 

@@ -16,6 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "evaltrace.h"
 
+inline EvalTrace ET;
+
+int get_phase(Position const &);
 int eval_position(Position const &);
