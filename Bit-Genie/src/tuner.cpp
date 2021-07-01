@@ -45,6 +45,7 @@ void init_coeffs(TCoeffs coeffs)
     coeffs[c++] = ET.stacked;
     coeffs[c++] = ET.isolated;
     coeffs[c++] = ET.passed_connected;
+    coeffs[c++] = ET.passed_tempo;
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Pawn][i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.passed[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.passer_blocked[i];
@@ -139,11 +140,11 @@ void init_tuner_entries(TPos* entries)
 
         if (i >= NPOSITIONS) break;
 
-        if (line.find("White") != line.npos)      entries[i].result = 1.0;
-        else if (line.find("Black") != line.npos) entries[i].result = 0.0;
+        if (line.find("1.000") != line.npos)      entries[i].result = 1.0;
+        else if (line.find("0.000") != line.npos) entries[i].result = 0.0;
         else                                      entries[i].result = 0.5;
 
-        std::string fen = line.substr(0, line.find("|") - 1);
+        std::string fen = line.substr(0, line.find("c2") - 1);
 
         position.set_fen(fen);
         init_tuner_entry(&entries[i++], &position);
@@ -168,6 +169,7 @@ void init_base_params(TVector params)
     init_param(params[c++], PawnEval::stacked);
     init_param(params[c++], PawnEval::isolated);
     init_param(params[c++], PawnEval::passed_connected);
+    init_param(params[c++], PawnEval::passed_tempo);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::psqt[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passed[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passer_blocked[i]);
@@ -322,6 +324,7 @@ void save_params(TVector params, TVector current_params)
     print_single(tparams, "stacked", fil, c);
     print_single(tparams, "isolated", fil, c);
     print_single(tparams, "passed_connected", fil, c);
+    print_single(tparams, "passed_tempo", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     print_array(tparams, 64, "passed", fil, c);
     print_array(tparams, 64, "passer_blocked", fil, c);
@@ -405,6 +408,6 @@ void tune()
 
         error = tune_evaluation_error(entries, params);
         std::cout << "\rEpoch " << epoch << " Error " << error;
-        if (epoch % 64 == 0) save_params(params, current_params);    
+        if (epoch % 4 == 0) save_params(params, current_params);    
     }
 }

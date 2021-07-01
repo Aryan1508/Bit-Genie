@@ -191,6 +191,12 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
         {
             score += PawnEval::passed[relative_sq];
             TRACE_2(passed, relative_sq);
+
+            if (position.side == us)
+            {
+                TRACE_1(passed_tempo);
+                score += PawnEval::passed_tempo;
+            }
         }
 
         if (BitMask::pawn_attacks[!us][sq] & friend_pawns)

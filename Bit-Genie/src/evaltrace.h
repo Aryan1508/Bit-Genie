@@ -29,6 +29,7 @@ struct EvalTrace
     int stacked;
     int isolated;
     int passed_connected;
+    int passed_tempo;
     int open_file;
     int semi_open_file;
     int control;

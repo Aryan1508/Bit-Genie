@@ -31,6 +31,8 @@ namespace PawnEval
 
     constexpr int passed_connected = S( 14,  28);
 
+    constexpr int passed_tempo = 0;
+
     constexpr int value = S(115, 164);
 
     constexpr int psqt[64]
@@ -68,8 +70,6 @@ namespace PawnEval
         S( -6, -19), S( -4, -12), S(-13,  -5), S( -6,  15), S(  6,  14), S( -7,  -6), S( -1, -10), S( -2, -17), 
         S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), S(  0,   0), 
     };
-
-    constexpr int passed_tempo = S(21, 40);
 }
 
 namespace KnightEval
