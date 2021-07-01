@@ -107,8 +107,8 @@ void init_tuner_entry(TPos* entry, Position* position)
                    - 2 * popcount64(rooks) 
                    - 1 * popcount64(bishops | knights);
 
-    entry->pfactors[MG] = 0 + phase / 24.0f;
-    entry->pfactors[EG] = 1 - phase / 24.0f;
+    entry->pfactors[MG] = 1 - phase / 24.0f;
+    entry->pfactors[EG] = 0 + phase / 24.0f;
     entry->phase        = (phase * 256 + 12) / 24.0f;
 
     ET.reset();
@@ -215,12 +215,13 @@ double linear_evaluation(TPos *entry, TVector params)
     double midgame = mg_score(entry->eval);
     double endgame = eg_score(entry->eval);
 
-    for (int i = 0; i < entry->ntuples; i++) {
+    for (int i = 0; i < entry->ntuples; i++) 
+    {
         midgame += (double) entry->tuples[i].coeff * params[entry->tuples[i].index][MG];
         endgame += (double) entry->tuples[i].coeff * params[entry->tuples[i].index][EG];
     }
 
-    double mixed =  (midgame * entry->phase +  endgame * (256 - entry->phase)) / 256;
+    double mixed = ((midgame * (256 - entry->phase)) + (endgame * entry->phase)) / 256;
 
     return mixed;
 }
