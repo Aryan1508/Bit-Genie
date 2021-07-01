@@ -387,7 +387,7 @@ void tune()
     init_base_params(current_params);
     save_params(current_params, params);
 
-    for (int epoch = 1; epoch <= 1000; epoch++) {
+    for (int epoch = 1; epoch <= 10000; epoch++) {
 
         TVector gradient = {0};
         compute_gradient(entries, gradient, params);
