@@ -28,7 +28,7 @@
 #include <iomanip>
 #include <sstream>
 
-#define K (2.97f)
+#define K  (2.97f)
 #define MG (0)
 #define EG (1)
 
@@ -217,12 +217,12 @@ void init_base_params(TVector params)
         std::cerr << "init_base_params failed, got " << c << " expeceted " << NTERMS << '\n';
         std::terminate();
     }
+
     std::cout << "Initialized " << c << " terms successfully\n";
 }
 
 double linear_evaluation(TPos *entry, TVector params)
- {
-
+{
     double midgame = mg_score(entry->eval);
     double endgame = eg_score(entry->eval);
 
@@ -231,9 +231,7 @@ double linear_evaluation(TPos *entry, TVector params)
         endgame += (double) entry->tuples[i].coeff * params[entry->tuples[i].index][EG];
     }
 
-    double mixed =  (midgame * entry->phase
-                  +  endgame * (256 - entry->phase))
-                  / 256;
+    double mixed =  (midgame * entry->phase +  endgame * (256 - entry->phase)) / 256;
 
     return mixed;
 }
@@ -245,15 +243,16 @@ void update_single_gradient(TPos *entry, TVector gradient, TVector params)
     double S = sigmoid(E);
     double X = (entry->result - S) * S * (1 - S);
 
-    double mgBase = X * entry->pfactors[MG];
-    double egBase = X * entry->pfactors[EG];
+    double mg_base = X * entry->pfactors[MG];
+    double eg_base = X * entry->pfactors[EG];
 
-    for (int i = 0; i < entry->ntuples; i++) {
-        int index = entry->tuples[i].index;
-        int coeff = entry->tuples[i].coeff;
+    for (int i = 0; i < entry->ntuples; i++) 
+    {
+        auto index = entry->tuples[i].index;
+        auto coeff = entry->tuples[i].coeff;
 
-        gradient[index][MG] += mgBase * coeff;
-        gradient[index][EG] += egBase * coeff;
+        gradient[index][MG] += mg_base * coeff;
+        gradient[index][EG] += eg_base * coeff;
     }
 }
 
@@ -416,8 +415,7 @@ void tune()
         }
 
         error = tune_evaluation_error(entries, params);
-        printf("\rEpoch [%d] Error = [%.8f], Rate = [%g]", epoch, error, rate);
-
+        std::cout << "Epoch " << epoch << " Error " << error;
         if (epoch % 64 == 0) save_params(params, current_params);    
     }
 }
