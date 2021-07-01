@@ -22,6 +22,7 @@
 #define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
 #define eg_score(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
 
+
 namespace PawnEval
 {
     constexpr int stacked = S( -8, -21);
