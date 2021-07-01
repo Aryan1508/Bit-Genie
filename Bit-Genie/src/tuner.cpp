@@ -44,29 +44,36 @@ void init_coeffs(TCoeffs coeffs)
 {
     int c = 0;
 
-    for(int i = 0;i < 5;i++) coeffs[c++] = ET.material[i];
-
-    for(int i = 0;i < 6;i++)
-        for(int j = 0;j < 64;j++)
-            coeffs[c++] = ET.psqt[i][j];
-
-    for(int i = 0;i < 64;i++)
-    {
-        coeffs[c++] = ET.passed[i];
-        coeffs[c++] = ET.passer_blocked[i];
-    }
-
-    for(int i = 0;i < 9;i++)   coeffs[c++] = ET.mobility[0][i];
-    for(int i = 0;i < 14;i++)  coeffs[c++] = ET.mobility[1][i];
-    for(int i = 0;i < 15;i++)  coeffs[c++] = ET.mobility[2][i];
-    for(int i = 0;i < 28;i++)  coeffs[c++] = ET.mobility[3][i];
-    for(int i = 0;i < 100;i++) coeffs[c++] = ET.safety_table[i];
-
-    coeffs[c++] = ET.isolated;
+    coeffs[c++] = ET.material[Pawn];
     coeffs[c++] = ET.stacked;
+    coeffs[c++] = ET.isolated;
     coeffs[c++] = ET.passed_connected;
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Pawn][i];
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.passed[i];
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.passer_blocked[i];
+
+    coeffs[c++] = ET.material[Knight];
+    for(int i = 0;i < 9;i++) coeffs[c++] = KnightEval::mobility[i];
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Knight][i];
+
+    coeffs[c++] = ET.material[Bishop];
+    for(int i = 0;i < 14;i++) coeffs[c++] = BishopEval::mobility[i];
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Bishop][i];
+
+    coeffs[c++] = ET.material[Rook];
     coeffs[c++] = ET.open_file;
     coeffs[c++] = ET.semi_open_file;
+    for(int i = 0;i < 15;i++) coeffs[c++] = RookEval::mobility[i];
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Rook][i];
+
+    coeffs[c++] = ET.material[Queen];
+    for(int i = 0;i < 28;i++) coeffs[c++] = QueenEval::mobility[i];
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Queen][i];
+
+
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[King][i];
+    for(int i = 0;i < 100;i++) coeffs[c++] = ET.safety_table[i];
+
     coeffs[c++] = ET.control;
 
 
