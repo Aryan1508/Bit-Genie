@@ -15,6 +15,12 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/*
+    Tuner implementation based on "Evaluation & Tuning in Chess Engines" by Andrew Grant
+    https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf
+*/
+
 #ifdef TUNE
 #include "tuner.h"
 
@@ -422,8 +428,8 @@ void tune()
     init_base_params(current_params);
     save_params(current_params, params);
 
-    for (int epoch = 1; epoch <= 10000; epoch++) {
-
+    for (int epoch = 1; epoch <= 10000; epoch++) 
+    {
         TVector gradient = {0};
         compute_gradient(entries, gradient, params);
 

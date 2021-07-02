@@ -15,6 +15,12 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/*
+    Tuner implementation based on "Evaluation & Tuning in Chess Engines" by Andrew Grant
+    https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf
+*/
+
 #pragma once 
 #ifdef TUNE 
 #include "misc.h"
