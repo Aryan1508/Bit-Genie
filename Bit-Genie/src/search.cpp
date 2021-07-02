@@ -164,7 +164,7 @@ namespace
                }
         }
 
-        int eval = eval_position(position);
+        int eval = tthit ? entry.seval : eval_position(position);
 
         if (!at_root && !in_check && depth < 6 && (eval - depth * 256) >= beta)
             return eval;
@@ -269,7 +269,7 @@ namespace
             return 0;
 
         TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::exact;
-        TT.add(position, result.best_move, result.score, depth, flag);
+        TT.add(position, result.best_move, result.score, depth, flag, eval);
 
         return result;
     }

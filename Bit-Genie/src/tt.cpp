@@ -33,12 +33,12 @@ void TTable::resize(int mb)
     entries.resize(mb_to_b(mb) / sizeof(TEntry), TEntry());
 }
 
-void TTable::add(Position const &position, Move move, int score, uint8_t depth, TEFlag flag)
+void TTable::add(Position const &position, Move move, int score, uint8_t depth, TEFlag flag, int16_t seval)
 {
     uint64_t hash = position.key.data();
     uint64_t index = hash % entries.size(); 
 
-    entries[index] = TEntry(hash, score, move, depth, flag);
+    entries[index] = TEntry(hash, score, move, depth, flag, seval);
 }
 
 TEntry &TTable::retrieve(Position const &position)

@@ -32,14 +32,15 @@ struct TEntry
 {
     uint64_t hash = 0;
     int32_t score = 0;
+    int16_t seval = 0;
     uint16_t move = 0;
     uint8_t depth = 0;
     TEFlag flag = TEFlag::none;
 
     TEntry() = default;
 
-    TEntry(uint64_t h, int32_t s, Move m, uint8_t d, TEFlag fl)
-        : hash(h), score(s), move(move_without_score(m)), depth(d), flag(fl)
+    TEntry(uint64_t h, int32_t s, Move m, uint8_t d, TEFlag fl, int16_t eval)
+        : hash(h), score(s), seval(eval), move(move_without_score(m)), depth(d), flag(fl)
     {
     }
 };
@@ -52,7 +53,7 @@ public:
     TTable(int mb) { resize(mb); }
 
     void resize(int);
-    void add(Position const &, Move, int score, uint8_t depth, TEFlag);
+    void add(Position const &, Move, int score, uint8_t depth, TEFlag, int16_t);
     void reset()
     {
         std::fill(entries.begin(), entries.end(), TEntry());
