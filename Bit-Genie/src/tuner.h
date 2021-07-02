@@ -15,12 +15,38 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once
-#include "evaltrace.h"
 
-#ifdef TUNE
-inline EvalTrace ET;
+/*
+    Tuner implementation based on "Evaluation & Tuning in Chess Engines" by Andrew Grant
+    https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf
+*/
+
+#pragma once 
+#ifdef TUNE 
+#include "misc.h"
+
+#define DATASET     ("C:/tuning/lichess-quiet.txt")
+#define NPOSITIONS  (2000005)
+#define ADAM_BETA1  (0.9)
+#define ADAM_BETA2  (0.999)
+#define NTERMS      (690)
+#define CHUNK       (NPOSITIONS / 8)
+
+struct TTuple 
+{
+    int16_t index, coeff;
+};
+
+struct TPos 
+{
+    int16_t seval, phase, turn, ntuples;
+    int     eval;
+    double  result, pfactors[2];
+    TTuple* tuples;
+};
+
+typedef double TCoeffs[NTERMS];
+typedef double TVector[NTERMS][2];
+
+void tune();
 #endif
-
-int get_phase(Position const &);
-int eval_position(Position const &);

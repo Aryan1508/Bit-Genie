@@ -15,12 +15,27 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once
-#include "evaltrace.h"
+#pragma once 
+#include "misc.h"
 
-#ifdef TUNE
-inline EvalTrace ET;
-#endif
+struct EvalTrace 
+{
+    int psqt[6][64];
+    int mobility[4][28];
+    int safety_table[100];
+    int passed[64];
+    int passer_blocked[64];
+    int material[5];
+    int stacked;
+    int isolated;
+    int passed_connected;
+    int passed_tempo;
+    int open_file;
+    int semi_open_file;
+    int control;
+    int eval;
 
-int get_phase(Position const &);
-int eval_position(Position const &);
+    EvalTrace();
+
+    void reset();
+};

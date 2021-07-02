@@ -15,12 +15,15 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once
 #include "evaltrace.h"
+#include <cstring>
 
-#ifdef TUNE
-inline EvalTrace ET;
-#endif
+EvalTrace::EvalTrace()
+{   
+    reset();
+}
 
-int get_phase(Position const &);
-int eval_position(Position const &);
+void EvalTrace::reset()
+{
+    std::memset(this, 0, sizeof(EvalTrace));
+}

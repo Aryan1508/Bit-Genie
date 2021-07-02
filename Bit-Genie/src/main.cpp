@@ -19,11 +19,16 @@
 #include "uci.h"
 #include "zobrist.h"
 #include "search.h"
+#include "tuner.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     Attacks::init();
     ZobristKey::init();
     Search::init();
+#ifdef TUNE 
+    tune();
+#else 
     UCI::init(argc, argv);
+#endif
 }
