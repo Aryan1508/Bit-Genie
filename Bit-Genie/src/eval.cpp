@@ -422,5 +422,7 @@ int eval_position(Position const &position)
 
     score = scale_score(position, score);
 
+    score += (position.side == White ? MiscEval::tempo : -MiscEval::tempo);
+
     return position.side == White ? score : -score;
 }

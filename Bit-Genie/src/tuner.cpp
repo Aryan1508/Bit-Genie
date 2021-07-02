@@ -232,7 +232,7 @@ double linear_evaluation(TPos *entry, TVector params)
 
     double mixed = ((midgame * (256 - entry->phase)) + (endgame * entry->phase)) / 256;
 
-    return mixed;
+    return mixed + (entry->turn == White ? MiscEval::tempo : -MiscEval::tempo);
 }
 
 void update_single_gradient(TPos *entry, TVector gradient, TVector params) 
@@ -405,6 +405,7 @@ R"~(
 
     fil << "\nnamespace MiscEval\n{";
     print_single(tparams, "control", fil, c);
+    fil << "\n    constexpr int tempo = 10;\n";
     fil << "}\n";
 
     if (c != NTERMS)
