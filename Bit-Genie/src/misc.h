@@ -43,7 +43,6 @@ enum PieceType : uint8_t;
 enum Color : uint8_t;
 
 class CastleRights;
-class Killers;
 class Movelist;
 class PieceManager;
 class Position;

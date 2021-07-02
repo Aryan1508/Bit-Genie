@@ -18,7 +18,6 @@
 #pragma once
 #include "searchstats.h"
 #include "searchlimits.h"
-#include "killer.h"
 #include "shistory.h"
 #include <atomic>
 
@@ -29,7 +28,7 @@ namespace Search
         Position*  position;
         Stats      stats;
         Limits     limits;
-        Killers    killers;
+        Move       killers[64][2] = {NullMove};
         SHistory   history;
 
         void update();
