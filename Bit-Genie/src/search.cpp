@@ -269,7 +269,7 @@ namespace
             return 0;
 
         TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::exact;
-        TT.add(position, result.best_move, result.score, depth, flag, eval);
+        TT.add(position, result.best_move, (int16_t)result.score, depth, flag, eval);
 
         return result;
     }
