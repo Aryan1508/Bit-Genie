@@ -268,7 +268,7 @@ namespace
         if (search.limits.stopped)
             return 0;
 
-        TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::upper;
+        TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::exact;
         TT.add(position, result.best_move, result.score, depth, flag);
 
         return result;
