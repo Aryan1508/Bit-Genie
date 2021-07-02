@@ -114,6 +114,12 @@ namespace
         return std::abs(alpha - beta) > 1;
     }
 
+    void add_killer(Search::Info& search, Move move)
+    {
+        search.killers[search.stats.ply][1] = search.killers[search.stats.ply][0];
+        search.killers[search.stats.ply][0] = move;
+    }
+
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
@@ -239,7 +245,7 @@ namespace
                 {
                     search.history.add(position, move, depth * depth);
                     search.history.penalty(position, picker.gen.movelist, move, depth);
-                    search.killers.add(search.stats.ply, move);
+                    add_killer(search, move);
                 }
                 break;
             }

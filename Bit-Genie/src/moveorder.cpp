@@ -190,7 +190,7 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::Killer1)
     {
         stage = Stage::Killer2;
-        Move killer = search->killers.first(search->stats.ply);
+        Move killer = search->killers[search->stats.ply][0];
 
         if (can_move(killer))
         {
@@ -202,7 +202,7 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::Killer2)
     {
         stage = Stage::GiveBadNoisy;
-        Move killer = search->killers.second(search->stats.ply);
+        Move killer = search->killers[search->stats.ply][1];
 
         if (can_move(killer))
         {
