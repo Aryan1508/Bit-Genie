@@ -20,7 +20,6 @@
     Tuner implementation based on "Evaluation & Tuning in Chess Engines" by Andrew Grant
     https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf
 */
-
 #ifdef TUNE
 #include "tuner.h"
 
@@ -58,6 +57,7 @@ void init_coeffs(TCoeffs coeffs)
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.passer_blocked[i];
 
     coeffs[c++] = ET.material[Knight];
+    coeffs[c++] = ET.knight_behind_pawn;
     for(int i = 0;i < 9;i++) coeffs[c++] = KnightEval::mobility[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Knight][i];
 
@@ -183,6 +183,7 @@ void init_base_params(TVector params)
 
     // Knight eval 
     init_param(params[c++], KnightEval::value);
+    init_param(params[c++], KnightEval::behind_pawn);
     for(int i = 0;i < 9;i++)  init_param(params[c++], KnightEval::mobility[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], KnightEval::psqt[i]);
 
@@ -365,6 +366,7 @@ void save_params(TVector params, TVector current_params)
 
     fil << "\nnamespace KnightEval\n{";
     print_single(tparams, "value", fil, c);
+    print_single(tparams, "behind_pawn", fil, c);
     print_array(tparams, 9, "mobility", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     fil << "}\n";

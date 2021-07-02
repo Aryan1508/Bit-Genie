@@ -17,6 +17,7 @@
 */
 #pragma once
 #include "misc.h"
+#include "piece.h"
 #include <string_view>
 
 enum Square : uint8_t
@@ -89,5 +90,11 @@ inline bool is_ok(const Square sq)
 {
     return sq <= Square::H8;
 }
+
+inline Direction relative_forward(Color side)
+{
+    return side == White ? Direction::north : Direction::south;
+}
+
 bool is_valid_sq(std::string_view);
 std::ostream &operator<<(std::ostream &, const Square);

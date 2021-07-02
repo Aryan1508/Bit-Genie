@@ -668,7 +668,7 @@ bool Position::move_is_pseudolegal(Move move)
     if (moving == wPawn || moving == bPawn)
     {
         Rank start_rank = side == White ? Rank::two : Rank::seven;
-        Direction forward = side == White ? Direction::north : Direction::south;
+        Direction forward = relative_forward(side);
         Square forward_sq = from + forward;
         uint64_t prom_rank = side == White ? BitMask::rank7 : BitMask::rank2;
         uint64_t from_sq_bb = 1ull << from;

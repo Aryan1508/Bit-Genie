@@ -144,7 +144,7 @@ private:
         uint64_t promotion_rank = position.side == White ? BitMask::rank7 : BitMask::rank2;
         uint64_t ep_rank = position.side == White ? BitMask::rank6 : BitMask::rank3;
 
-        Direction forward = position.side == White ? Direction::north : Direction::south;
+        Direction forward = relative_forward(position.side);
         uint64_t empty = ~position.total_occupancy();
         uint64_t enemy = position.enemy_bb();
 

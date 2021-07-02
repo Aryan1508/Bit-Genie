@@ -81,7 +81,7 @@ static constexpr int calculate_moblity(Position const &position, EvalData &data,
     else
     {
         uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
-        uint64_t forward = us == White ? shift<Direction::south>(enemy_pawns) : shift<Direction::north>(enemy_pawns);
+        uint64_t forward     = shift(enemy_pawns, relative_forward(!us));
         uint64_t enemy_pawn_attacks = shift<Direction::east>(forward) | shift<Direction::west>(forward);
 
         if (attacks & data.king_ring[!us])
@@ -225,15 +225,21 @@ static int evaluate_knight(Position const &position, EvalData &data, Square sq, 
 {
     int score = 0;
     Square relative_sq = psqt_sq(sq, us);
+    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
 
     score += KnightEval::psqt[relative_sq];
     TRACE_3(psqt, Knight, relative_sq);
     
-
     score += calculate_moblity<Knight, true>(position, data, sq, us, KnightEval::mobility);
 
     score += KnightEval::value;
     TRACE_2(material, Knight);
+
+    if (shift(1ull << sq, relative_forward(us)) & friend_pawns)
+    {
+        score += KnightEval::behind_pawn;
+        TRACE_1(knight_behind_pawn);
+    }
 
     return score;
 }
