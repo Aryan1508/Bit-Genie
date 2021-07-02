@@ -44,12 +44,17 @@ struct EvalData
     int king_attackers_weight[2] = {0};
     uint64_t king_ring[2] = {0};
     int attackers_count[2];
+    int  open_file_count;
 
     void init(Position const &position)
     {
+
         std::memset(this, 0, sizeof(EvalData));
         king_ring[White] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
         king_ring[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
+
+        for(int i = 0; i < 8;i++)
+            open_file_count += !(position.pieces.bitboards[Pawn] & BitMask::files[i]);
     }
 
     void update_attackers_count(uint64_t attacks, Color by)
@@ -265,8 +270,8 @@ static int evaluate_rook(Position const &position, EvalData &data, Square sq, Co
 
     if (is_on_open_file(position, sq))
     {
-        TRACE_1(open_file);
-        score += RookEval::open_file;
+        TRACE_2(open_file, data.open_file_count);
+        score += RookEval::open_file[data.open_file_count];
     }
 
     if (is_on_semiopen_file(position, sq))

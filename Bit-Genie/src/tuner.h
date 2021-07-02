@@ -29,7 +29,7 @@
 #define NPOSITIONS  (2000005)
 #define ADAM_BETA1  (0.9)
 #define ADAM_BETA2  (0.999)
-#define NTERMS      (690)
+#define NTERMS      (698)
 #define CHUNK       (NPOSITIONS / 8)
 
 struct TTuple 

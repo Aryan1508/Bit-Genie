@@ -30,7 +30,7 @@ struct EvalTrace
     int isolated;
     int passed_connected;
     int passed_tempo;
-    int open_file;
+    int open_file[9];
     int semi_open_file;
     int control;
     int eval;
