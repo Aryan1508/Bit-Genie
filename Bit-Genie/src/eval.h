@@ -18,7 +18,9 @@
 #pragma once
 #include "evaltrace.h"
 
+#ifdef TUNE
 inline EvalTrace ET;
+#endif
 
 int get_phase(Position const &);
 int eval_position(Position const &);

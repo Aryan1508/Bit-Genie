@@ -16,6 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once 
+#ifdef TUNE 
 #include "misc.h"
 
 #define DATASET     ("C:/tuning/lichess-quiet.txt")
@@ -24,7 +25,6 @@
 #define ADAM_BETA2  (0.999)
 #define NTERMS      (690)
 #define CHUNK       (NPOSITIONS / 8)
-#define STACKSIZE   (NPOSITIONS * NTERMS)
 
 struct TTuple 
 {
@@ -34,8 +34,8 @@ struct TTuple
 struct TPos 
 {
     int16_t seval, phase, turn, ntuples;
-    int eval;
-    double result, pfactors[2];
+    int     eval;
+    double  result, pfactors[2];
     TTuple* tuples;
 };
 
@@ -43,3 +43,4 @@ typedef double TCoeffs[NTERMS];
 typedef double TVector[NTERMS][2];
 
 void tune();
+#endif

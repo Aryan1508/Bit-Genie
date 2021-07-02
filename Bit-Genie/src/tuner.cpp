@@ -15,6 +15,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef TUNE
 #include "tuner.h"
 
 #include "eval.h"
@@ -443,6 +444,8 @@ void tune()
 
         error = tune_evaluation_error(entries, params);
         std::cout << "\rEpoch " << epoch << " Error " << error;
-        if (epoch % 4 == 0) save_params(params, current_params);    
+
+        if (epoch % 8 == 0) save_params(params, current_params);    
     }
 }
+#endif

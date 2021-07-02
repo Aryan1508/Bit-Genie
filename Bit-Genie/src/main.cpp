@@ -21,10 +21,14 @@
 #include "search.h"
 #include "tuner.h"
 
-int main()
+int main(int argc, char** argv)
 {
     Attacks::init();
     ZobristKey::init();
     Search::init();
+#ifdef TUNE 
     tune();
+#else 
+    UCI::init(argc, argv);
+#endif
 }

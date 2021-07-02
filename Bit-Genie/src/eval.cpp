@@ -23,11 +23,20 @@
 #include "evalscores.h"
 #include <cstring>
 
+#ifdef TUNE 
 constexpr int SIDE_SCALAR[] = {1, -1};
-
 #define TRACE_1(term) (ET.term += SIDE_SCALAR[us])
 #define TRACE_2(term, i) (ET.term[(i)] += SIDE_SCALAR[us])
 #define TRACE_3(term, i, j) (ET.term[(i)][(j)] += SIDE_SCALAR[us])
+#define TRACE_COUNT(term, count) (ET.term += SIDE_SCALAR[us] * (count))
+#define TRACE_EVAL(score) (ET.eval = score)
+#else 
+#define TRACE_1(term) 
+#define TRACE_2(term, i) 
+#define TRACE_3(term, i, j) 
+#define TRACE_EVAL(score) 
+#define TRACE_COUNT(term, count) 
+#endif 
 
 struct EvalData
 {
@@ -379,9 +388,7 @@ template<Color us>
 static inline int evaluate_control(EvalData& data)
 {
     int count = data.attackers_count[us] - data.attackers_count[!us];
-
-    ET.control += SIDE_SCALAR[us] * count;
-
+    TRACE_COUNT(control, count);
     return MiscEval::control * count;    
 }
 
@@ -411,7 +418,7 @@ int eval_position(Position const &position)
     score += evaluate_control<White>(data);
     score -= evaluate_control<Black>(data);
 
-    ET.eval = score;
+    TRACE_EVAL(score);
 
     score = scale_score(position, score);
 
