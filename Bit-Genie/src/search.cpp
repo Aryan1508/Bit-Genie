@@ -166,7 +166,7 @@ namespace
 
         int eval = eval_position(position);
 
-        if (!at_root && depth < 6 && (eval - depth * 256) >= beta)
+        if (!at_root && !pv_node && depth < 6 && (eval - depth * 256) >= beta)
             return eval;
 
         if (!pv_node && !in_check && depth >= 4 && !at_root && do_null && position.should_do_null())
