@@ -120,6 +120,11 @@ namespace
         search.killers[search.stats.ply][0] = move;
     }
 
+    int hist_bonus(int depth, int move_i)
+    {
+        return depth * depth * (1 + (move_i == 1));
+    }
+
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
@@ -142,6 +147,7 @@ namespace
         bool         at_root   = search.stats.ply == 0;
         bool         tthit     = entry.hash == position.key.data();
         int          move_num  = 0;
+        int         qmove_num  = 0;
         int          original  = alpha;
 
         if (!at_root)
@@ -192,13 +198,16 @@ namespace
 
         for (Move move; picker.next(move);)
         {
+            bool quiet = !move_is_capture(position, move);
+
             if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > depth * depth * 2 + 2)
                 break;
 
-            if (depth < 5 && move_is_capture(position, move) && move_score(move) < see_pruning_margins[depth])
+            if (depth < 5 && !quiet && move_score(move) < see_pruning_margins[depth])
                 continue;
 
             move_num++;
+            if (quiet) qmove_num++;
 
             position.apply_move(move, search.stats.ply);
 
@@ -249,9 +258,9 @@ namespace
 
             if (alpha >= beta)
             {
-                if (!move_is_capture(position, move))
+                if (quiet)
                 {
-                    search.history.add(position, move, depth * depth);
+                    search.history.add(position, move, hist_bonus(depth, qmove_num));
                     search.history.penalty(position, picker.gen.movelist, move, depth);
                     add_killer(search, move);
                 }
