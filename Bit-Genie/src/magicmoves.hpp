@@ -1,58 +1,4 @@
 /**
- *magicmoves.h
- *
- *Header file for magic move uint64_t generation.  Include this in any files
- *need this functionality.
- *
- *Usage:
- *You must first initialize the generator with a call to initmagicmoves().
- *Then you can use the following macros for generating move bitboards by
- *giving them a square and an occupancy.  The macro will then "return"
- *the correct move uint64_t for that particular square and occupancy. It
- *has been named Rmagic and Bmagic so that it will not conflict with
- *any functions/macros in your chess program called Rmoves/Bmoves. You
- *can macro Bmagic/Rmagic to Bmoves/Rmoves if you wish.  If you want to
- *minimize the size of the bitboards, make MINIMIZE_MAGIC uncommented in this
- *header (more info on this later).  Where you typedef your unsigned 64-bit
- *integer declare __64_BIT_INTEGER_DEFINED__.  If USE_INLINING is uncommented,
- *the macros will be expressed as MMINLINEd functions.  If PERFECT_MAGIC_HASH is
- *uncomment, the move generator will use an additional indrection to make the
- *table sizes smaller : (~50kb+((original size)/sizeof(PERFECT_MAGIC_HASH)).
- *The size listed from here on out are the sizes without PERFECT_MAGIC_HASH.
- *
- *Bmagic(square, occupancy)
- *Rmagic(square, occupancy)
- *
- *Square is an integer that is greater than or equal to zero and less than 64.
- *Occupancy is any unsigned 64-bit integer that describes which squares on
- *the board are occupied.
- *
- *The following macros are identical to Rmagic and Bmagic except that the
- *occupancy is assumed to already have been "masked".  Look at the following
- *source or read up on the internet about magic uint64_t move generation to
- *understand the usage of these macros and what it means by "an occupancy that
- *has already been masked".  Using the following macros when possible might be
- *a tiny bit faster than using Rmagic and Bmagic because it avoids an array
- *access and a 64-bit & operation.
- *
- *BmagicNOMASK(square, occupancy)
- *RmagicNOMASK(square, occupancy)
- *
- *Unsigned 64 bit integers are referenced by this generator as U64.
- *Edit the beginning lines of this header for the defenition of a 64 bit
- *integer if necessary.
- *
- *If MINIMIZE_MAGIC is defined before including this file:
- *The move uint64_t generator will use up 841kb of memory.
- *41kb of memory is used for the bishop database and 800kb is used for the rook
- *database.  If you feel the 800kb rook database is too big, then comment it out
- *and use a more traditional move uint64_t generator in conjunction with the
- *magic move uint64_t generator for bishops.
- *
- *If MINIMIAZE_MAGIC is not defined before including this file:
- *The move uint64_t generator will use up 2304kb of memory but might perform a bit
- *faster.
- *
  *Copyright (C) 2007 Pradyumna Kannan.
  *
  *This code is provided 'as-is', without any expressed or implied warranty.
@@ -71,180 +17,132 @@
  *
  *3. This notice may not be removed or altered from any source distribution.
  */
+// altered source 
 
-#ifndef _magicmovesh
-#define _magicmovesh
+#pragma once
+#include <stdint.h>
 
- /*********MODIFY THE FOLLOWING IF NECESSARY********/
- //the default configuration is the best
-
- //Uncommont either one of the following or none
 #define MINIMIZE_MAGIC
-//#define PERFECT_MAGIC_HASH unsigned short
 
-//the following works only for perfect magic hash or no defenitions above
-//it uses variable shift for each square
-//#define VARIABLE_SHIFT
+typedef unsigned long long  U64;
 
-// #define USE_INLINING /*the MMINLINE keyword is assumed to be available*/
-
-#ifndef __64_BIT_INTEGER_DEFINED__
-#define __64_BIT_INTEGER_DEFINED__
-#if defined(_MSC_VER) && _MSC_VER<1300
-typedef unsigned __int64 U64; //For the old microsoft compilers
-#else
-typedef unsigned long long  U64; //Supported by MSC 13.00+ and C99
-#endif //defined(_MSC_VER) && _MSC_VER<1300
-#endif //__64_BIT_INTEGER_DEFINED__
-/***********MODIFY THE ABOVE IF NECESSARY**********/
-
-/*Defining the inlining keyword*/
-#ifdef USE_INLINING
-#ifdef _MSC_VER
-#define MMINLINE __forceinline
-#elif defined(__GNUC__)
-#define MMINLINE __inline__ __attribute__((always_inline))
-#else
-#define MMINLINE inline
-#endif
-#endif
-
-#ifndef C64
-#if (!defined(_MSC_VER) || _MSC_VER>1300)
 #define C64(constantU64) constantU64##ULL
-#else
-#define C64(constantU64) constantU64
-#endif
-#endif
 
-extern const U64 magicmoves_r_magics[64];
-extern const U64 magicmoves_r_mask[64];
-extern const U64 magicmoves_b_magics[64];
-extern const U64 magicmoves_b_mask[64];
-extern const unsigned int magicmoves_b_shift[64];
-extern const unsigned int magicmoves_r_shift[64];
+constexpr U64 magicmoves_r_magics[64] =
+{
+    0x0080001020400080, 0x0040001000200040, 0x0080081000200080, 0x0080040800100080,
+    0x0080020400080080, 0x0080010200040080, 0x0080008001000200, 0x0080002040800100,
+    0x0000800020400080, 0x0000400020005000, 0x0000801000200080, 0x0000800800100080,
+    0x0000800400080080, 0x0000800200040080, 0x0000800100020080, 0x0000800040800100,
+    0x0000208000400080, 0x0000404000201000, 0x0000808010002000, 0x0000808008001000,
+    0x0000808004000800, 0x0000808002000400, 0x0000010100020004, 0x0000020000408104,
+    0x0000208080004000, 0x0000200040005000, 0x0000100080200080, 0x0000080080100080,
+    0x0000040080080080, 0x0000020080040080, 0x0000010080800200, 0x0000800080004100,
+    0x0000204000800080, 0x0000200040401000, 0x0000100080802000, 0x0000080080801000,
+    0x0000040080800800, 0x0000020080800400, 0x0000020001010004, 0x0000800040800100,
+    0x0000204000808000, 0x0000200040008080, 0x0000100020008080, 0x0000080010008080,
+    0x0000040008008080, 0x0000020004008080, 0x0000010002008080, 0x0000004081020004,
+    0x0000204000800080, 0x0000200040008080, 0x0000100020008080, 0x0000080010008080,
+    0x0000040008008080, 0x0000020004008080, 0x0000800100020080, 0x0000800041000080,
+    0x00FFFCDDFCED714A, 0x007FFCDDFCED714A, 0x003FFFCDFFD88096, 0x0000040810002101,
+    0x0001000204080011, 0x0001000204000801, 0x0001000082000401, 0x0001FFFAABFAD1A2
+};
 
-#ifndef VARIABLE_SHIFT
+
+constexpr uint64_t magicmoves_b_magics[64] =
+{
+    0x0002020202020200, 0x0002020202020000, 0x0004010202000000, 0x0004040080000000,
+    0x0001104000000000, 0x0000821040000000, 0x0000410410400000, 0x0000104104104000,
+    0x0000040404040400, 0x0000020202020200, 0x0000040102020000, 0x0000040400800000,
+    0x0000011040000000, 0x0000008210400000, 0x0000004104104000, 0x0000002082082000,
+    0x0004000808080800, 0x0002000404040400, 0x0001000202020200, 0x0000800802004000,
+    0x0000800400A00000, 0x0000200100884000, 0x0000400082082000, 0x0000200041041000,
+    0x0002080010101000, 0x0001040008080800, 0x0000208004010400, 0x0000404004010200,
+    0x0000840000802000, 0x0000404002011000, 0x0000808001041000, 0x0000404000820800,
+    0x0001041000202000, 0x0000820800101000, 0x0000104400080800, 0x0000020080080080,
+    0x0000404040040100, 0x0000808100020100, 0x0001010100020800, 0x0000808080010400,
+    0x0000820820004000, 0x0000410410002000, 0x0000082088001000, 0x0000002011000800,
+    0x0000080100400400, 0x0001010101000200, 0x0002020202000400, 0x0001010101000200,
+    0x0000410410400000, 0x0000208208200000, 0x0000002084100000, 0x0000000020880000,
+    0x0000001002020000, 0x0000040408020000, 0x0004040404040000, 0x0002020202020000,
+    0x0000104104104000, 0x0000002082082000, 0x0000000020841000, 0x0000000000208800,
+    0x0000000010020200, 0x0000000404080200, 0x0000040404040400, 0x0002020202020200
+};
+
+
+constexpr U64 magicmoves_r_mask[64] =
+{
+    0x000101010101017E, 0x000202020202027C, 0x000404040404047A, 0x0008080808080876,
+    0x001010101010106E, 0x002020202020205E, 0x004040404040403E, 0x008080808080807E,
+    0x0001010101017E00, 0x0002020202027C00, 0x0004040404047A00, 0x0008080808087600,
+    0x0010101010106E00, 0x0020202020205E00, 0x0040404040403E00, 0x0080808080807E00,
+    0x00010101017E0100, 0x00020202027C0200, 0x00040404047A0400, 0x0008080808760800,
+    0x00101010106E1000, 0x00202020205E2000, 0x00404040403E4000, 0x00808080807E8000,
+    0x000101017E010100, 0x000202027C020200, 0x000404047A040400, 0x0008080876080800,
+    0x001010106E101000, 0x002020205E202000, 0x004040403E404000, 0x008080807E808000,
+    0x0001017E01010100, 0x0002027C02020200, 0x0004047A04040400, 0x0008087608080800,
+    0x0010106E10101000, 0x0020205E20202000, 0x0040403E40404000, 0x0080807E80808000,
+    0x00017E0101010100, 0x00027C0202020200, 0x00047A0404040400, 0x0008760808080800,
+    0x00106E1010101000, 0x00205E2020202000, 0x00403E4040404000, 0x00807E8080808000,
+    0x007E010101010100, 0x007C020202020200, 0x007A040404040400, 0x0076080808080800,
+    0x006E101010101000, 0x005E202020202000, 0x003E404040404000, 0x007E808080808000,
+    0x7E01010101010100, 0x7C02020202020200, 0x7A04040404040400, 0x7608080808080800,
+    0x6E10101010101000, 0x5E20202020202000, 0x3E40404040404000, 0x7E80808080808000
+};
+
+
+constexpr uint64_t magicmoves_b_mask[64]
+{
+    0x0040201008040200, 0x0000402010080400, 0x0000004020100A00, 0x0000000040221400,
+    0x0000000002442800, 0x0000000204085000, 0x0000020408102000, 0x0002040810204000,
+    0x0020100804020000, 0x0040201008040000, 0x00004020100A0000, 0x0000004022140000,
+    0x0000000244280000, 0x0000020408500000, 0x0002040810200000, 0x0004081020400000,
+    0x0010080402000200, 0x0020100804000400, 0x004020100A000A00, 0x0000402214001400,
+    0x0000024428002800, 0x0002040850005000, 0x0004081020002000, 0x0008102040004000,
+    0x0008040200020400, 0x0010080400040800, 0x0020100A000A1000, 0x0040221400142200,
+    0x0002442800284400, 0x0004085000500800, 0x0008102000201000, 0x0010204000402000,
+    0x0004020002040800, 0x0008040004081000, 0x00100A000A102000, 0x0022140014224000,
+    0x0044280028440200, 0x0008500050080400, 0x0010200020100800, 0x0020400040201000,
+    0x0002000204081000, 0x0004000408102000, 0x000A000A10204000, 0x0014001422400000,
+    0x0028002844020000, 0x0050005008040200, 0x0020002010080400, 0x0040004020100800,
+    0x0000020408102000, 0x0000040810204000, 0x00000A1020400000, 0x0000142240000000,
+    0x0000284402000000, 0x0000500804020000, 0x0000201008040200, 0x0000402010080400,
+    0x0002040810204000, 0x0004081020400000, 0x000A102040000000, 0x0014224000000000,
+    0x0028440200000000, 0x0050080402000000, 0x0020100804020000, 0x0040201008040200
+};
+
+constexpr unsigned int magicmoves_b_shift[64] =
+{
+    58, 59, 59, 59, 59, 59, 59, 58,
+    59, 59, 59, 59, 59, 59, 59, 59,
+    59, 59, 57, 57, 57, 57, 59, 59,
+    59, 59, 57, 55, 55, 57, 59, 59,
+    59, 59, 57, 55, 55, 57, 59, 59,
+    59, 59, 57, 57, 57, 57, 59, 59,
+    59, 59, 59, 59, 59, 59, 59, 59,
+    58, 59, 59, 59, 59, 59, 59, 58
+};
+
+constexpr unsigned int magicmoves_r_shift[64] 
+{
+    52, 53, 53, 53, 53, 53, 53, 52,
+    53, 54, 54, 54, 54, 54, 54, 53,
+    53, 54, 54, 54, 54, 54, 54, 53,
+    53, 54, 54, 54, 54, 54, 54, 53,
+    53, 54, 54, 54, 54, 54, 54, 53,
+    53, 54, 54, 54, 54, 54, 54, 53,
+    53, 54, 54, 54, 54, 54, 54, 53,
+    53, 54, 54, 53, 53, 53, 53, 53
+};
+
+
 #define MINIMAL_B_BITS_SHIFT(square) 55
 #define MINIMAL_R_BITS_SHIFT(square) 52
-#else
-#define MINIMAL_B_BITS_SHIFT(square) magicmoves_b_shift[square]
-#define MINIMAL_R_BITS_SHIFT(square) magicmoves_r_shift[square]
-#endif
-
-#ifndef PERFECT_MAGIC_HASH
-#ifdef MINIMIZE_MAGIC
-
-#ifndef USE_INLINING
 #define Bmagic(square, occupancy) *(magicmoves_b_indices[square]+((((occupancy)&magicmoves_b_mask[square])*magicmoves_b_magics[square])>>magicmoves_b_shift[square]))
 #define Rmagic(square, occupancy) *(magicmoves_r_indices[square]+((((occupancy)&magicmoves_r_mask[square])*magicmoves_r_magics[square])>>magicmoves_r_shift[square]))
-#define BmagicNOMASK(square, occupancy) *(magicmoves_b_indices[square]+(((occupancy)*magicmoves_b_magics[square])>>magicmoves_b_shift[square]))
-#define RmagicNOMASK(square, occupancy) *(magicmoves_r_indices[square]+(((occupancy)*magicmoves_r_magics[square])>>magicmoves_r_shift[square]))
-#endif //USE_INLINING
+#define Qmagic(square, occupancy) (Bmagic(square,occupancy)|Rmagic(square,occupancy))
 
-//extern U64 magicmovesbdb[5248];
 extern const U64* magicmoves_b_indices[64];
-
-//extern U64 magicmovesrdb[102400];
 extern const U64* magicmoves_r_indices[64];
 
-#else //Don't Minimize database size
-
-#ifndef USE_INLINING
-#define Bmagic(square, occupancy) magicmovesbdb[square][(((occupancy)&magicmoves_b_mask[square])*magicmoves_b_magics[square])>>MINIMAL_B_BITS_SHIFT(square)]
-#define Rmagic(square, occupancy) magicmovesrdb[square][(((occupancy)&magicmoves_r_mask[square])*magicmoves_r_magics[square])>>MINIMAL_R_BITS_SHIFT(square)]
-#define BmagicNOMASK(square, occupancy) magicmovesbdb[square][((occupancy)*magicmoves_b_magics[square])>>MINIMAL_B_BITS_SHIFT(square)]
-#define RmagicNOMASK(square, occupancy) magicmovesrdb[square][((occupancy)*magicmoves_r_magics[square])>>MINIMAL_R_BITS_SHIFT(square)]
-#endif //USE_INLINING
-
-extern U64 magicmovesbdb[64][1 << 9];
-extern U64 magicmovesrdb[64][1 << 12];
-
-#endif //MINIMIAZE_MAGICMOVES
-#else //PERFCT_MAGIC_HASH defined
-#ifndef MINIMIZE_MAGIC
-
-#ifndef USE_INLINING
-#define Bmagic(square, occupancy) magicmovesbdb[magicmoves_b_indices[square][(((occupancy)&magicmoves_b_mask[square])*magicmoves_b_magics[square])>>MINIMAL_B_BITS_SHIFT(square)]]
-#define Rmagic(square, occupancy) magicmovesrdb[magicmoves_r_indices[square][(((occupancy)&magicmoves_r_mask[square])*magicmoves_r_magics[square])>>MINIMAL_R_BITS_SHIFT(square)]]
-#define BmagicNOMASK(square, occupancy) magicmovesbdb[magicmoves_b_indices[square][((occupancy)*magicmoves_b_magics[square])>>MINIMAL_B_BITS_SHIFT(square)]]
-#define RmagicNOMASK(square, occupancy) magicmovesrdb[magicmoves_r_indices[square][((occupancy)*magicmoves_r_magics[square])>>MINIMAL_R_BITS_SHIFT(square)]]
-#endif //USE_INLINING
-
-extern U64 magicmovesbdb[1428];
-extern U64 magicmovesrdb[4900];
-extern PERFECT_MAGIC_HASH magicmoves_b_indices[64][1 << 9];
-extern PERFECT_MAGIC_HASH magicmoves_r_indices[64][1 << 12];
-#else
-#error magicmoves - MINIMIZED_MAGIC and PERFECT_MAGIC_HASH cannot be used together
-#endif
-#endif //PERFCT_MAGIC_HASH
-
-#ifdef USE_INLINING
-static MMINLINE U64 Bmagic(const unsigned int square, const U64 occupancy)
-{
-#ifndef PERFECT_MAGIC_HASH
-#ifdef MINIMIZE_MAGIC
-  return *(magicmoves_b_indices[square] + (((occupancy & magicmoves_b_mask[square]) * magicmoves_b_magics[square]) >> magicmoves_b_shift[square]));
-#else
-  return magicmovesbdb[square][(((occupancy)&magicmoves_b_mask[square]) * magicmoves_b_magics[square]) >> MINIMAL_B_BITS_SHIFT(square)];
-#endif
-#else
-  return magicmovesbdb[magicmoves_b_indices[square][(((occupancy)&magicmoves_b_mask[square]) * magicmoves_b_magics[square]) >> MINIMAL_B_BITS_SHIFT(square)]];
-#endif
-}
-static MMINLINE U64 Rmagic(const unsigned int square, const U64 occupancy)
-{
-#ifndef PERFECT_MAGIC_HASH
-#ifdef MINIMIZE_MAGIC
-  return *(magicmoves_r_indices[square] + (((occupancy & magicmoves_r_mask[square]) * magicmoves_r_magics[square]) >> magicmoves_r_shift[square]));
-#else
-  return magicmovesrdb[square][(((occupancy)&magicmoves_r_mask[square]) * magicmoves_r_magics[square]) >> MINIMAL_R_BITS_SHIFT(square)];
-#endif
-#else
-  return magicmovesrdb[magicmoves_r_indices[square][(((occupancy)&magicmoves_r_mask[square]) * magicmoves_r_magics[square]) >> MINIMAL_R_BITS_SHIFT(square)]];
-#endif
-}
-static MMINLINE U64 BmagicNOMASK(const unsigned int square, const U64 occupancy)
-{
-#ifndef PERFECT_MAGIC_HASH
-#ifdef MINIMIZE_MAGIC
-  return *(magicmoves_b_indices[square] + (((occupancy)*magicmoves_b_magics[square]) >> magicmoves_b_shift[square]));
-#else
-  return magicmovesbdb[square][((occupancy)*magicmoves_b_magics[square]) >> MINIMAL_B_BITS_SHIFT(square)];
-#endif
-#else
-  return magicmovesbdb[magicmoves_b_indices[square][((occupancy)*magicmoves_b_magics[square]) >> MINIMAL_B_BITS_SHIFT(square)]];
-#endif
-}
-static MMINLINE U64 RmagicNOMASK(const unsigned int square, const U64 occupancy)
-{
-#ifndef PERFECT_MAGIC_HASH
-#ifdef MINIMIZE_MAGIC
-  return *(magicmoves_r_indices[square] + (((occupancy)*magicmoves_r_magics[square]) >> magicmoves_r_shift[square]));
-#else
-  return magicmovesrdb[square][((occupancy)*magicmoves_r_magics[square]) >> MINIMAL_R_BITS_SHIFT(square)];
-#endif
-#else
-  return magicmovesrdb[magicmoves_r_indices[square][((occupancy)*magicmoves_r_magics[square]) >> MINIMAL_R_BITS_SHIFT(square)]];
-#endif
-}
-
-static MMINLINE U64 Qmagic(const unsigned int square, const U64 occupancy)
-{
-  return Bmagic(square, occupancy) | Rmagic(square, occupancy);
-}
-static MMINLINE U64 QmagicNOMASK(const unsigned int square, const U64 occupancy)
-{
-  return BmagicNOMASK(square, occupancy) | RmagicNOMASK(square, occupancy);
-}
-#else //!USE_INLINING
-
-#define Qmagic(square, occupancy) (Bmagic(square,occupancy)|Rmagic(square,occupancy))
-#define QmagicNOMASK(square, occupancy) (BmagicNOMASK(square,occupancy)|RmagicNOMASK(square,occupancy))
-
-#endif //USE_INLINING
-
 void initmagicmoves(void);
-
-#endif //_magicmoveshvesh
