@@ -125,6 +125,9 @@ namespace
         if (search.limits.stopped)
             return 0;
 
+        if (search.stats.ply)
+            depth += search.position->king_in_check();
+
         if (depth <= 0)
             return qsearch(search, alpha, beta);
 
