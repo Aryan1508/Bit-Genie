@@ -169,7 +169,7 @@ namespace
 
         int eval = tthit ? entry.seval : eval_position(position);
 
-        if (!at_root && !in_check && depth < 6 && (eval - depth * 256) >= beta)
+        if (!at_root && !in_check && depth < 6 && (eval - depth * 170) >= beta)
             return eval;
 
         if (!pv_node && !in_check && depth >= 4 && !at_root && do_null && position.should_do_null())
