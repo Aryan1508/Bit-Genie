@@ -353,7 +353,7 @@ namespace Search
                 return 0;
             }
         }
-        constexpr int window = 20;
+        constexpr int window = 12;
 
         SEARCH_ABORT = false;
         Move best_move = NullMove;
