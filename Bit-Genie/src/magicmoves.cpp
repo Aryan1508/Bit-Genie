@@ -218,9 +218,12 @@ void initmagicmoves(void)
     {
         int squares[64];
         int numsquares = 0;
-        U64 temp = magicmoves_b_mask[i];
+        uint64_t temp = magicmoves_b_mask[i];
         while (temp)
-            squares[numsquares++] = pop_lsb(temp);
+        {
+            Square sq = pop_lsb(temp);
+            squares[numsquares++] = sq;
+        }
 
         for (temp = 0; temp < (((U64)(1)) << numsquares); temp++)
         {
@@ -233,9 +236,12 @@ void initmagicmoves(void)
     {
         int squares[64];
         int numsquares = 0;
-        U64 temp = magicmoves_r_mask[i];
+        uint64_t temp = magicmoves_r_mask[i];
         while (temp)
-            squares[numsquares++] = pop_lsb(temp);
+        {
+            Square sq = pop_lsb(temp);
+            squares[numsquares++] = sq;
+        }
 
         for (temp = 0; temp < (((U64)(1)) << numsquares); temp++)
         {
