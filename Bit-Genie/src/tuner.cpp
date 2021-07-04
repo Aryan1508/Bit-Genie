@@ -450,7 +450,7 @@ void tune()
         }
 
         error = tune_evaluation_error(entries, params);
-        std::cout << "\rEpoch " << epoch << " Error " << error;
+        std::cout << "\rEpoch " << epoch << " Error " << std::fixed << std::setprecision(8) << error;
 
         if (epoch % 8 == 0) save_params(params, current_params);    
     }
