@@ -24,23 +24,6 @@ int16_t& get_history(HistoryTable table, Position const& position, Move move)
     return table[position.side][move_from(move)][move_to(move)];
 }
 
-int16_t& get_counter_history(CounterHistory table, Position const& position, Move move)
-{
-    Move prev_m = position.history.total > 0 ? position.history.previous().move : NullMove;
-
-    if (!prev_m) return table[0][0][0][0];
-
-    Piece pre_p = position.pieces.squares[move_to(prev_m)];
-    Piece cur_p = position.pieces.squares[move_from(move)];
-
-    return table[pre_p][0][cur_p][move_to(move)];
-}
-
-void counter_history_bonus(CounterHistory table, Position const& position, Move move, int depth)
-{
-    history_bonus(get_counter_history(table, position, move), depth * depth);
-}
-
 void history_bonus(int16_t& cur, int bonus) 
 {
     cur += 32 * bonus - cur * abs(bonus) / 512;
@@ -51,21 +34,16 @@ void history_bonus(HistoryTable table, Position const& position, Move move, int 
     history_bonus(get_history(table, position, move), depth * depth);
 }
 
-void update_history(HistoryTable table, CounterHistory ctable, Position const& position, Move good, Movelist const& other, int depth)
+void update_history(HistoryTable table, Position const& position, Move good, Movelist const& other, int depth)
 {
-    Move prev_m = position.history.total > 0 ? position.history.previous().move : NullMove;
     int bonus = depth * depth;
     
     history_bonus(table, position, good, depth);
-    counter_history_bonus(ctable, position, good, depth);
 
     for(auto move : other)
     {
         if (move_without_score(good) == move_without_score(move)) continue;
 
         history_bonus(get_history(table, position, move), -bonus);
-
-        if (prev_m)
-            history_bonus(get_counter_history(ctable, position, move), -bonus);
     }
 }

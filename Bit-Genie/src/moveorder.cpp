@@ -105,14 +105,7 @@ static void score_movelist(Movelist &movelist, Search::Info& search)
             set_move_score(move, score);
         }
         else
-        {
-            int score = 0;
-
-            score += get_history(search.history, position, move);
-            score += get_counter_history(search.counter_history, position, move);
-
-            set_move_score(move, score);
-        }
+            set_move_score(move, get_history(search.history, position, move));
     }
 }
 
