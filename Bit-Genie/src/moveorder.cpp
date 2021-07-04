@@ -60,7 +60,7 @@ static int16_t see(Position &position, Move move)
 
     bishops = rooks = position.pieces.bitboards[Queen];
     bishops |= position.pieces.bitboards[Bishop];
-    rooks |= position.pieces.bitboards[Rook];
+    rooks   |= position.pieces.bitboards[Rook];
 
     uint64_t attack_def = Attacks::attackers_to_sq(position, to);
     scores[index] = see_piece_vals[captured];
@@ -100,6 +100,9 @@ static void score_movelist(Movelist &movelist, Search::Info& search)
             int score = see(position, move);
 
             score += get_history(search.capture_history, position, move) / 128;
+
+            if (move_flag(move) == MoveFlag::promotion)
+                score += move_promoted(move) == PieceType::Queen ? 1000 : 300;
 
             set_move_score(move, score);
         }
