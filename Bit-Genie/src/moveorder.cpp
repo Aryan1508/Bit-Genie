@@ -183,7 +183,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GiveGoodNoisy)
     {
-        if (current != gen.movelist.end() && move_score(*current) > 0)
+        if (current != gen.movelist.end() && move_score(*current) >= 0)
         {
             move = *current++;
             bubble_top_move(current, gen.movelist.end());
