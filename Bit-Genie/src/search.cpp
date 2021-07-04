@@ -255,6 +255,12 @@ namespace
                     search.history.penalty(position, picker.gen.movelist, move, depth);
                     add_killer(search, move);
                 }
+                else 
+                {
+                    search.chistory.add(position, move, depth * depth);
+                    search.chistory.penalty(position, picker.gen.movelist, move, depth);
+                }
+
                 break;
             }
         }
