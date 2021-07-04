@@ -99,7 +99,7 @@ static void score_movelist(Movelist &movelist, Search::Info& search)
         {
             int score = see(position, move);
 
-            score += get_history(search.capture_history, position, move) / 128;
+            score += get_history(search.capture_history, position, move) / 64;
 
             set_move_score(move, score);
         }
