@@ -255,7 +255,7 @@ namespace
                     add_killer(search, move);
                 }
                 else 
-                    history_bonus(search.capture_history, position, move, depth);
+                    update_history(search.capture_history, position, move, picker.gen.movelist, depth);
 
                 break;
             }
