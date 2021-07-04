@@ -161,7 +161,7 @@ namespace
                (entry.flag == TEFlag::upper && entry.score <= alpha))
                {
                     if (!move_is_capture(position, move) && entry.score >= beta)
-                        search.history.add(position, move, depth * depth);
+                        history_bonus(search.history, position, move, depth);
                         
                     return { entry.score, move };
                }
@@ -213,7 +213,7 @@ namespace
                 R -= (picker.stage == MovePicker::Stage::Killer1 || picker.stage == MovePicker::Stage::Killer2);
 
                 if (picker.stage == MovePicker::Stage::GiveQuiet)
-                    R -= (search.history.get(position, move) / 14000);
+                    R -= (get_history(search.history, position, move) / 14000);
 
                 int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
                 score = -pvs(search, RDepth, -alpha - 1, -alpha).score;
@@ -251,12 +251,11 @@ namespace
             {
                 if (!move_is_capture(position, move))
                 {
-                    search.history.add(position, move, depth * depth);
-                    search.history.penalty(position, picker.gen.movelist, move, depth);
+                    update_history(search.history, position, move, picker.gen.movelist, depth);
                     add_killer(search, move);
                 }
                 else 
-                    search.chistory.add(position, move, depth * depth);
+                    history_bonus(search.capture_history, position, move, depth);
 
                 break;
             }
@@ -344,7 +343,7 @@ namespace Search
         }
     }
 
-    uint64_t bestmove(Info search, bool log)
+    uint64_t bestmove(Info& search, bool log)
     {
         Position& position = *search.position;
         if (PolyGlot::book.enabled)

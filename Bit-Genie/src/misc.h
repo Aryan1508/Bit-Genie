@@ -47,7 +47,6 @@ class Movelist;
 class PieceManager;
 class Position;
 class PositionHistory;
-class SHistory;
 class TTable;
 class ZobristKey;
 

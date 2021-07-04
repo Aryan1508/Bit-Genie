@@ -1,12 +1,22 @@
 #include "searchinit.h"
 
-void SearchInit::begin(Search::Info& search)
+SearchInit::SearchInit()
+{
+    search = new Search::Info;
+}
+
+SearchInit::~SearchInit()
+{
+    delete search;
+}
+
+void SearchInit::begin()
 {
     if (worker.joinable())
         end();
 
     using std::ref;
-    worker = std::thread(Search::bestmove, search, true);
+    worker = std::thread(Search::bestmove, ref(*search), true);
 }
 
 void SearchInit::end()

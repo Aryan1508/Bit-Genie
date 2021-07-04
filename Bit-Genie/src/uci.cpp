@@ -25,8 +25,9 @@
 #include "benchmark.h"
 #include "searchinit.h"
 #include "polyglot.h"
+#include <cstring>
 
-const char *version = "7.27";
+const char *version = "7.28";
 
 namespace
 {
@@ -83,7 +84,9 @@ namespace
     {
         UciGo options = parser.parse_go(position.side);
 
-        Search::Info search;
+        Search::Info& search = *worker.search;
+
+        search = Search::Info();
         search.position = &position;
         search.limits.stopwatch.go();
         search.limits.max_depth = std::min(options.depth, 64);
@@ -107,7 +110,7 @@ namespace
             search.limits.time_set = true;
         }
 
-        worker.begin(search);
+        worker.begin();
     }
 
     void uci_setposition(UciParser const &parser, Position &position)
