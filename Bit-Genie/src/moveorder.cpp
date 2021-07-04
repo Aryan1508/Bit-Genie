@@ -107,7 +107,14 @@ static void score_movelist(Movelist &movelist, Search::Info& search)
             set_move_score(move, score);
         }
         else
-            set_move_score(move, get_history(search.history, position, move));
+        {
+            int score = get_history(search.history, position, move);
+
+            if (move_flag(move) == MoveFlag::promotion)
+                score += 10000;
+
+            set_move_score(move, score);
+        }
     }
 }
 
