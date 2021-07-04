@@ -41,7 +41,7 @@ struct TPos
 {
     int16_t seval, phase, turn, ntuples;
     int     eval;
-    double  result, pfactors[2];
+    double  result, scale, pfactors[2];
     TTuple* tuples;
 };
 
