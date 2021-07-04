@@ -41,8 +41,8 @@ static bool lost_material(int16_t scores[16], int index)
 static int16_t see(Position &position, Move move)
 {
     static constexpr int see_piece_vals[]{
-        1500, 3500, 3750, 5500, 9500, 0,
-        1500, 3500, 3750, 5500, 9500, 0, 0
+        100, 300, 325, 500, 900, 1000,
+        100, 300, 325, 500, 900, 1000, 0
     };
 
     int16_t scores[32] = {0};
@@ -100,7 +100,7 @@ static void score_movelist(Movelist &movelist, Search::Info& search)
             int score = see(position, move);
 
             if (score > 0)
-                score += search.chistory.get(position, move);
+                score += search.chistory.get(position, move) / 128;
 
             set_move_score(move, score);
         }
