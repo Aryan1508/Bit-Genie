@@ -23,4 +23,5 @@ inline EvalTrace ET;
 #endif
 
 int get_phase(Position const &);
+int scale_factor(Position const&);
 int eval_position(Position const &);

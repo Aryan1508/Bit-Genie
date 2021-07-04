@@ -128,6 +128,7 @@ void init_tuner_entry(TPos* entry, Position* position)
 
     entry->eval = ET.eval;
     entry->turn = position->side;
+    entry->scale = scale_factor(*position) / 128.0f;
 }
 
 void init_tuner_entries(TPos* entries)
@@ -157,7 +158,7 @@ void init_tuner_entries(TPos* entries)
         init_tuner_entry(&entries[i++], &position);
     }
     
-    std::cout << "\nInitialized " << i << " entries successfully. (" << (sizeof(TPos) * i) / 1e+6 << " Mb)\n";
+    std::cout << "\nInitialized " << i << " entries successfully\n";
     fil.close();
 }
 
@@ -230,7 +231,7 @@ double linear_evaluation(TPos *entry, TVector params)
         endgame += (double) entry->tuples[i].coeff * params[entry->tuples[i].index][EG];
     }
 
-    double mixed = ((midgame * (256 - entry->phase)) + (endgame * entry->phase)) / 256;
+    double mixed = ((midgame * (256 - entry->phase)) + (endgame * entry->phase * entry->scale)) / 256;
 
     return mixed;
 }
@@ -250,7 +251,7 @@ void update_single_gradient(TPos *entry, TVector gradient, TVector params)
         auto coeff = entry->tuples[i].coeff;
 
         gradient[index][MG] += mg_base * coeff;
-        gradient[index][EG] += eg_base * coeff;
+        gradient[index][EG] += eg_base * coeff * entry->scale;
     }
 }
 

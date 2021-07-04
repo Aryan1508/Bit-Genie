@@ -21,6 +21,7 @@
 #include "attacks.h"
 #include "board.h"
 #include "evalscores.h"
+#include <math.h>
 #include <cstring>
 
 #ifdef TUNE 
@@ -29,12 +30,12 @@ constexpr int SIDE_SCALAR[] = {1, -1};
 #define TRACE_2(term, i) (ET.term[(i)] += SIDE_SCALAR[us])
 #define TRACE_3(term, i, j) (ET.term[(i)][(j)] += SIDE_SCALAR[us])
 #define TRACE_COUNT(term, count) (ET.term += SIDE_SCALAR[us] * (count))
-#define TRACE_EVAL(score) (ET.eval = score)
+#define TRACE_VAL(term, value) (ET.term = (value))
 #else 
 #define TRACE_1(term) 
 #define TRACE_2(term, i) 
 #define TRACE_3(term, i, j) 
-#define TRACE_EVAL(score) 
+#define TRACE_VAL(term, value)
 #define TRACE_COUNT(term, count) 
 #endif 
 
@@ -395,7 +396,35 @@ static inline int evaluate_control(EvalData& data)
 static inline int scale_score(Position const &position, int score)
 {
     int phase = get_phase(position);
-    return ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase)) / 256;
+    int scale = scale_factor(position);
+
+    return ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase * (scale / 128.0f))) / 256;
+}
+
+static inline int is_ocb(Position const& position)
+{
+    constexpr uint64_t dark_squares = 0xAA55AA55AA55AA55;
+
+    uint64_t rooks   = position.pieces.bitboards[Rook];
+    uint64_t knights = position.pieces.bitboards[Knight];
+    uint64_t queens  = position.pieces.bitboards[Queen];
+    uint64_t bishopw = position.pieces.get_piece_bb<Bishop>(White);
+    uint64_t bishopb = position.pieces.get_piece_bb<Bishop>(Black);
+    uint64_t bishops = bishopw | bishopb;
+
+    if (rooks || knights || queens) return false;
+
+    return popcount64(bishopw) == 1 
+        && popcount64(bishopb) == 1 
+        && popcount64(bishops & dark_squares) == 1;
+}
+
+int scale_factor(Position const& position)
+{
+    if (is_ocb(position))
+        return 64;
+
+    return 128;
 }
 
 int eval_position(Position const &position)
@@ -418,7 +447,7 @@ int eval_position(Position const &position)
     score += evaluate_control<White>(data);
     score -= evaluate_control<Black>(data);
 
-    TRACE_EVAL(score);
+    TRACE_VAL(eval, score);
 
     score = scale_score(position, score);
 
