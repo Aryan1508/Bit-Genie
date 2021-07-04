@@ -396,7 +396,7 @@ static inline int evaluate_control(EvalData& data)
 static inline int scale_score(Position const &position, int score)
 {
     int phase = get_phase(position);
-    int scale = scale_factor(position);
+    int scale = scale_factor(position, score);
 
     return ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase * (scale / 128.0f))) / 256;
 }
@@ -419,12 +419,17 @@ static inline int is_ocb(Position const& position)
         && popcount64(bishops & dark_squares) == 1;
 }
 
-int scale_factor(Position const& position)
+int scale_factor(Position const& position, int eval)
 {
     if (is_ocb(position))
         return 64;
 
-    return 128;
+    Color stronger = eval > 0 ? White : Black;
+
+    uint64_t pawns = position.pieces.get_piece_bb<Pawn>(stronger);
+    int count =  8 - popcount64(pawns);
+
+    return 128 - count * count;
 }
 
 int eval_position(Position const &position)

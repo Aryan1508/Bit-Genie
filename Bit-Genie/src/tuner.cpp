@@ -128,7 +128,7 @@ void init_tuner_entry(TPos* entry, Position* position)
 
     entry->eval = ET.eval;
     entry->turn = position->side;
-    entry->scale = scale_factor(*position) / 128.0f;
+    entry->scale = scale_factor(*position, entry->seval) / 128.0f;
 }
 
 void init_tuner_entries(TPos* entries)
