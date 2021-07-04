@@ -51,16 +51,21 @@ void history_bonus(HistoryTable table, Position const& position, Move move, int 
     history_bonus(get_history(table, position, move), depth * depth);
 }
 
-void update_history(HistoryTable table, Position const& position, Move good, Movelist const& other, int depth)
+void update_history(HistoryTable table, CounterHistory ctable, Position const& position, Move good, Movelist const& other, int depth)
 {
+    Move prev_m = position.history.total > 0 ? position.history.previous().move : NullMove;
     int bonus = depth * depth;
     
     history_bonus(table, position, good, depth);
+    counter_history_bonus(ctable, position, good, depth);
 
     for(auto move : other)
     {
         if (move_without_score(good) == move_without_score(move)) continue;
 
         history_bonus(get_history(table, position, move), -bonus);
+
+        if (prev_m)
+            history_bonus(get_counter_history(ctable, position, move), -bonus);
     }
 }

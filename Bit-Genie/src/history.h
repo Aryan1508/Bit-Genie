@@ -27,4 +27,4 @@ int16_t& get_counter_history(CounterHistory, Position const&, Move);
 void history_bonus(int16_t& cur, int bonus);
 void history_bonus(HistoryTable, Position const&, Move, int);
 void counter_history_bonus(CounterHistory, Position const&, Move, int);
-void update_history(HistoryTable, Position const&, Move, Movelist const& other, int depth);
+void update_history(HistoryTable, CounterHistory, Position const&, Move, Movelist const& other, int depth);

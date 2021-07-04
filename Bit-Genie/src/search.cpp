@@ -251,8 +251,7 @@ namespace
             {
                 if (!move_is_capture(position, move))
                 {
-                    update_history(search.history, position, move, picker.gen.movelist, depth);
-                    counter_history_bonus(search.counter_history, position, move, depth);
+                    update_history(search.history, search.counter_history, position, move, picker.gen.movelist, depth);
                     add_killer(search, move);
                 }
                 else 
