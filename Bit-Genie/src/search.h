@@ -30,14 +30,15 @@ namespace Search
         Stats      stats;
         Limits     limits;
         Move       killers[64][2] = {NullMove};
-        HistoryTable    history = {NullMove};
-        HistoryTable   chistory = {NullMove};    
+        HistoryTable    history = {0};
+        HistoryTable   capture_history = {0};   
+        CounterHistory counter_history = {0}; 
 
         void update();
     };
 
     void init();
-    uint64_t bestmove(Info, bool log);
+    uint64_t bestmove(Info&, bool log);
 }
 
 extern std::atomic_bool SEARCH_ABORT;

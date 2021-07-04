@@ -24,6 +24,23 @@ int16_t& get_history(HistoryTable table, Position const& position, Move move)
     return table[position.side][move_from(move)][move_to(move)];
 }
 
+int16_t& get_counter_history(CounterHistory table, Position const& position, Move move)
+{
+    Move prev_m = position.history.total > 0 ? position.history.previous().move : NullMove;
+
+    if (!prev_m) return table[0][0][0][0];
+
+    Piece pre_p = position.pieces.squares[move_to(prev_m)];
+    Piece cur_p = position.pieces.squares[move_from(move)];
+
+    return table[pre_p][0][cur_p][move_to(move)];
+}
+
+void counter_history_bonus(CounterHistory table, Position const& position, Move move, int depth)
+{
+    history_bonus(get_counter_history(table, position, move), depth * depth);
+}
+
 void history_bonus(int16_t& cur, int bonus) 
 {
     cur += 32 * bonus - cur * abs(bonus) / 512;

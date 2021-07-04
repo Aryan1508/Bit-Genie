@@ -23,15 +23,17 @@
 class SearchInit
 {
 public:
-    SearchInit() = default;
-
-    void begin(Search::Info&);
+    SearchInit();
+    ~SearchInit();
+    
+    void begin();
     void end();
     bool is_searching() const noexcept
     {
         return worker.joinable();
     }
 
+    Search::Info *search;
 private:
     std::thread worker;
 };

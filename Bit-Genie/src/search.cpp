@@ -252,10 +252,11 @@ namespace
                 if (!move_is_capture(position, move))
                 {
                     update_history(search.history, position, move, picker.gen.movelist, depth);
+                    counter_history_bonus(search.counter_history, position, move, depth);
                     add_killer(search, move);
                 }
                 else 
-                    history_bonus(search.chistory, position, move, depth);
+                    history_bonus(search.capture_history, position, move, depth);
 
                 break;
             }
@@ -343,7 +344,7 @@ namespace Search
         }
     }
 
-    uint64_t bestmove(Info search, bool log)
+    uint64_t bestmove(Info& search, bool log)
     {
         Position& position = *search.position;
         if (PolyGlot::book.enabled)
