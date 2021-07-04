@@ -30,6 +30,7 @@ namespace Search
         Limits     limits;
         Move       killers[64][2] = {NullMove};
         SHistory   history;
+        SHistory   chistory;
 
         void update();
     };
