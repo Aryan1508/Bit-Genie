@@ -114,25 +114,25 @@ static Move decode_move(Position const& position, uint16_t move)
     if (type_of(moving) == PieceType::King)
     {
         if (from == E1 && to == H1)
-            return CreateMove(E1, G1, MoveFlag::castle, 1);
+            return Move(E1, G1, MoveFlag::castle);
 
         if (from == E1 && to == A1)
-            return CreateMove(E1, C1, MoveFlag::castle, 1);
+            return Move(E1, C1, MoveFlag::castle);
 
         if (from == E8 && to == H8)
-            return CreateMove(E8, G8, MoveFlag::castle, 1);
+            return Move(E8, G8, MoveFlag::castle);
 
         if (from == E8 && to == A8)
-            return CreateMove(E8, C8, MoveFlag::castle, 1);
+            return Move(E8, C8, MoveFlag::castle);
     }
 
     if (type_of(moving) == PieceType::Pawn && rank_of(from, position.side) == Rank::seven)
-        return CreateMove(from, to, MoveFlag::promotion, promoted - 1);
+        return Move(from, to, PieceType(promoted - 1));
 
     if (type_of(moving) == PieceType::Pawn && to == position.ep_sq)
-        return CreateMove(from, to, MoveFlag::enpassant, 1);
+        return Move(from, to, MoveFlag::enpassant);
 
-    return CreateMove(from, to, MoveFlag::normal, 1);
+    return Move(from, to);
 }
 
 

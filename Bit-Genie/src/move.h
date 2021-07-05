@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "Square.h"
 #include <string>
 
 enum class MoveFlag : uint8_t
@@ -31,6 +31,24 @@ struct Move
 {
     uint16_t data;
     int16_t score;
+
+    Move() = default;
+
+    explicit constexpr Move(uint16_t val)
+        : data(val), score(0)
+    {}
+
+    constexpr Move(Square from, Square to)
+        : data(from | (to << 6)), score(0)
+    {}
+
+    constexpr Move(Square from, Square to, MoveFlag flag)
+        : data(from | (to << 6) | ((uint8_t)flag << 12)), score(0)
+    {}
+
+    constexpr Move(Square from, Square to, PieceType promoted)
+        : data(0x3000 | from | (to << 6) | ((promoted - 1) << 14)), score(0)
+    {}
 
     bool operator<(Move rhs) const noexcept 
     {
@@ -85,11 +103,8 @@ struct Move
     friend std::ostream& operator<<(std::ostream& o, Move);
 };
 
-constexpr Move NullMove = Move{ 0,  0};
+static_assert(std::is_trivial<Move>::value);
 
-constexpr Move CreateMove(Square from, Square to, MoveFlag type, uint8_t promoted)
-{
-    return { uint16_t(from | (to << 6) | (to_int(type) << 12) | ((promoted - 1) << 14)), 0 };
-}
+constexpr Move NullMove = Move(Square::A1, Square::A1);
 
 bool move_is_capture(Position const &, Move);

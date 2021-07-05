@@ -155,7 +155,7 @@ namespace
 
         if (entry.depth >= depth && tthit)
         {
-            Move move = Move{ entry.move, 0 };
+            Move move = Move(entry.move);
             if (entry.flag == TEFlag::exact || 
                (entry.flag == TEFlag::lower && entry.score >= beta) || 
                (entry.flag == TEFlag::upper && entry.score <= alpha))

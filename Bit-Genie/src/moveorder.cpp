@@ -172,7 +172,7 @@ bool MovePicker::next(Move &move)
         stage = Stage::GenNoisy;
         auto& entry = TT.retrieve(position);
         
-        Move hmove = Move{ entry.move, 0 };
+        Move hmove = Move(entry.move);
 
         if (entry.hash == position.key.data() && can_move(hmove))
         {
