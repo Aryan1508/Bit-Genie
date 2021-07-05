@@ -53,6 +53,7 @@ void init_coeffs(TCoeffs coeffs)
     coeffs[c++] = ET.isolated;
     coeffs[c++] = ET.passed_connected;
     coeffs[c++] = ET.passed_tempo;
+    for(int i = 0;i < 8;i++)  coeffs[c++] = ET.phalanx[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Pawn][i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.passed[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.passer_blocked[i];
@@ -178,6 +179,7 @@ void init_base_params(TVector params)
     init_param(params[c++], PawnEval::isolated);
     init_param(params[c++], PawnEval::passed_connected);
     init_param(params[c++], PawnEval::passed_tempo);
+    for(int i = 0;i < 8;i++)  init_param(params[c++], PawnEval::phalanx[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::psqt[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passed[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passer_blocked[i]);
@@ -359,6 +361,7 @@ void save_params(TVector params, TVector current_params)
     print_single(tparams, "isolated", fil, c);
     print_single(tparams, "passed_connected", fil, c);
     print_single(tparams, "passed_tempo", fil, c);
+    print_array(tparams, 8 , "phalanx", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     print_array(tparams, 64, "passed", fil, c);
     print_array(tparams, 64, "passer_blocked", fil, c);
@@ -421,7 +424,7 @@ void tune()
 {
     TVector current_params = {0};   
     TVector params = {0}, momentum = {0}, velocity = {0};  
-    double error, rate = 0.01;
+    double error, rate = 0.1;
 
     TPos* entries = (TPos*)calloc(NPOSITIONS, sizeof(TPos));  
 
@@ -429,6 +432,7 @@ void tune()
     init_base_params(current_params);
     save_params(current_params, params);
 
+    std::cout  << " Error " << std::fixed << std::setprecision(9) << tune_evaluation_error(entries, params) << '\n';
     for (int epoch = 1; epoch <= 10000; epoch++) 
     {
         TVector gradient = {0};
@@ -450,7 +454,7 @@ void tune()
         }
 
         error = tune_evaluation_error(entries, params);
-        std::cout << "\rEpoch " << epoch << " Error " << std::fixed << std::setprecision(8) << error;
+        std::cout << "\rEpoch " << epoch << " Error " << std::fixed << std::setprecision(9) << error;
 
         if (epoch % 8 == 0) save_params(params, current_params);    
     }

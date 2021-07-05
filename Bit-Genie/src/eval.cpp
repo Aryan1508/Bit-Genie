@@ -339,6 +339,26 @@ static int evaluate_piece(Position const &position, EvalData &data, Callable F)
     return score;
 }
 
+template<Color us>
+static int evaluate_pawn_structure(Position const& position)
+{
+    int score = 0;
+
+    uint64_t pawns = position.pieces.get_piece_bb<Pawn>(us);
+
+    uint64_t phalanx_pawns = shift<Direction::east>(pawns) & pawns;
+    while (phalanx_pawns)
+    {
+        Square sq = pop_lsb(phalanx_pawns);
+        int r = (int)rank_of(sq, us);
+
+        score += PawnEval::phalanx[r];
+        TRACE_2(phalanx, r);
+    }
+
+    return score;
+}
+
 int get_phase(Position const &position)
 {
     constexpr int rook_phase = 2;
@@ -451,6 +471,9 @@ int eval_position(Position const &position)
 
     score += evaluate_control<White>(data);
     score -= evaluate_control<Black>(data);
+
+    score += evaluate_pawn_structure<White>(position);
+    score -= evaluate_pawn_structure<Black>(position);
 
     TRACE_VAL(eval, score);
 
