@@ -21,55 +21,42 @@
 
 namespace Attacks
 {
-    // Initializes magic bitboard arrays. Should be called before
-    // using Attacks::bishop / Attacks::rook
     inline void init()
     {
         initmagicmoves();
     }
 
-    // Return a bitboard of the knight attacks for a
-    // knight situated on the given square
+    inline uint64_t pawn(uint64_t pawns, Color side)
+    {
+        uint64_t forward = side == White ? shift<Direction::north>(pawns) : shift<Direction::south>(pawns);
+        return shift<Direction::west>(forward) | shift<Direction::east>(forward);
+    }
+
     inline uint64_t knight(Square sq)
     {
         return BitMask::knight_attacks[sq];
     }
 
-    // Return a bitboard of the king attacks for a
-    // king situated on the given square
     inline uint64_t king(Square sq)
     {
         return BitMask::king_attacks[sq];
     }
 
-    // Return a bitboard of the bishop attacks for a
-    // bishop situated on the given square
-    // Diagonal and anti-diagonal attacks with respect to the current occupancy
     inline uint64_t bishop(Square sq, uint64_t occ)
     {
         return Bmagic(sq, occ);
     }
 
-    // Return a bitboard of the rook attacks for a
-    // rook situated on the given square
-    // Vertical (file) and horizontal(rank) attacks with respect to the current occupancy
     inline uint64_t rook(Square sq, uint64_t occ)
     {
         return Rmagic(sq, occ);
     }
 
-    // Return a bitboard of the queen attacks for a
-    // queen situated on the given square
-
-    // Diagonal and anti-diagonal attacks with respect to the current occupancy
-    // Vertical (file) and horizontal(rank) attacks with respect to the current occupancy
     inline uint64_t queen(Square sq, uint64_t occ)
     {
         return Qmagic(sq, occ);
     }
 
-    // Check whether the given square is directly attacked by any of the given color's
-    //pieces in the position.
     inline bool square_attacked(Position const &position, Square sq, Color enemy, uint64_t occupancy)
     {
         assert(is_ok(sq));
@@ -86,8 +73,6 @@ namespace Attacks
         return (BitMask::pawn_attacks[!enemy][sq] & pawns) || (bishop(sq, occupancy) & bishops) || (rook(sq, occupancy) & rooks) || (knight(sq) & knights) || (king(sq) & kings);
     }
 
-    // Return a bitboard of all the attackers to the given square, both black and white pieces
-    // are included.
     inline uint64_t attackers_to_sq(Position const &position, Square sq)
     {
         uint64_t occ = position.total_occupancy();
@@ -105,7 +90,6 @@ namespace Attacks
         return square_attacked(position, sq, enemy, position.total_occupancy());
     }
 
-    // Check for the piece and generate (no pawns)
     inline uint64_t generate(PieceType piece, Square sq, uint64_t occ)
     {
         switch (piece)
