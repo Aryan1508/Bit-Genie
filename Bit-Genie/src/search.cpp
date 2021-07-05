@@ -160,8 +160,8 @@ namespace
                (entry.flag == TEFlag::lower && entry.score >= beta) || 
                (entry.flag == TEFlag::upper && entry.score <= alpha))
                {
-                    if (!move_is_capture(position, move) && entry.score >= beta)
-                        history_bonus(search.history, position, move, depth);
+                    auto& table = move_is_capture(position, move) ? search.capture_history : search.history;
+                    history_bonus(table, position, move, depth);
                         
                     return { entry.score, move };
                }
