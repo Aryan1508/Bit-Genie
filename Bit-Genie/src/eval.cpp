@@ -363,6 +363,7 @@ int get_phase(Position const &position)
 static int evaluate_king(Position const &position, EvalData &data, Square sq, Color us)
 {
     Square relative_sq = psqt_sq(sq, us);
+    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
 
     int score = KingEval::psqt[relative_sq];    
     TRACE_3(psqt, King, relative_sq);
@@ -381,6 +382,10 @@ static int evaluate_king(Position const &position, EvalData &data, Square sq, Co
         score += KingEval::safety_table[weight];
         TRACE_2(safety_table, weight);
     }
+
+    int shield_pawn_count = popcount64(friend_pawns & BitMask::pawn_shield[us][sq]);
+    score += KingEval::pawn_shield[shield_pawn_count];
+    TRACE_2(pawn_shield, shield_pawn_count);
 
     return score;
 }

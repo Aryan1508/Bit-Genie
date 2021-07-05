@@ -76,7 +76,7 @@ void init_coeffs(TCoeffs coeffs)
     for(int i = 0;i < 28;i++) coeffs[c++] = QueenEval::mobility[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Queen][i];
 
-
+    for(int i = 0;i <  4;i++) coeffs[c++] = ET.pawn_shield[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[King][i];
     for(int i = 0;i < 100;i++) coeffs[c++] = ET.safety_table[i];
 
@@ -207,6 +207,7 @@ void init_base_params(TVector params)
     for(int i = 0;i < 64;i++) init_param(params[c++], QueenEval::psqt[i]);
 
     // King eval
+    for(int i = 0;i <  4;i++) init_param(params[c++], KingEval::pawn_shield[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], KingEval::psqt[i]);
     for(int i = 0;i < 100;i++) init_param(params[c++], KingEval::safety_table[i]);
 
@@ -394,6 +395,7 @@ void save_params(TVector params, TVector current_params)
     fil << "}\n";
 
     fil << "\nnamespace KingEval\n{";
+    print_array(tparams, 4, "pawn_shield", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     print_array(tparams, 100, "safety_table", fil, c);
 
@@ -424,7 +426,7 @@ void tune()
 {
     TVector current_params = {0};   
     TVector params = {0}, momentum = {0}, velocity = {0};  
-    double error, rate = 0.01;
+    double error, rate = 0.1;
 
     TPos* entries = (TPos*)calloc(NPOSITIONS, sizeof(TPos));  
 

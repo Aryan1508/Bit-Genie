@@ -26,6 +26,7 @@ struct EvalTrace
     int passed[64];
     int passer_blocked[64];
     int material[5];
+    int pawn_shield[4];
     int stacked;
     int isolated;
     int passed_connected;
