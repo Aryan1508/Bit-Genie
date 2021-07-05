@@ -155,7 +155,7 @@ namespace
 
         if (entry.depth >= depth && tthit)
         {
-            Move move = Move(entry.move);
+            Move move = Move{ entry.move, 0 };
             if (entry.flag == TEFlag::exact || 
                (entry.flag == TEFlag::lower && entry.score >= beta) || 
                (entry.flag == TEFlag::upper && entry.score <= alpha))
@@ -349,7 +349,7 @@ namespace Search
         if (PolyGlot::book.enabled)
         {
             Move bookmove = PolyGlot::book.probe(position);
-            if (bookmove)
+            if (bookmove.data)
             {
                 std::cout << "bestmove " << print_move(bookmove) << std::endl;
                 return 0;

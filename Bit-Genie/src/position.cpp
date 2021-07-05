@@ -257,7 +257,7 @@ void Position::perft(int depth, uint64_t &nodes, bool root)
 
 bool Position::move_is_legal(Move move)
 {
-    if (!move)
+    if (move.data == 0)
         return false;
 
     Square from = move_from(move);

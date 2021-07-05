@@ -58,11 +58,12 @@ std::vector<Move> TTable::extract_pv(Position& position, int depth)
 
     while (entry->hash == position.key.data() && depth != 0)
     {
-        if (position.move_exists((Move)entry->move))
+        Move pv_move = Move{ entry->move, 0 };
+        if (position.move_exists(pv_move))
         {
             distance++;
-            position.apply_move((Move)entry->move);
-            pv.push_back((Move)entry->move);
+            position.apply_move(pv_move);
+            pv.push_back(pv_move);
             depth--;
         }
         else
