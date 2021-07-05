@@ -419,6 +419,20 @@ static inline int is_ocb(Position const& position)
         && popcount64(bishops & dark_squares) == 1;
 }
 
+template<Color us>
+static int evaluate_pawn_structure(Position const& position)
+{
+    int score = 0;
+
+    uint64_t pawns = position.pieces.get_piece_bb<Pawn>(us);
+
+    int supported = popcount64(pawns & Attacks::pawn(pawns, !us));
+    score += supported * PawnEval::support;
+    TRACE_COUNT(support, supported);
+   
+    return score;
+}
+
 int scale_factor(Position const& position, int eval)
 {
     if (is_ocb(position))
@@ -450,7 +464,10 @@ int eval_position(Position const &position)
     score += evaluate_piece<King  >(position, data, evaluate_king);
 
     score += evaluate_control<White>(data);
-    score -= evaluate_control<Black>(data);
+    score -= evaluate_control<Black>(data); 
+
+    score += evaluate_pawn_structure<White>(position);
+    score -= evaluate_pawn_structure<Black>(position);
 
     TRACE_VAL(eval, score);
 
