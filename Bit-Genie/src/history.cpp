@@ -21,7 +21,7 @@
 
 int16_t& get_history(HistoryTable table, Position const& position, Move move)
 {
-    return table[position.side][move_from(move)][move_to(move)];
+    return table[position.side][move.from()][move.to()];
 }
 
 void history_bonus(int16_t& cur, int bonus) 
@@ -42,7 +42,7 @@ void update_history(HistoryTable table, Position const& position, Move good, Mov
 
     for(auto move : other)
     {
-        if (move_without_score(good) == move_without_score(move)) continue;
+        if (move == good) continue;
 
         history_bonus(get_history(table, position, move), -bonus);
     }

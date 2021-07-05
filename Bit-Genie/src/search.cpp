@@ -88,7 +88,7 @@ namespace
 
         for (Move move; picker.qnext(move);)
         {
-            if (move_score(move) + 300 < alpha)
+            if (move.score + 300 < alpha)
                 break;
 
             position.apply_move(move, search.stats.ply);
@@ -195,7 +195,7 @@ namespace
             if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > depth * depth * 2 + 2)
                 break;
 
-            if (depth < 5 && move_is_capture(position, move) && move_score(move) < see_pruning_margins[depth])
+            if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
                 continue;
 
             move_num++;
@@ -315,7 +315,7 @@ namespace
 
         for (auto m : TT.extract_pv(*search.position, depth))
         {
-            std::cout << print_move(m) << ' ';
+            std::cout << m << ' ';
         }
 
         std::cout << std::endl;
@@ -351,7 +351,7 @@ namespace Search
             Move bookmove = PolyGlot::book.probe(position);
             if (bookmove.data)
             {
-                std::cout << "bestmove " << print_move(bookmove) << std::endl;
+                std::cout << "bestmove " << bookmove << std::endl;
                 return 0;
             }
         }
@@ -399,7 +399,7 @@ namespace Search
         conc:
 
         if (log)    
-            std::cout << "bestmove " << print_move(best_move) << std::endl;
+            std::cout << "bestmove " << best_move << std::endl;
 
         return search.stats.total_nodes;
     }

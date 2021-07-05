@@ -40,7 +40,7 @@ struct TEntry
     TEntry() = default;
 
     TEntry(uint64_t h, int16_t s, Move m, uint8_t d, TEFlag fl, int16_t eval)
-        : hash(h), score(s), seval(eval), move(move_without_score(m)), depth(d), flag(fl)
+        : hash(h), score(s), seval(eval), move(m.data), depth(d), flag(fl)
     {
     }
 };

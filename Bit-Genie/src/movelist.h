@@ -18,6 +18,7 @@
 #pragma once
 #include "position.h"
 #include <array>
+#include <algorithm>
 
 class Movelist
 {
@@ -76,12 +77,7 @@ public:
 
     bool find(Move move)
     {
-        for (auto m : *this)
-        {
-            if (move_without_score(m) == move_without_score(move))
-                return true;
-        }
-        return false;
+        return std::find(begin(), end(), move) != end();
     }
 
 private:

@@ -23,7 +23,7 @@
 #include "movegen.h"
 #include <vector>
 #include <algorithm>
-
+#include <sstream>
 Position::Position()
 {
     set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -155,9 +155,9 @@ Piece Position::apply_enpassant(Move move)
 {
     reset_halfmoves();
 
-    Square from = move_from(move);
-    Square to = move_to(move);
-    Square ep = to_sq(to_int(move_to(move)) ^ 8);
+    Square from = move.from();
+    Square to = move.to();
+    Square ep = to_sq(to_int(move.to()) ^ 8);
 
     Piece from_pce = pieces.squares[from];
     Piece captured = pieces.squares[ep];
@@ -181,8 +181,8 @@ Piece Position::apply_enpassant(Move move)
 
 void Position::revert_normal_move(Move move, Piece captured)
 {
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
 
     Piece from_pce = pieces.squares[to];
 
@@ -201,10 +201,10 @@ void Position::revert_normal_move(Move move, Piece captured)
 
 void Position::revert_enpassant(Move move, Piece captured)
 {
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
 
-    Square ep = to_sq(to_int(move_to(move)) ^ 8);
+    Square ep = to_sq(to_int(move.to()) ^ 8);
     uint64_t ep_bb = 1ull << to_int(ep);
     Piece from_pce = pieces.squares[to];
 
@@ -251,7 +251,7 @@ void Position::perft(int depth, uint64_t &nodes, bool root)
         revert_move();
 
         if (root)
-            std::cout << print_move(m) << ": " << nodes - old << std::endl;
+            std::cout << m << ": " << nodes - old << std::endl;
     }
 }
 
@@ -260,10 +260,10 @@ bool Position::move_is_legal(Move move)
     if (move.data == 0)
         return false;
 
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
 
-    if (move_flag(move) == MoveFlag::normal || move_flag(move) == MoveFlag::promotion)
+    if (move.flag() == MoveFlag::normal || move.flag() == MoveFlag::promotion)
     {
         if (pieces.squares[from] == wKing || pieces.squares[from] == bKing) // Normal king moves
         {
@@ -299,7 +299,7 @@ bool Position::move_is_legal(Move move)
         }
     }
 
-    else if (move_flag(move) == MoveFlag::castle)
+    else if (move.flag() == MoveFlag::castle)
     {
         return !Attacks::square_attacked(*this, to, !side);
     }
@@ -330,8 +330,8 @@ bool Position::move_is_legal(Move move)
 Piece Position::apply_castle(Move move)
 {
     auto old_castle = castle_rights;
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
     Square rook_from = bad_sq, rook_to = bad_sq;
     Color col = White;
 
@@ -392,8 +392,8 @@ Piece Position::apply_castle(Move move)
 
 void Position::revert_castle(Move move)
 {
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
     Square rook_from = bad_sq, rook_to = bad_sq;
     Color col = White;
 
@@ -445,8 +445,8 @@ void Position::revert_castle(Move move)
 Piece Position::apply_normal_move(Move move)
 {
     CastleRights old_castle = castle_rights;
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
     Piece from_pce = pieces.squares[from];
 
     PieceType from_pce_t = type_of(from_pce);
@@ -491,14 +491,14 @@ Piece Position::apply_promotion(Move move)
     reset_halfmoves();
 
     CastleRights old_castle = castle_rights;
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
     Piece from_pce = pieces.squares[from];
 
     PieceType from_pce_t = type_of(from_pce);
     Color from_pce_c = color_of(from_pce);
 
-    PieceType prom_pce = move_promoted(move);
+    PieceType prom_pce = move.promoted();
 
     Piece captured = pieces.squares[to];
 
@@ -527,8 +527,8 @@ Piece Position::apply_promotion(Move move)
 
 void Position::revert_promotion(Move move, Piece captured)
 {
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
 
     Piece original = make_piece(PieceType::Pawn, !side);
     Piece prom_pce = pieces.squares[to];
@@ -558,7 +558,7 @@ void Position::apply_move(Move move)
     reset_ep();
     half_moves++;
 
-    MoveFlag type = move_flag(move);
+    MoveFlag type = move.flag();
 
     if (type == MoveFlag::normal)
         undo.captured = apply_normal_move(move);
@@ -582,7 +582,7 @@ void Position::revert_move()
 
     restore(move, captured);
 
-    MoveFlag type = move_flag(move);
+    MoveFlag type = move.flag();
 
     if (type == MoveFlag::normal)
         revert_normal_move(move, captured);
@@ -606,7 +606,9 @@ bool Position::apply_move(std::string const &move)
 
     for (Move m : gen.movelist)
     {
-        if (print_move(m) == move)
+        std::stringstream s;
+        s << m;
+        if (s.str() == move)
         {
             apply_move(m);
             return true;
@@ -631,12 +633,12 @@ bool Position::move_exists(Move move)
 
 bool Position::move_is_pseudolegal(Move move)
 {
-    if (!move_without_score(move))
+    if (!move.data)
         return false;
 
-    Square from = move_from(move);
-    Square to = move_to(move);
-    MoveFlag flag = move_flag(move);
+    Square from = move.from();
+    Square to = move.to();
+    MoveFlag flag = move.flag();
     Piece moving = pieces.squares[from];
     Piece captured = pieces.squares[to];
 

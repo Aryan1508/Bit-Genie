@@ -31,6 +31,58 @@ struct Move
 {
     uint16_t data;
     int16_t score;
+
+    bool operator<(Move rhs) const noexcept 
+    {
+        return score < rhs.score;
+    }
+
+    bool operator<=(Move rhs) const noexcept 
+    {
+        return score <= rhs.score;
+    }
+
+    bool operator>(Move rhs) const noexcept 
+    {
+        return score > rhs.score;
+    }
+
+    bool operator>=(Move rhs) const noexcept 
+    {
+        return score >= rhs.score;
+    }
+
+    bool operator==(Move rhs) const noexcept 
+    {
+        return data == rhs.data;
+    }
+
+    bool operator!=(Move rhs) const noexcept 
+    {
+        return data != rhs.data;
+    }
+
+    Square from() const noexcept 
+    {
+        return static_cast<Square>(data & 0x3f);   
+    }
+
+    Square to() const noexcept 
+    {
+        return static_cast<Square>((data >> 6) & 0x3f);
+    }
+
+    MoveFlag flag() const noexcept 
+    {
+        return static_cast<MoveFlag>((data >> 12) & 0x3);
+    }
+    
+    PieceType promoted() const noexcept
+    {
+        return static_cast<PieceType>(((data >> 14) & 0x3) + 1);
+    }
+    
+    friend std::ostream& operator<<(std::ostream& o, Move);
 };
 
 constexpr Move NullMove = Move{ 0,  0};
@@ -40,40 +92,4 @@ constexpr Move CreateMove(Square from, Square to, MoveFlag type, uint8_t promote
     return { uint16_t(from | (to << 6) | (to_int(type) << 12) | ((promoted - 1) << 14)), 0 };
 }
 
-inline int16_t move_score(Move move)
-{
-    return move.score;
-}
-
-constexpr uint16_t move_without_score(Move move)
-{
-    return move.data;
-}
-
-constexpr Square move_from(Move move)
-{
-    return static_cast<Square>(move.data & 0x3f);
-}
-
-constexpr Square move_to(Move move)
-{
-    return static_cast<Square>((move.data >> 6) & 0x3f);
-}
-
-constexpr MoveFlag move_flag(Move move)
-{
-    return static_cast<MoveFlag>((move.data >> 12) & 0x3);
-}
-
-constexpr PieceType move_promoted(Move move)
-{
-    return static_cast<PieceType>(((move.data >> 14) & 0x3) + 1);
-}
-
-inline void set_move_score(Move &move, int16_t score)
-{
-    move.score = score;
-}
-
-bool move_is_capture(Position const &positio, Move);
-std::string print_move(Move);
+bool move_is_capture(Position const &, Move);
