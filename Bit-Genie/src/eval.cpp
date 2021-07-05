@@ -159,6 +159,12 @@ static bool pawn_is_stacked(uint64_t friend_pawns, Square sq)
     return (shift<Direction::north>(sq_bb) & friend_pawns) | (shift<Direction::south>(sq_bb) & friend_pawns);
 }
 
+static uint64_t get_shield_mask(Square sq, Color side)
+{   
+    uint64_t forward = side == White ? shift<Direction::north>(1ull << sq) : shift<Direction::south>(1ull << sq);
+    return forward | shift<Direction::west>(forward) | shift<Direction::east>(forward);
+}
+
 static Square psqt_sq(Square sq, Color color)
 {
     return color == White ? flip_square(sq) : sq;
@@ -363,6 +369,7 @@ int get_phase(Position const &position)
 static int evaluate_king(Position const &position, EvalData &data, Square sq, Color us)
 {
     Square relative_sq = psqt_sq(sq, us);
+    uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
 
     int score = KingEval::psqt[relative_sq];    
     TRACE_3(psqt, King, relative_sq);
@@ -381,6 +388,10 @@ static int evaluate_king(Position const &position, EvalData &data, Square sq, Co
         score += KingEval::safety_table[weight];
         TRACE_2(safety_table, weight);
     }
+
+    int shield_pawn_count = popcount64(friend_pawns & get_shield_mask(sq, us));
+    score += KingEval::pawn_shield[shield_pawn_count];
+    TRACE_2(pawn_shield, shield_pawn_count);
 
     return score;
 }
