@@ -72,7 +72,7 @@ public:
             if (castle_path_is_attacked(position, rook, !position.side))
                 continue;
 
-            movelist.add<checked>(position, CreateMove(king_sq, rook, MoveFlag::castle, 1));
+            movelist.add<checked>(position, Move(king_sq, rook, MoveFlag::castle));
         }
     }
 
@@ -87,21 +87,12 @@ private:
                                                                                                 : ~position.total_occupancy();
     }
 
-    template <bool is_promo = false>
-    void add_moves(Position &pos, Square from, uint64_t attacks, MoveFlag gen_type)
+    void add_moves(Position &pos, Square from, uint64_t attacks)
     {
-        assert(is_ok(from));
         while (attacks)
         {
             Square to = pop_lsb(attacks);
-            if constexpr (is_promo)
-            {
-                movelist.add<checked>(pos, CreateMove(from, to, gen_type, Knight));
-                movelist.add<checked>(pos, CreateMove(from, to, gen_type, Bishop));
-                movelist.add<checked>(pos, CreateMove(from, to, gen_type, Rook));
-                movelist.add<checked>(pos, CreateMove(from, to, gen_type, Queen));
-            }
-            movelist.add<checked>(pos, CreateMove(from, to, gen_type, Knight));
+            movelist.add<checked>(pos, Move(from, to));
         }
     }
 
@@ -113,27 +104,28 @@ private:
         {
             Square sq = pop_lsb(pieces);
             uint64_t attacks = F(sq, args...) & targets;
-            add_moves(position, sq, attacks, MoveFlag::normal);
+            add_moves(position, sq, attacks);
         }
     }
 
-    template <bool is_promo = false>
+    void add_pawn_promotions(Position &pos, uint64_t attacks, Direction delta)
+    {
+        while (attacks)
+        {
+            Square sq = pop_lsb(attacks);
+            movelist.add<checked>(pos, Move(sq - delta, sq, Knight));
+            movelist.add<checked>(pos, Move(sq - delta, sq, Bishop));
+            movelist.add<checked>(pos, Move(sq - delta, sq, Rook));
+            movelist.add<checked>(pos, Move(sq - delta, sq, Queen));
+        }
+    }
+
     inline void add_pawn_moves(Position &pos, uint64_t attacks, Direction delta, MoveFlag gen_type = MoveFlag::normal)
     {
         while (attacks)
         {
             Square sq = pop_lsb(attacks);
-            if constexpr (is_promo)
-            {
-                movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Knight));
-                movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Bishop));
-                movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Rook));
-                movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Queen));
-            }
-            else
-            {
-                movelist.add<checked>(pos, CreateMove(sq - delta, sq, gen_type, Knight));
-            }
+            movelist.add<checked>(pos, Move(sq - delta, sq, gen_type));
         }
     }
 
@@ -162,7 +154,7 @@ private:
             add_pawn_moves(position, push_two_noraml, forward + forward);
 
             push_one_normal = shift(pawns_promo, forward) & empty;
-            add_pawn_moves<true>(position, push_one_normal, forward, MoveFlag::promotion);
+            add_pawn_promotions(position, push_one_normal, forward);
         }
 
         if constexpr (type == MoveGenType::normal || type == MoveGenType::noisy)
@@ -189,8 +181,8 @@ private:
             left = shift<Direction::west>(forward_one) & enemy;
             right = shift<Direction::east>(forward_one) & enemy;
 
-            add_pawn_moves<true>(position, left, forward + Direction::west, MoveFlag::promotion);
-            add_pawn_moves<true>(position, right, forward + Direction::east, MoveFlag::promotion);
+            add_pawn_promotions(position, left, forward + Direction::west);
+            add_pawn_promotions(position, right, forward + Direction::east);
         }
     }
 

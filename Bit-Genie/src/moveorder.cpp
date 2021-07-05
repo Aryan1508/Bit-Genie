@@ -48,8 +48,8 @@ static int16_t see(Position &position, Move move)
     int16_t scores[32] = {0};
     int index = 0;
 
-    Square from = move_from(move);
-    Square to = move_to(move);
+    Square from = move.from();
+    Square to = move.to();
 
     Piece capturing = position.pieces.squares[from];
     Piece captured = position.pieces.squares[to];
@@ -101,27 +101,26 @@ static void score_movelist(Movelist &movelist, Search::Info& search)
 
             score += get_history(search.capture_history, position, move) / 128;
 
-            if (move_flag(move) == MoveFlag::promotion)
-                score += move_promoted(move) == PieceType::Queen ? 1000 : 300;
+            if (move.flag() == MoveFlag::promotion)
+                score += move.promoted() == PieceType::Queen ? 1000 : 300;
 
-            set_move_score(move, score);
+            move.score = score;
         }
         else
         {
             int score = get_history(search.history, position, move);
 
-            if (move_flag(move) == MoveFlag::promotion)
+            if (move.flag() == MoveFlag::promotion)
                 score += 10000;
 
-            set_move_score(move, score);
+            move.score = score;
         }
     }
 }
 
 void bubble_top_move(Movelist::iterator begin, Movelist::iterator end)
 {  
-    auto best = std::max_element(begin, end ,
-        [](Move lhs, Move rhs){return move_score(lhs) < move_score(rhs); });
+    auto best = std::max_element(begin, end);
     std::iter_swap(best, begin);
 }
 
@@ -149,7 +148,7 @@ bool MovePicker::qnext(Move &move)
     if (stage == Stage::GiveGoodNoisy)
     {
         stage = Stage::GenQuiet;
-        if (current != gen.movelist.end() && move_score(*current) >= 0)
+        if (current != gen.movelist.end() && current->score >= 0)
         {
             move = *current++;
             bubble_top_move(current, gen.movelist.end());
@@ -173,9 +172,11 @@ bool MovePicker::next(Move &move)
         stage = Stage::GenNoisy;
         auto& entry = TT.retrieve(position);
         
-        if (entry.hash == position.key.data() && can_move((Move)entry.move))
+        Move hmove = Move(entry.move);
+
+        if (entry.hash == position.key.data() && can_move(hmove))
         {
-            move = (Move)entry.move;
+            move = hmove;
             return true;
         }
     }
@@ -193,7 +194,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GiveGoodNoisy)
     {
-        if (current != gen.movelist.end() && move_score(*current) >= 0)
+        if (current != gen.movelist.end() && current->score >= 0)
         {
             move = *current++;
             bubble_top_move(current, gen.movelist.end());

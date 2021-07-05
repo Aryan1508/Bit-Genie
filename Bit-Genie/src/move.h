@@ -16,10 +16,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "Square.h"
 #include <string>
-
-#define CreateMove(from, to, type, promoted) (Move(((from)) | ((to) << 6) | ((to_int(type)) << 12) | (((promoted)-1) << 14)))
 
 enum class MoveFlag : uint8_t
 {
@@ -29,55 +27,84 @@ enum class MoveFlag : uint8_t
     promotion
 };
 
-enum Move : uint32_t
+struct Move 
 {
-    NullMove
+    uint16_t data;
+    int16_t score;
+
+    Move() = default;
+
+    explicit constexpr Move(uint16_t val)
+        : data(val), score(0)
+    {}
+
+    constexpr Move(Square from, Square to)
+        : data(from | (to << 6)), score(0)
+    {}
+
+    constexpr Move(Square from, Square to, MoveFlag flag)
+        : data(from | (to << 6) | ((uint8_t)flag << 12)), score(0)
+    {}
+
+    constexpr Move(Square from, Square to, PieceType promoted)
+        : data(0x3000 | from | (to << 6) | ((promoted - 1) << 14)), score(0)
+    {}
+
+    bool operator<(Move rhs) const noexcept 
+    {
+        return score < rhs.score;
+    }
+
+    bool operator<=(Move rhs) const noexcept 
+    {
+        return score <= rhs.score;
+    }
+
+    bool operator>(Move rhs) const noexcept 
+    {
+        return score > rhs.score;
+    }
+
+    bool operator>=(Move rhs) const noexcept 
+    {
+        return score >= rhs.score;
+    }
+
+    bool operator==(Move rhs) const noexcept 
+    {
+        return data == rhs.data;
+    }
+
+    bool operator!=(Move rhs) const noexcept 
+    {
+        return data != rhs.data;
+    }
+
+    Square from() const noexcept 
+    {
+        return static_cast<Square>(data & 0x3f);   
+    }
+
+    Square to() const noexcept 
+    {
+        return static_cast<Square>((data >> 6) & 0x3f);
+    }
+
+    MoveFlag flag() const noexcept 
+    {
+        return static_cast<MoveFlag>((data >> 12) & 0x3);
+    }
+    
+    PieceType promoted() const noexcept
+    {
+        return static_cast<PieceType>(((data >> 14) & 0x3) + 1);
+    }
+    
+    friend std::ostream& operator<<(std::ostream& o, Move);
 };
 
-inline int16_t move_score(Move move)
-{
-    return static_cast<int16_t>(move >> 16);
-}
+static_assert(std::is_trivial<Move>::value);
 
-constexpr Move move_without_score(Move m)
-{
-    return Move(m & 0xFFFF);
-}
+constexpr Move NullMove = Move(Square::A1, Square::A1);
 
-inline bool operator<(Move rhs, Move lhs)
-{
-    return move_score(rhs) < move_score(lhs);
-}
-
-inline bool operator>(Move rhs, Move lhs)
-{
-    return move_score(rhs) > move_score(lhs);
-}
-
-constexpr Square move_from(Move move)
-{
-    return static_cast<Square>(move & 0x3f);
-}
-
-constexpr Square move_to(Move move)
-{
-    return static_cast<Square>((move >> 6) & 0x3f);
-}
-
-constexpr MoveFlag move_flag(Move move)
-{
-    return static_cast<MoveFlag>((move >> 12) & 0x3);
-}
-
-constexpr PieceType move_promoted(Move move)
-{
-    return static_cast<PieceType>(((move >> 14) & 0x3) + 1);
-}
-
-inline void set_move_score(Move &move, int16_t score)
-{
-    move = static_cast<Move>(move | (score << 16));
-}
-
-bool move_is_capture(Position const &positio, Move);
-std::string print_move(Move);
+bool move_is_capture(Position const &, Move);
