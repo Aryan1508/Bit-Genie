@@ -167,7 +167,9 @@ namespace
                }
         }
 
-        int eval = tthit ? entry.seval : eval_position(position);
+        int seval = tthit ? entry.seval : eval_position(position);
+
+        int eval = seval;
 
         if (tthit && (entry.score > eval ? entry.flag == TEFlag::lower : entry.flag == TEFlag::upper))
             eval = entry.score;
@@ -277,7 +279,7 @@ namespace
             return 0;
 
         TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::exact;
-        TT.add(position, result.best_move, (int16_t)result.score, depth, flag, eval);
+        TT.add(position, result.best_move, (int16_t)result.score, depth, flag, seval);
 
         return result;
     }
