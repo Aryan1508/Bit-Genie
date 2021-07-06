@@ -33,6 +33,8 @@ namespace Search
         HistoryTable    history = {0};
         HistoryTable   capture_history = {0};   
 
+        int eval[64] = {0};
+
         void update();
     };
 
@@ -40,4 +42,4 @@ namespace Search
     uint64_t bestmove(Info&, bool log);
 }
 
-extern std::atomic_bool SEARCH_ABORT;
+inline std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);
