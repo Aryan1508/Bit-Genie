@@ -40,7 +40,7 @@ public:
 
     MoveGenerator<true> gen;
     Stage stage = Stage::HashMove;
-    
+    bool skip_quiets = false;
 private:
     Search::Info *search;
     Movelist::iterator current;
