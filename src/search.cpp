@@ -192,7 +192,7 @@ namespace
 
         for (Move move; picker.next(move);)
         {
-            if (move_num > depth * depth * 3 + 3)
+            if (move_num > depth * depth * 2 + 4)
                 break;
 
             if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > depth * depth * 2 + 2)
