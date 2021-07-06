@@ -169,7 +169,7 @@ namespace
 
         int eval = tthit ? entry.seval : eval_position(position);
 
-        if (tthit && (entry.flag == TEFlag::exact || (entry.score > eval ? entry.flag == TEFlag::lower : entry.flag == TEFlag::upper)))
+        if (tthit && (entry.score > eval ? entry.flag == TEFlag::lower : entry.flag == TEFlag::upper))
             eval = entry.score;
 
         if (!at_root && !in_check && depth < 6 && (eval - depth * 170) >= beta)
