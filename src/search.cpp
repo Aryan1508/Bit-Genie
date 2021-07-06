@@ -174,7 +174,7 @@ namespace
 
         if (!pv_node && !in_check && depth >= 4 && !at_root && do_null && position.should_do_null())
         {
-            int R = std::max(4, 3 + depth / 5);
+            int R = std::max(4, 3 + depth / 3);
 
             position.apply_null_move(search.stats.ply);
             int score = -pvs(search, depth - R, -beta, -beta + 1, false).score;
