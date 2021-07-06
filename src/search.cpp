@@ -192,7 +192,7 @@ namespace
 
         for (Move move; picker.next(move);)
         {
-            if (move_num > depth * depth * 2 + 4)
+            if (move_num > depth * depth * 2 + 2)
                 picker.skip_quiets = true;
 
             if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
