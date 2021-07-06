@@ -349,8 +349,8 @@ namespace Search
                 lmr_reductions_array[i][j] = log(i) * log(j);
             }
 
-            lmp_margin[i][0] = 3 + i * i;
-            lmp_margin[i][1] = 3 + i * i / 1.5;
+            lmp_margin[i][1] = 3 + i * i;
+            lmp_margin[i][0] = 3 + i * i / 1.5;
             quiet_lmp_margin[i]  = 2 + i * i;
         }
     }
