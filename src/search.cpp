@@ -195,6 +195,9 @@ namespace
             if (move_num > 3 + depth * depth)
                 picker.skip_quiets = true;
 
+            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > depth * depth + 2)
+                break;
+
             if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
                 continue;
 
