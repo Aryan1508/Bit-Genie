@@ -238,7 +238,7 @@ bool MovePicker::next(Move &move)
         stage = Stage::GenQuiet;
     }
 
-    if (stage == Stage::GenQuiet)
+    if (stage == Stage::GenQuiet && !skip_quiets)
     {
         gen.movelist.clear();
         gen.generate<MoveGenType::quiet>(position);
@@ -249,7 +249,7 @@ bool MovePicker::next(Move &move)
         stage = Stage::GiveQuiet;
     }
 
-    if (stage == Stage::GiveQuiet)
+    if (stage == Stage::GiveQuiet && !skip_quiets)
     {
         if (current != gen.movelist.end())
         {
