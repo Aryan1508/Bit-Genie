@@ -40,7 +40,8 @@ void TTable::add(Position const &position, Move move, int16_t score, uint8_t dep
 
     if (flag != TEFlag::exact && hash == entries[index].hash && depth < entries[index].depth) return;
 
-    entries[index] = TEntry(hash, score, move, depth, flag, seval);
+    if (flag == TEFlag::exact || depth * 2 > entries[index].depth)
+        entries[index] = TEntry(hash, score, move, depth, flag, seval);
 }
 
 TEntry &TTable::retrieve(Position const &position)
