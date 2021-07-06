@@ -27,7 +27,7 @@
 #include "polyglot.h"
 #include <cstring>
 
-const char *version = "7.38";
+const char *version = "7.39";
 
 namespace
 {
