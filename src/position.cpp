@@ -634,7 +634,7 @@ bool Position::move_exists(Move move)
 
 bool Position::is_drawn() const 
 {
-    for(int i = history.total - 2;i >= 0;i -= 2)
+    for(int i = history.total - 2;i >= 0 && i >= history.total - half_moves;i -= 2)
     {
         if (history.history[i].key == key)
             return true;
@@ -816,6 +816,7 @@ void Position::apply_null_move(int &ply)
 {
     ply++;
     save();
+    half_moves++;
 
     if (ep_sq != bad_sq)
         key.hash_ep(ep_sq);
