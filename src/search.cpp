@@ -16,7 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "search.h"
-#include "movegen.h"
 #include "position.h"
 #include "eval.h"
 #include "moveorder.h"
@@ -259,11 +258,11 @@ namespace
             {
                 if (!move_is_capture(position, move))
                 {
-                    update_history(search.history, position, move, picker.gen.movelist, depth);
+                    update_history(search.history, position, move, picker.movelist, depth);
                     add_killer(search, move);
                 }
                 else 
-                    update_history(search.capture_history, position, move, picker.gen.movelist, depth);
+                    update_history(search.capture_history, position, move, picker.movelist, depth);
 
                 break;
             }

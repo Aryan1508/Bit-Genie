@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "piece.h"
 #include <string_view>
 
 enum Square : uint8_t
@@ -83,6 +83,11 @@ inline Square &operator+=(Square &sq, int inc)
 {
     sq = to_sq(sq + inc);
     return sq;
+}
+
+constexpr Direction relative_forward(Color side)
+{
+    return side == White ? Direction::north : Direction::south;
 }
 
 inline bool is_ok(const Square sq)

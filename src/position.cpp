@@ -18,9 +18,10 @@
 #include "attacks.h"
 #include <iomanip>
 #include "move.h"
+#include "board.h"
+#include "movelist.h"
 #include "position.h"
 #include "stringparse.h"
-#include "movegen.h"
 #include <vector>
 #include <algorithm>
 #include <sstream>
@@ -54,7 +55,7 @@ uint64_t Position::enemy_bb() const
     return pieces.get_occupancy(!side);
 }
 
-uint64_t Position::total_occupancy() const
+uint64_t Position::total_bb() const
 {
     return friend_bb() | enemy_bb();
 }
@@ -226,25 +227,20 @@ bool Position::move_was_legal() const
     return !Attacks::square_attacked(*this, our_king, side);
 }
 
-static inline uint64_t legal_move_count(Position &position)
-{
-    MoveGenerator gen;
-    gen.generate(position);
-    return gen.movelist.size();
-}
-
 void Position::perft(int depth, uint64_t &nodes, bool root)
 {
     if (depth == 1)
     {
-        nodes += legal_move_count(*this);
+        Movelist movelist;
+        generate_moves(movelist);
+        nodes += movelist.size();
         return;
     }
 
-    MoveGenerator gen;
-    gen.generate(*this);
+    Movelist movelist;
+    generate_moves(movelist);
 
-    for (Move m : gen.movelist)
+    for (Move m : movelist)
     {
         apply_move(m);
         uint64_t old = nodes;
@@ -264,17 +260,17 @@ bool Position::move_is_legal(Move move)
     Square from = move.from();
     Square to = move.to();
 
-    if (move.flag() == MoveFlag::normal || move.flag() == MoveFlag::promotion)
+    if (move.flag() == Move::Flag::normal || move.flag() == Move::Flag::promotion)
     {
         if (pieces.squares[from] == wKing || pieces.squares[from] == bKing) // Normal king moves
         {
-            uint64_t occupancy = total_occupancy() ^ (1ull << from);
+            uint64_t occupancy = total_bb() ^ (1ull << from);
             return !Attacks::square_attacked(*this, to, !side, occupancy);
         }
 
         else // Normal non-king moves
         {
-            uint64_t occupancy = total_occupancy() ^ (1ull << from) ^ (1ull << to);
+            uint64_t occupancy = total_bb() ^ (1ull << from) ^ (1ull << to);
             uint64_t enemy = enemy_bb();
 
             Piece captured = pieces.squares[to];
@@ -300,7 +296,7 @@ bool Position::move_is_legal(Move move)
         }
     }
 
-    else if (move.flag() == MoveFlag::castle)
+    else if (move.flag() == Move::Flag::castle)
     {
         return !Attacks::square_attacked(*this, to, !side);
     }
@@ -308,7 +304,7 @@ bool Position::move_is_legal(Move move)
     else
     {
         Square ep = to_sq(to ^ 8);
-        uint64_t occupancy = total_occupancy() ^ (1ull << from) ^ (1ull << to) ^ (1ull << ep);
+        uint64_t occupancy = total_bb() ^ (1ull << from) ^ (1ull << to) ^ (1ull << ep);
         uint64_t enemy = enemy_bb() ^ (1ull << ep);
 
         uint64_t pawns = pieces.bitboards[Pawn] & enemy;
@@ -559,15 +555,15 @@ void Position::apply_move(Move move)
     reset_ep();
     half_moves++;
 
-    MoveFlag type = move.flag();
+    Move::Flag type = move.flag();
 
-    if (type == MoveFlag::normal)
+    if (type == Move::Flag::normal)
         undo.captured = apply_normal_move(move);
 
-    else if (type == MoveFlag::enpassant)
+    else if (type == Move::Flag::enpassant)
         undo.captured = apply_enpassant(move);
 
-    else if (type == MoveFlag::castle)
+    else if (type == Move::Flag::castle)
         undo.captured = apply_castle(move);
     else
         undo.captured = apply_promotion(move);
@@ -583,15 +579,15 @@ void Position::revert_move()
 
     restore(move, captured);
 
-    MoveFlag type = move.flag();
+    Move::Flag type = move.flag();
 
-    if (type == MoveFlag::normal)
+    if (type == Move::Flag::normal)
         revert_normal_move(move, captured);
 
-    else if (type == MoveFlag::enpassant)
+    else if (type == Move::Flag::enpassant)
         revert_enpassant(move, captured);
 
-    else if (type == MoveFlag::castle)
+    else if (type == Move::Flag::castle)
         revert_castle(move);
 
     else
@@ -602,10 +598,10 @@ void Position::revert_move()
 
 bool Position::apply_move(std::string const &move)
 {
-    MoveGenerator gen;
-    gen.generate(*this);
+    Movelist legal_moves;
+    generate_moves(legal_moves);
 
-    for (Move m : gen.movelist)
+    for (Move m : legal_moves)
     {
         std::stringstream s;
         s << m;
@@ -627,9 +623,9 @@ bool Position::king_in_check() const
 
 bool Position::move_exists(Move move)
 {
-    MoveGenerator gen;
-    gen.generate(*this);
-    return gen.movelist.find(move);
+    Movelist legal_moves;
+    generate_moves(legal_moves);
+    return legal_moves.find(move);
 }
 
 bool Position::is_drawn() const 
@@ -650,7 +646,7 @@ bool Position::move_is_pseudolegal(Move move)
 
     Square from = move.from();
     Square to = move.to();
-    MoveFlag flag = move.flag();
+    Move::Flag flag = move.flag();
     Piece moving = pieces.squares[from];
     Piece captured = pieces.squares[to];
 
@@ -671,11 +667,26 @@ bool Position::move_is_pseudolegal(Move move)
     if (captured != Empty && color_of(captured) == side)
         return false;
 
-    if (flag == MoveFlag::castle)
+    if (flag == Move::Flag::castle)
     {
-        MoveGenerator<false> gen;
-        gen.generate_castle(*this);
-        return !king_in_check() && gen.movelist.find(move);
+        if (!test_bit(to, castle_rights.data()))
+            return false;
+
+        if (!CastleRights::castle_path_is_clear(to, total_bb()))
+            return false;
+
+        if (Attacks::square_attacked(*this, from, !side))
+            return false;
+
+        uint64_t path = CastleRights::get_castle_path(to);
+        while (path)
+        {
+            Square sq = pop_lsb(path);
+            if (Attacks::square_attacked(*this, sq, !side))
+                return false;
+        }
+
+        return true;
     }
 
     // Validating pawn moves
@@ -687,7 +698,7 @@ bool Position::move_is_pseudolegal(Move move)
         uint64_t prom_rank = side == White ? BitMask::rank7 : BitMask::rank2;
         uint64_t from_sq_bb = 1ull << from;
 
-        if (flag == MoveFlag::promotion)
+        if (flag == Move::Flag::promotion)
         {
             if ((prom_rank & from_sq_bb) == 0)
                 return false;
@@ -695,12 +706,12 @@ bool Position::move_is_pseudolegal(Move move)
 
         if (from_sq_bb & prom_rank)
         {
-            if (flag != MoveFlag::promotion)
+            if (flag != Move::Flag::promotion)
                 return false;
         }
 
         // Normal and promotions
-        if (flag == MoveFlag::normal || flag == MoveFlag::promotion)
+        if (flag == Move::Flag::normal || flag == Move::Flag::promotion)
         {
             // Pushes
             if (pieces.squares[to] == Empty)
@@ -749,10 +760,10 @@ bool Position::move_is_pseudolegal(Move move)
     {
         // Other pieces don't have special moves
         // except for king castles, but we already checked that
-        if (flag != MoveFlag::normal)
+        if (flag != Move::Flag::normal)
             return false;
 
-        uint64_t attacks = Attacks::generate(type_of(moving), from, total_occupancy());
+        uint64_t attacks = Attacks::generate(type_of(moving), from, total_bb());
         return test_bit(to, attacks);
     }
 
@@ -833,5 +844,5 @@ void Position::revert_null_move(int &ply)
 
 bool Position::should_do_null() const
 {
-    return popcount64(total_occupancy()) >= 4;
+    return popcount64(total_bb()) >= 4;
 }

@@ -27,7 +27,7 @@ bool move_is_capture(Position const &position, Move move)
 std::ostream& operator<<(std::ostream& o, Move move)
 {
     o << move.from() << move.to();
-    if (move.flag() == MoveFlag::promotion)
+    if (move.flag() == Move::Flag::promotion)
     {
         o << move.promoted();
     }

@@ -28,7 +28,7 @@ namespace Attacks
 
     inline uint64_t pawn(uint64_t pawns, Color side)
     {
-        uint64_t forward = side == White ? shift<Direction::north>(pawns) : shift<Direction::south>(pawns);
+        uint64_t forward = shift(pawns, relative_forward(side));
         return shift<Direction::west>(forward) | shift<Direction::east>(forward);
     }
 
@@ -75,7 +75,7 @@ namespace Attacks
 
     inline uint64_t attackers_to_sq(Position const &position, Square sq)
     {
-        uint64_t occ = position.total_occupancy();
+        uint64_t occ = position.total_bb();
         uint64_t pawn_mask = (BitMask::pawn_attacks[White][sq] & position.pieces.bitboards[Pawn] & position.pieces.colors[Black]);
         pawn_mask |= (BitMask::pawn_attacks[Black][sq] & position.pieces.bitboards[Pawn] & position.pieces.colors[White]);
 
@@ -87,7 +87,7 @@ namespace Attacks
 
     inline bool square_attacked(Position const &position, Square sq, Color enemy)
     {
-        return square_attacked(position, sq, enemy, position.total_occupancy());
+        return square_attacked(position, sq, enemy, position.total_bb());
     }
 
     inline uint64_t generate(PieceType piece, Square sq, uint64_t occ)
