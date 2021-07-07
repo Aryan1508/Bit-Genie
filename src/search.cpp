@@ -396,7 +396,10 @@ namespace Search
                 score     = result.score;
 
                 if (score <= alpha)
+                {
+                    beta  = (beta + alpha) / 2;
                     alpha = std::max(alpha - delta, (int)MinEval);
+                }
                 else if (score >= beta)
                     beta = std::min(beta + delta, (int)MaxEval);
                 else 
