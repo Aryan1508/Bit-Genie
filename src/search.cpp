@@ -352,8 +352,8 @@ namespace Search
             lmp_margin[i][1] = 3 + 2 * i * i;
             lmp_margin[i][0] = 3 + i * i / 1.5;
 
-            quiet_lmp_margin[i][0]  = 2 + i * i;
-            quiet_lmp_margin[i][1]  = 2 + i * i / 1.5;
+            quiet_lmp_margin[i][0]  = 2 + i * i / 1.5;
+            quiet_lmp_margin[i][1]  = 2 + i * i;
         }
     }
 
