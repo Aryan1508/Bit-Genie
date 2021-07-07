@@ -54,18 +54,7 @@ public:
         total = 0;
     }
 
-    bool is_drawn(ZobristKey current) const
-    {
-        for (int i = 0; i < total; i++)
-        {
-            if (history[i].key == current)
-                return true;
-        }
-        return false;
-    }
-
     int total = 0;
 
-private:
     std::array<Undo, 2048> history;
 };

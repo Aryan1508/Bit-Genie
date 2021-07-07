@@ -75,7 +75,7 @@ namespace
             if (search.stats.ply >= MaxPly)
                 return eval_position(position);
 
-            if (position.history.is_drawn(position.key) || position.half_moves >= 100)
+            if (position.is_drawn())
                 return 0;
         }
 
@@ -151,7 +151,7 @@ namespace
             if (search.stats.ply >= MaxPly)
                 return eval_position(position);
 
-            if (position.history.is_drawn(position.key) || position.half_moves >= 100)
+            if (position.is_drawn())
                 return 0;
         }
 
