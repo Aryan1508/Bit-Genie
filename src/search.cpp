@@ -155,7 +155,7 @@ namespace
                 return 0;
         }
 
-        if (entry.depth >= depth && tthit)
+        if (!at_root && entry.depth >= depth && tthit)
         {
             Move move = Move(entry.move);
             if (entry.flag == TEFlag::exact || 
