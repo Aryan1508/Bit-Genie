@@ -136,6 +136,36 @@ namespace
         serialize_bitboard<Move::Flag::enpassant>(movelist, position, ep_r, relative_forward(side) + Direction::east);
     }
 
+    void generate_castle(Position& position, Movelist& movelist, Square from, Square to, uint64_t occ_cond, uint64_t att_cond)
+    {
+        if (!test_bit(to, position.castle_rights.data()))
+            return;
+
+        if (occ_cond & position.total_bb())
+            return;
+
+        while(att_cond)
+            if (Attacks::square_attacked(position, pop_lsb(att_cond), !position.side))
+                return;
+
+        verified_add(movelist, position, Move(from, to, Move::Flag::castle));
+    }
+
+    template<Color side>
+    void generate_castle(Position& position, Movelist& movelist)
+    {
+        if (side == White)
+        {
+            generate_castle(position, movelist, E1, C1, 0x0E, 0x08);
+            generate_castle(position, movelist, E1, G1, 0x60, 0x20);
+        }
+        else 
+        {
+            generate_castle(position, movelist, E8, C8, 0xE00000000000000 , 0x800000000000000);
+            generate_castle(position, movelist, E8, G8, 0x6000000000000000, 0x2000000000000000);
+        }
+    }
+
     template<GenType type, Color side>
     void generate_pawn_moves(Position& position, Movelist& movelist)
     {
@@ -150,7 +180,13 @@ namespace
             generate_pawn_captures<side>(position, movelist, forwarded_pawns);
             generate_enpassant    <side>(position, movelist, forwarded_pawns);
         }
-
+        else if (type == GenType::noisy)
+        {
+            generate_pawn_captures<side>(position, movelist, forwarded_pawns);
+            generate_enpassant    <side>(position, movelist, forwarded_pawns);
+        }
+        else 
+            generate_pawn_pushes  <side>(position, movelist, forwarded_pawns);
     }
 
     template<GenType type, Color side>
@@ -160,16 +196,18 @@ namespace
 
         generate_simple_moves<side>(position, movelist, targets);
         generate_pawn_moves<type, side>(position, movelist);
+
+        if (type != GenType::noisy && !position.king_in_check())
+            generate_castle<side>(position, movelist);
     }
 
     template<GenType type>
     void generate_moves(Position& position, Movelist& movelist)
     {
-        position.side == White ? generate_moves<GenType::all, White>(position, movelist)
-                               : generate_moves<GenType::all, Black>(position, movelist);
+        position.side == White ? generate_moves<type, White>(position, movelist)
+                               : generate_moves<type, Black>(position, movelist);
     }
 }
-
 
 void Position::generate_moves(Movelist& movelist)
 {
