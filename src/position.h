@@ -63,6 +63,8 @@ public:
 
     bool king_in_check() const;
 
+    bool is_drawn() const;
+
     friend std::ostream &operator<<(std::ostream &, Position const &);
 
 public:

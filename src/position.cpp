@@ -24,6 +24,7 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
+
 Position::Position()
 {
     set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -629,6 +630,17 @@ bool Position::move_exists(Move move)
     MoveGenerator gen;
     gen.generate(*this);
     return gen.movelist.find(move);
+}
+
+bool Position::is_drawn() const 
+{
+    for(int i = history.total - 2;i >= 0;i -= 2)
+    {
+        if (history.history[i].key == key)
+            return true;
+    }
+
+    return half_moves >= 100;
 }
 
 bool Position::move_is_pseudolegal(Move move)
