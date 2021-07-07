@@ -29,9 +29,11 @@
 
 int lmr_reductions_array[64][64]{0};
 
-std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);
+int lmp_margin[64][2]{0};
+int quiet_lmp_margin[64]{0};
 
-constexpr int see_pruning_margins[5] {
+constexpr int see_pruning_margins[5] 
+{
     0, -100, -100, -300, -325
 };
 
@@ -168,6 +170,9 @@ namespace
         }
 
         int eval = tthit ? entry.seval : eval_position(position);
+        search.eval[search.stats.ply] = eval;
+
+        bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];
 
         if (!at_root && !in_check && depth < 6 && (eval - depth * 170) >= beta)
             return eval;
@@ -192,10 +197,10 @@ namespace
 
         for (Move move; picker.next(move);)
         {
-            if (move_num > 3 + depth * depth)
+            if (move_num > lmp_margin[depth][improving])
                 picker.skip_quiets = true;
 
-            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > depth * depth + 2)
+            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > quiet_lmp_margin[depth])
                 break;
 
             if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
@@ -343,6 +348,10 @@ namespace Search
             {
                 lmr_reductions_array[i][j] = log(i) * log(j);
             }
+
+            lmp_margin[i][1] = 3 + 2 * i * i;
+            lmp_margin[i][0] = 3 + i * i / 1.5;
+            quiet_lmp_margin[i]  = 2 + i * i;
         }
     }
 
