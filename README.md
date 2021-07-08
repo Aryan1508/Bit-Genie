@@ -27,6 +27,19 @@ The estimated strength over the different versions
 
 [Bit-Genie on the CCRL](https://ccrl.chessdom.com/ccrl/404/cgi/compare_engines.cgi?family=Bit-Genie&print=Rating+list&print=Results+table&print=LOS+table&print=Ponder+hit+table&print=Eval+difference+table&print=Comopp+gamenum+table&print=Overlap+table&print=Score+with+common+opponents)
 
+
+# Rebel's gambit rating list 40/2
+
+|   Version       |  Elo   |
+| -------------   | ------ |
+| Bit-Genie 5     |  2450  |
+| Bit-Genie 6     |  2620  |
+| Bit-Genie 7     |  2760  |
+| Bit-Genie 8     |  2870  |
+
+[Rebel's 40/2 rating list](http://rebel13.nl/grl-best-40-2.html)
+
+
 # Usage
 Bit-Genie is **not** a complete chess software, but a chess engine which still needs a GUI if you don't prefer writing and reading [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface "UCI") commands through the terminal. There are plenty of free softwares available online, here are two common ones
 - [Cute Chess](https://github.com/cutechess/cutechess "Cute Chess")
