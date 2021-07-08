@@ -302,7 +302,6 @@ namespace
             o << "mate " << mate_distance(score);
         }
         else
-#define mg_score(s) ((int16_t)((uint16_t)((unsigned)((s)))))
         {
             o << "cp " << int(score * 100 / mg_score(PawnEval::value));
         }

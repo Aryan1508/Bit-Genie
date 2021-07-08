@@ -650,10 +650,6 @@ bool Position::move_is_pseudolegal(Move move)
     Piece moving = pieces.squares[from];
     Piece captured = pieces.squares[to];
 
-    // Make sure from and to squares are valid
-    if (!is_ok(from) || !is_ok(to))
-        return false;
-
     // Moving piece can't be empty
     if (moving == Empty)
         return false;
