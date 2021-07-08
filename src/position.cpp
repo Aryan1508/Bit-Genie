@@ -628,6 +628,25 @@ bool Position::move_exists(Move move)
     return legal_moves.find(move);
 }
 
+static bool is_drawn_by_material(Position const& position)
+{
+    auto const& bbs = position.pieces.bitboards;
+
+    if (bbs[Pawn] || bbs[Rook] || bbs[Queen])
+        return false;
+    
+    if (bbs[Knight])
+    {
+        if (bbs[Bishop])
+            return false;
+
+        return popcount64(bbs[Knight]) <= 2;
+    }
+
+    return   !is_several(bbs[Bishop] & position.pieces.colors[White])
+          && !is_several(bbs[Bishop] & position.pieces.colors[Black]);
+}
+
 bool Position::is_drawn() const 
 {
     for(int i = history.total - 2;i >= 0 && i >= history.total - half_moves;i -= 2)
@@ -636,7 +655,7 @@ bool Position::is_drawn() const
             return true;
     }
 
-    return half_moves >= 100;
+    return half_moves >= 100 || is_drawn_by_material(*this);
 }
 
 bool Position::move_is_pseudolegal(Move move)
