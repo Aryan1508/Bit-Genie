@@ -54,7 +54,7 @@ public:
     bool move_is_pseudolegal(Move);
 
     bool move_exists(Move);
-
+    
     bool apply_move(std::string const &);
 
     void generate_moves(Movelist&);

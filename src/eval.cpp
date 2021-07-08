@@ -98,51 +98,6 @@ static constexpr int calculate_moblity(Position const &position, EvalData &data,
     }
 }
 
-static bool material_draw(Position const &position)
-{
-    auto single = [](uint64_t bb)
-    { return bb && !is_several(bb); };
-
-    auto &pieces = position.pieces;
-    auto &bitboards = position.pieces.bitboards;
-
-    if (bitboards[Pawn] || bitboards[Queen])
-        return false;
-
-    if (!bitboards[Rook])
-    {
-        if (!bitboards[Bishop])
-        {
-            uint64_t white = pieces.get_piece_bb<Knight>(White);
-            uint64_t black = pieces.get_piece_bb<Knight>(Black);
-
-            return popcount64(black) <= 2 && popcount64(white) <= 2;
-        }
-
-        if (!bitboards[Knight])
-        {
-            uint64_t white = pieces.get_piece_bb<Bishop>(White);
-            uint64_t black = pieces.get_piece_bb<Bishop>(Black);
-
-            return abs(popcount64(white) - popcount64(black)) <= 2;
-        }
-    }
-    else
-    {
-        // Rook vs 2 minors
-        if (single(bitboards[Rook]))
-        {
-            Color owner = pieces.get_piece_bb<Rook>(White) ? White : Black;
-
-            uint64_t minor = bitboards[Bishop] | bitboards[Knight];
-
-            return !(minor & pieces.colors[owner]) && (popcount64(minor & pieces.colors[!owner]) == 1 || popcount64(minor & pieces.colors[!owner]) == 2);
-        }
-    }
-
-    return false;
-}
-
 static bool pawn_passed(uint64_t enemy_pawns, Color us, Square sq)
 {
     return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
@@ -454,9 +409,6 @@ int scale_factor(Position const& position, int eval)
 int eval_position(Position const &position)
 {
     int score = 0;
-
-    if (material_draw(position))
-        return 0;
 
     EvalData data;
     data.init(position);
