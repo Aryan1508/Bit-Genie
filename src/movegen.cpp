@@ -83,11 +83,11 @@ namespace
     template<Color side>
     void generate_simple_moves(Position& position, Movelist& movelist, uint64_t targets)
     {
+        generate_simple_moves<King  , side>(position, movelist, targets);
         generate_simple_moves<Knight, side>(position, movelist, targets);
         generate_simple_moves<Bishop, side>(position, movelist, targets);
         generate_simple_moves<Rook  , side>(position, movelist, targets);
         generate_simple_moves<Queen , side>(position, movelist, targets);
-        generate_simple_moves<King  , side>(position, movelist, targets);
     }
 
     template<Color side>
@@ -167,7 +167,7 @@ namespace
     }
 
     template<GenType type, Color side>
-    void generate_pawn_moves(Position& position, Movelist& movelist)
+    void    generate_pawn_moves(Position& position, Movelist& movelist)
     {
         constexpr Direction forward   = relative_forward(side);
 
