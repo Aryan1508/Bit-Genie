@@ -16,112 +16,116 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "moveorder.h"
+#include "attacks.h"
 #include "tt.h"
 #include "search.h"
 #include <algorithm>
 
-static uint64_t least_valuable_attacker(Position &position, uint64_t attackers, Color side, Piece &capturing)
+namespace 
 {
-    for (int i = 0; i < total_pieces; i++)
+    uint64_t least_valuable_attacker(Position &position, uint64_t attackers, Color side, Piece &capturing)
     {
-        capturing = make_piece(PieceType(i), side);
-        uint64_t pieces = position.pieces.bitboards[i] & position.pieces.colors[side] & attackers;
-
-        if (pieces)
-            return pieces & (~pieces + 1);
-    }
-    return 0;
-}
-
-static bool lost_material(int16_t scores[16], int index)
-{
-    return (-scores[index - 1] < 0 && scores[index] < 0);
-}
-
-static int16_t see(Position &position, Move move)
-{
-    static constexpr int see_piece_vals[]{
-        100, 300, 325, 500, 900, 1000,
-        100, 300, 325, 500, 900, 1000, 0
-    };
-
-    int16_t scores[32] = {0};
-    int index = 0;
-
-    Square from = move.from();
-    Square to = move.to();
-
-    Piece capturing = position.pieces.squares[from];
-    Piece captured = position.pieces.squares[to];
-    Color attacker = color_of(capturing);
-
-    uint64_t from_set = (1ull << from);
-    uint64_t occ = position.total_occupancy(), bishops = 0, rooks = 0;
-
-    bishops = rooks = position.pieces.bitboards[Queen];
-    bishops |= position.pieces.bitboards[Bishop];
-    rooks   |= position.pieces.bitboards[Rook];
-
-    uint64_t attack_def = Attacks::attackers_to_sq(position, to);
-    scores[index] = see_piece_vals[captured];
-
-    do
-    {
-        index++;
-        attacker = !attacker;
-        scores[index] = see_piece_vals[capturing] - scores[index - 1];
-
-        if (lost_material(scores, index))
-            break;
-
-        attack_def ^= from_set;
-        occ ^= from_set;
-
-        attack_def |= occ & ((Attacks::bishop(to, occ) & bishops) | (Attacks::rook(to, occ) & rooks));
-        from_set = least_valuable_attacker(position, attack_def, attacker, capturing);
-    } while (from_set);
-
-    while (--index)
-    {
-        scores[index - 1] = -(-scores[index - 1] > scores[index] ? -scores[index - 1] : scores[index]);
-    }
-
-    return scores[0];
-}
-
-template <bool quiet = false>
-static void score_movelist(Movelist &movelist, Search::Info& search)
-{
-    Position& position = *search.position;
-    for (auto &move : movelist)
-    {
-        if constexpr (!quiet)
+        for (int i = 0; i < total_pieces; i++)
         {
-            int score = see(position, move);
+            capturing = make_piece(PieceType(i), side);
+            uint64_t pieces = position.pieces.bitboards[i] & position.pieces.colors[side] & attackers;
 
-            score += get_history(search.capture_history, position, move) / 128;
-
-            if (move.flag() == MoveFlag::promotion)
-                score += move.promoted() == PieceType::Queen ? 1000 : 300;
-
-            move.score = score;
+            if (pieces)     
+                return pieces & (~pieces + 1);
         }
-        else
+        return 0;
+    }
+
+    bool lost_material(int16_t scores[16], int index)
+    {
+        return (-scores[index - 1] < 0 && scores[index] < 0);
+    }
+
+    int16_t see(Position &position, Move move)
+    {
+        static constexpr int see_piece_vals[]{
+            100, 300, 325, 500, 900, 1000,
+            100, 300, 325, 500, 900, 1000, 0
+        };
+
+        int16_t scores[32] = {0};
+        int index = 0;
+
+        Square from = move.from();
+        Square to = move.to();
+
+        Piece capturing = position.pieces.squares[from];
+        Piece captured = position.pieces.squares[to];
+        Color attacker = color_of(capturing);
+
+        uint64_t from_set = (1ull << from);
+        uint64_t occ = position.total_bb(), bishops = 0, rooks = 0;
+
+        bishops = rooks = position.pieces.bitboards[Queen];
+        bishops |= position.pieces.bitboards[Bishop];
+        rooks   |= position.pieces.bitboards[Rook];
+
+        uint64_t attack_def = Attacks::attackers_to_sq(position, to);
+        scores[index] = see_piece_vals[captured];
+
+        do
         {
-            int score = get_history(search.history, position, move);
+            index++;
+            attacker = !attacker;
+            scores[index] = see_piece_vals[capturing] - scores[index - 1];
 
-            if (move.flag() == MoveFlag::promotion)
-                score += 10000;
+            if (lost_material(scores, index))
+                break;
 
-            move.score = score;
+            attack_def ^= from_set;
+            occ ^= from_set;
+
+            attack_def |= occ & ((Attacks::bishop(to, occ) & bishops) | (Attacks::rook(to, occ) & rooks));
+            from_set = least_valuable_attacker(position, attack_def, attacker, capturing);
+        } while (from_set);
+
+        while (--index)
+        {
+            scores[index - 1] = -(-scores[index - 1] > scores[index] ? -scores[index - 1] : scores[index]);
+        }
+
+        return scores[0];
+    }
+
+    template <bool quiet = false>
+    void score_movelist(Movelist &movelist, Search::Info& search)
+    {
+        Position& position = *search.position;
+        for (auto &move : movelist)
+        {
+            if constexpr (!quiet)
+            {
+                int score = see(position, move);
+
+                score += get_history(search.capture_history, position, move) / 128;
+
+                if (move.flag() == Move::Flag::promotion)
+                    score += move.promoted() == PieceType::Queen ? 1000 : 300;
+
+                move.score = score;
+            }
+            else
+            {
+                int score = get_history(search.history, position, move);
+
+                if (move.flag() == Move::Flag::promotion)
+                    score += 10000;
+
+                move.score = score;
+            }
         }
     }
-}
 
-void bubble_top_move(Movelist::iterator begin, Movelist::iterator end)
-{  
-    auto best = std::max_element(begin, end);
-    std::iter_swap(best, begin);
+    void bubble_top_move(Movelist::iterator begin, Movelist::iterator end)
+    {  
+        auto best = std::max_element(begin, end);
+        std::iter_swap(best, begin);
+    }
 }
 
 MovePicker::MovePicker(Search::Info& s)
@@ -136,11 +140,11 @@ bool MovePicker::qnext(Move &move)
 
     if (stage == Stage::HashMove) 
     {
-        gen.generate<MoveGenType::noisy>(position);
+        position.generate_noisy_moves(movelist);
         
-        score_movelist<false>(gen.movelist, *search);
-        bubble_top_move(gen.movelist.begin(), gen.movelist.end());
-        current = gen.movelist.begin();
+        score_movelist<false>(movelist, *search);
+        bubble_top_move(movelist.begin(), movelist.end());
+        current = movelist.begin();
 
         stage = Stage::GiveGoodNoisy;
     }
@@ -148,10 +152,10 @@ bool MovePicker::qnext(Move &move)
     if (stage == Stage::GiveGoodNoisy)
     {
         stage = Stage::GenQuiet;
-        if (current != gen.movelist.end() && current->score >= 0)
+        if (current != movelist.end() && current->score >= 0)
         {
             move = *current++;
-            bubble_top_move(current, gen.movelist.end());
+            bubble_top_move(current, movelist.end());
             return true;
         }
         return false;
@@ -163,7 +167,8 @@ bool MovePicker::next(Move &move)
 {
     Position& position = *search->position;
 
-    auto can_move = [&](Move m) {
+    auto can_move = [&](Move m) 
+    {
         return position.move_is_pseudolegal(m) && position.move_is_legal(m);
     };
 
@@ -183,21 +188,21 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GenNoisy)
     {
-        gen.generate<MoveGenType::noisy>(position);
-        
-        score_movelist(gen.movelist, *search);
-        bubble_top_move(gen.movelist.begin(), gen.movelist.end());
-        current = gen.movelist.begin();
+        position.generate_noisy_moves(movelist);
+
+        score_movelist(movelist, *search);
+        bubble_top_move(movelist.begin(), movelist.end());
+        current = movelist.begin();
 
         stage = Stage::GiveGoodNoisy;
     }
 
     if (stage == Stage::GiveGoodNoisy)
     {
-        if (current != gen.movelist.end() && current->score >= 0)
+        if (current != movelist.end() && current->score >= 0)
         {
             move = *current++;
-            bubble_top_move(current, gen.movelist.end());
+            bubble_top_move(current, movelist.end());
             return true;
         }
         stage = Stage::Killer1;
@@ -229,10 +234,10 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GiveBadNoisy)
     {
-        if (current != gen.movelist.end())
+        if (current != movelist.end())
         {
             move = *current++;
-            bubble_top_move(current, gen.movelist.end());
+            bubble_top_move(current, movelist.end());
             return true;
         }
         stage = Stage::GenQuiet;
@@ -240,21 +245,21 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GenQuiet && !skip_quiets)
     {
-        gen.movelist.clear();
-        gen.generate<MoveGenType::quiet>(position);
-
-        score_movelist<true>(gen.movelist, *search);
-        bubble_top_move(gen.movelist.begin(), gen.movelist.end());
-        current = gen.movelist.begin();
+        movelist.clear();
+        position.generate_quiet_moves(movelist);
+        
+        score_movelist<true>(movelist, *search);
+        bubble_top_move(movelist.begin(), movelist.end());
+        current = movelist.begin();
         stage = Stage::GiveQuiet;
     }
 
     if (stage == Stage::GiveQuiet && !skip_quiets)
     {
-        if (current != gen.movelist.end())
+        if (current != movelist.end())
         {
             move = *current++;
-            bubble_top_move(current, gen.movelist.end());
+            bubble_top_move(current, movelist.end());
             return true;
         }
         return false;

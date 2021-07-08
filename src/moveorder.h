@@ -17,7 +17,8 @@
 */
 #pragma once
 #include "search.h"
-#include "movegen.h"
+#include "movelist.h"
+
 class MovePicker
 {
 public:
@@ -38,7 +39,7 @@ public:
     bool next(Move &);
     bool qnext(Move &);
 
-    MoveGenerator<true> gen;
+    Movelist movelist;
     Stage stage = Stage::HashMove;
     bool skip_quiets = false;
 private:

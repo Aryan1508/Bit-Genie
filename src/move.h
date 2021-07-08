@@ -19,16 +19,17 @@
 #include "Square.h"
 #include <string>
 
-enum class MoveFlag : uint8_t
-{
-    normal,
-    enpassant,
-    castle,
-    promotion
-};
 
 struct Move 
 {
+    enum class Flag : uint8_t
+    {
+        normal,
+        enpassant,
+        castle,
+        promotion
+    };
+
     uint16_t data;
     int16_t score;
 
@@ -42,7 +43,7 @@ struct Move
         : data(from | (to << 6)), score(0)
     {}
 
-    constexpr Move(Square from, Square to, MoveFlag flag)
+    constexpr Move(Square from, Square to, Flag flag)
         : data(from | (to << 6) | ((uint8_t)flag << 12)), score(0)
     {}
 
@@ -90,9 +91,9 @@ struct Move
         return static_cast<Square>((data >> 6) & 0x3f);
     }
 
-    MoveFlag flag() const noexcept 
+    Flag flag() const noexcept 
     {
-        return static_cast<MoveFlag>((data >> 12) & 0x3);
+        return static_cast<Flag>((data >> 12) & 0x3);
     }
     
     PieceType promoted() const noexcept

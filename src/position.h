@@ -33,7 +33,7 @@ public:
 
     uint64_t enemy_bb() const;
 
-    uint64_t total_occupancy() const;
+    uint64_t total_bb() const;
 
     void apply_move(Move);
 
@@ -56,6 +56,12 @@ public:
     bool move_exists(Move);
 
     bool apply_move(std::string const &);
+
+    void generate_moves(Movelist&);
+
+    void generate_noisy_moves(Movelist&);
+
+    void generate_quiet_moves(Movelist&);
 
     bool should_do_null() const;
 

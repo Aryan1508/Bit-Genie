@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "position.h"
+#include "move.h"
 #include <array>
 #include <algorithm>
 
@@ -64,15 +64,9 @@ public:
 
     Move &operator[](size_t pos) { return moves[pos]; }
 
-    template <bool check = false>
-    void add(Position &position, Move &&move)
+    void add(Move move)
     {
-        if constexpr (check)
-        {
-            if (!position.move_is_legal(move))
-                return;
-        }
-        moves[cap++] = std::move(move);
+        moves[cap++] = move;
     }
 
     bool find(Move move)
