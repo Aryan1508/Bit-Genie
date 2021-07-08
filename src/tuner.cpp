@@ -50,10 +50,10 @@ void init_coeffs(TCoeffs coeffs)
 
     coeffs[c++] = ET.material[Pawn];
     coeffs[c++] = ET.stacked;
-    coeffs[c++] = ET.isolated;
     coeffs[c++] = ET.passed_connected;
     coeffs[c++] = ET.passed_tempo;
     coeffs[c++] = ET.support;
+    for(int i = 0;i <  8;i++) coeffs[c++] = ET.isolated[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Pawn][i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.passed[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.passer_blocked[i];
@@ -176,10 +176,10 @@ void init_base_params(TVector params)
     // Pawn eval
     init_param(params[c++], PawnEval::value);
     init_param(params[c++], PawnEval::stacked);
-    init_param(params[c++], PawnEval::isolated);
     init_param(params[c++], PawnEval::passed_connected);
     init_param(params[c++], PawnEval::passed_tempo);
     init_param(params[c++], PawnEval::support);
+    for(int i = 0;i <  8;i++) init_param(params[c++], PawnEval::isolated[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::psqt[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passed[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passer_blocked[i]);
@@ -359,10 +359,10 @@ void save_params(TVector params, TVector current_params)
     fil << "\nnamespace PawnEval\n{";
     print_single(tparams, "value", fil, c);
     print_single(tparams, "stacked", fil, c);
-    print_single(tparams, "isolated", fil, c);
     print_single(tparams, "passed_connected", fil, c);
     print_single(tparams, "passed_tempo", fil, c);
     print_single(tparams, "support", fil, c);
+    print_array(tparams, 8, "isolated", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     print_array(tparams, 64, "passed", fil, c);
     print_array(tparams, 64, "passer_blocked", fil, c);

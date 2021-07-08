@@ -135,8 +135,9 @@ static int evaluate_pawn(Position const &position, EvalData& data, Square sq, Co
 
     if (pawn_is_isolated(friend_pawns, sq))
     {
-        TRACE_1(isolated);
-        score += PawnEval::isolated;
+        int f = (int)file_of(sq);
+        TRACE_2(isolated, f);
+        score += PawnEval::isolated[f];
     }
 
     if (pawn_is_stacked(friend_pawns, sq))

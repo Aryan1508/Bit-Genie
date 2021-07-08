@@ -28,7 +28,7 @@ struct EvalTrace
     int material[5];
     int pawn_shield[4];
     int stacked;
-    int isolated;
+    int isolated[8];
     int passed_connected;
     int passed_tempo;
     int support;
