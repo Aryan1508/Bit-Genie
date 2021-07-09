@@ -53,7 +53,9 @@ public:
     TTable(int mb) { resize(mb); }
 
     void resize(int);
+   
     void add(Position const &, Move, int16_t score, uint8_t depth, TEFlag, int16_t);
+   
     void reset()
     {
         std::fill(entries.begin(), entries.end(), TEntry());
@@ -63,6 +65,7 @@ public:
 
     std::vector<Move> extract_pv(Position&, int);
 
+    
 private:
     std::vector<TEntry> entries;
 };

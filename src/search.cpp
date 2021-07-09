@@ -121,6 +121,18 @@ namespace
         search.killers[search.stats.ply][0] = move;
     }
 
+    int16_t mate_score_to_tt(int score, int ply)
+    {
+        return score  >  MinMateScore ? score + ply : 
+               score  < -MinMateScore ? score - ply : score;
+    }
+
+    int16_t tt_score_to_mate(int score, int ply)
+    {
+        return score  >  MinMateScore ? score - ply : 
+               score  < -MinMateScore ? score + ply : score;
+    }
+
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
@@ -157,14 +169,16 @@ namespace
         if (entry.depth >= depth && tthit)
         {
             Move move = Move(entry.move);
+            int score = tt_score_to_mate(entry.score, search.stats.ply);
+
             if (entry.flag == TEFlag::exact || 
-               (entry.flag == TEFlag::lower && entry.score >= beta) || 
-               (entry.flag == TEFlag::upper && entry.score <= alpha))
+               (entry.flag == TEFlag::lower && score >= beta) || 
+               (entry.flag == TEFlag::upper && score <= alpha))
                {
-                    if (!move_is_capture(position, move) && entry.score >= beta)
+                    if (!move_is_capture(position, move) && score >= beta)
                         history_bonus(search.history, position, move, depth);
                         
-                    return { entry.score, move };
+                    return { score, move };
                }
         }
 
@@ -281,7 +295,7 @@ namespace
             return 0;
 
         TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::exact;
-        TT.add(position, result.best_move, (int16_t)result.score, depth, flag, eval);
+        TT.add(position, result.best_move, mate_score_to_tt(result.score, search.stats.ply), depth, flag, eval);
 
         return result;
     }
