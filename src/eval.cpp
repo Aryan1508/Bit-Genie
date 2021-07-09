@@ -44,13 +44,28 @@ struct EvalData
     int king_attackers_count[2] = {0};
     int king_attackers_weight[2] = {0};
     uint64_t king_ring[2] = {0};
+    uint64_t inner_king_ring[2] = {0};
+    uint64_t outer_king_ring[2] = {0};
     int attackers_count[2];
 
     void init(Position const &position)
     {
         std::memset(this, 0, sizeof(EvalData));
-        king_ring[White] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
-        king_ring[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
+
+        uint64_t wring = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
+        uint64_t bring = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
+
+        inner_king_ring[White] = wring;
+        inner_king_ring[Black] = bring;
+
+        wring |= shift<Direction::north>(wring);
+        bring |= shift<Direction::south>(bring);
+
+        outer_king_ring[White] = wring & ~inner_king_ring[White];
+        outer_king_ring[Black] = bring & ~inner_king_ring[Black];
+
+        king_ring[White] = wring;
+        king_ring[Black] = bring;
     }
 
     void update_attackers_count(uint64_t attacks, Color by)
@@ -71,9 +86,11 @@ static constexpr int calculate_moblity(Position const &position, EvalData &data,
     {
         if (attacks & data.king_ring[!us])
         {
-            data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.king_ring[!us]);
+            data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.inner_king_ring[!us]);
+            data.king_attackers_weight[us] += (KingEval::attack_weight[pt] * popcount64(attacks & data.outer_king_ring[!us])) / 2;
             data.king_attackers_count[us]++;
         }
+
         int count = popcount64(attacks);
         TRACE_3(mobility, pt, count);
 
@@ -87,7 +104,8 @@ static constexpr int calculate_moblity(Position const &position, EvalData &data,
 
         if (attacks & data.king_ring[!us])
         {
-            data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.king_ring[!us]);
+            data.king_attackers_weight[us] += KingEval::attack_weight[pt] * popcount64(attacks & data.inner_king_ring[!us]);
+            data.king_attackers_weight[us] += (KingEval::attack_weight[pt] * popcount64(attacks & data.outer_king_ring[!us])) / 2;
             data.king_attackers_count[us]++;
         }
 
@@ -333,6 +351,8 @@ static int evaluate_king(Position const &position, EvalData &data, Square sq, Co
 
         if (!position.pieces.get_piece_bb<Queen>(enemy))
             weight /= 2;
+
+        weight = std::min(99, weight);
 
         score += KingEval::safety_table[weight];
         TRACE_2(safety_table, weight);
