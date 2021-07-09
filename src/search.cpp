@@ -27,17 +27,21 @@
 #include <algorithm>
 
 int lmr_reductions_array[64][64]{0};
-
 int lmp_margin[64][2]{0};
 int quiet_lmp_margin[64][2]{0};
 
-constexpr int see_pruning_margins[5] 
-{
-    0, -100, -100, -300, -325
-};
-
 namespace
 {
+    constexpr int rfp_margin[6]
+    {
+        0, 120, 340, 510, 680, 850
+    };
+
+    constexpr int see_pruning_margins[5] 
+    {
+        0, -100, -100, -300, -325
+    };
+
     enum
     {
         MinEval = -32001,
@@ -187,7 +191,7 @@ namespace
 
         bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];
 
-        if (!at_root && !in_check && depth < 6 && (eval - depth * 170) >= beta)
+        if (!at_root && !in_check && depth < 6 && (eval - rfp_margin[depth]) >= beta )
             return eval;
 
         if (!pv_node && !in_check && depth >= 4 && !at_root && do_null && position.should_do_null())
