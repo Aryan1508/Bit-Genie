@@ -63,6 +63,7 @@ void init_coeffs(TCoeffs coeffs)
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Knight][i];
 
     coeffs[c++] = ET.material[Bishop];
+    coeffs[c++] = ET.friendly_diagonal;
     for(int i = 0;i < 14;i++) coeffs[c++] = ET.mobility[Bishop][i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Bishop][i];
 
@@ -193,6 +194,7 @@ void init_base_params(TVector params)
 
     // Bishop eval
     init_param(params[c++], BISHOP_VALUE);
+    init_param(params[c++], FRIENDLY_DIAGONAL);
     for(int i = 0;i < 14;i++)  init_param(params[c++], BISHOP_MOBILITY[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], BISHOP_PSQT[i]);
 
@@ -375,6 +377,7 @@ void save_params(TVector params, TVector current_params)
     print_array(tparams, 64, "KNIGHT_PSQT", fil, c);
 
     print_single(tparams, "BISHOP_VALUE", fil, c);
+    print_single(tparams, "FRIENDLY_DIAGONAL", fil, c);
     print_array(tparams, 14, "BISHOP_MOBILITY", fil, c);
     print_array(tparams, 64, "BISHOP_PSQT", fil, c);
 

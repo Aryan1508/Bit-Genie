@@ -174,6 +174,7 @@ namespace
     {
         int score = 0;
         Square relative_sq = psqt_sq(sq, us);
+        uint64_t friend_queens = position.pieces.get_piece_bb<Queen>(us);
 
         score += BISHOP_PSQT[relative_sq];
         TRACE_3(psqt, Bishop, relative_sq);
@@ -182,6 +183,12 @@ namespace
 
         score += BISHOP_VALUE;
         TRACE_2(material, Bishop);
+
+        if ((BitMask::diagonals[sq] | BitMask::antidiagonals[sq]) & friend_queens)
+        {
+            TRACE_1(friendly_diagonal);
+            score += FRIENDLY_DIAGONAL;
+        }
 
         return score;
     }
