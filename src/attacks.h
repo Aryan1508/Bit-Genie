@@ -59,7 +59,6 @@ namespace Attacks
 
     inline bool square_attacked(Position const &position, Square sq, Color enemy, uint64_t occupancy)
     {
-        assert(is_ok(sq));
         uint64_t pawns = position.pieces.get_piece_bb<Pawn>(enemy);
         uint64_t knights = position.pieces.get_piece_bb<Knight>(enemy);
         uint64_t bishops = position.pieces.get_piece_bb<Bishop>(enemy);

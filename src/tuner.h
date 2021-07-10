@@ -22,7 +22,7 @@
 */
 
 #pragma once 
-#ifdef TUNE 
+#ifdef TUNE
 #include "misc.h"
 
 #define DATASET     ("C:/tuning/lichess-quiet.txt")

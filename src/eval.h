@@ -22,6 +22,9 @@
 inline EvalTrace ET;
 #endif
 
-int get_phase(Position const &);
-int scale_factor(Position const&, int eval);
-int eval_position(Position const &);
+namespace Eval
+{
+    int get_phase(Position const &);
+    int get_scale_factor(Position const&, int eval);
+    int evaluate(Position const &);
+}

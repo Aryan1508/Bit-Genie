@@ -76,13 +76,13 @@ namespace
         if (!at_root)
         {
             if (search.stats.ply >= MaxPly)
-                return eval_position(position);
+                return Eval::evaluate(position);
 
             if (position.is_drawn())
                 return 0;
         }
 
-        int stand_pat = eval_position(position);
+        int stand_pat = Eval::evaluate(position);
 
         if (stand_pat >= beta)
             return beta;
@@ -164,7 +164,7 @@ namespace
         if (!at_root)
         {
             if (search.stats.ply >= MaxPly)
-                return eval_position(position);
+                return Eval::evaluate(position);
 
             if (position.is_drawn())
                 return 0;
@@ -186,7 +186,7 @@ namespace
                }
         }
 
-        int eval = tthit ? entry.seval : eval_position(position);
+        int eval = tthit ? entry.seval : Eval::evaluate(position);
         search.eval[search.stats.ply] = eval;
 
         bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];
@@ -321,7 +321,7 @@ namespace
         }
         else
         {
-            o << "cp " << int(score * 100 / mg_score(PawnEval::value));
+            o << "cp " << int(score * 100 / mg_score(PAWN_VALUE));
         }
         return o.str();
     }

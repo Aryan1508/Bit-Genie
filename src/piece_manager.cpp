@@ -96,7 +96,7 @@ bool PieceManager::add_rank(Square &counter, std::string_view rank)
 {
     for (auto const c : rank)
     {
-        if (!is_ok(counter))
+        if (counter > Square::H8)
             return false;
 
         if (std::isalpha(c))
@@ -127,7 +127,6 @@ bool PieceManager::add_rank(Square &counter, std::string_view rank)
 
 Piece const &PieceManager::get_piece(const Square sq) const
 {
-    assert(is_ok(sq));
     return squares[sq];
 }
 

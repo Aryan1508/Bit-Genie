@@ -40,7 +40,6 @@ constexpr uint64_t shift(uint64_t bits, Direction dir)
 // Position of the least significant bit in a bitboard.
 inline Square get_lsb(uint64_t b)
 {
-    assert(b);
     unsigned long idx;
     _BitScanForward64(&idx, b);
     return to_sq(idx);
@@ -56,7 +55,6 @@ inline int popcount64(uint64_t bb)
 // Position of the least significant bit in a bitboard
 inline Square get_lsb(uint64_t bb)
 {
-    assert(bb);
     return static_cast<Square>(__builtin_ctzll(bb));
 }
 
@@ -71,7 +69,6 @@ inline int popcount64(uint64_t bb)
 // and return its index
 inline Square pop_lsb(uint64_t &bb)
 {
-    assert(bb);
     Square index = get_lsb(bb);
     bb &= (bb - 1);
     return index;

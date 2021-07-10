@@ -15,38 +15,34 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "Square.h"
-#include "board.h"
+#include "evaldata.h"
 
-namespace
+#include "attacks.h"
+#include "position.h"
+#include <cstring>
+
+namespace Eval
 {
-    bool verify_sq_size(std::string_view sq)
+    
+    Data::Data(Position const& position)
     {
-        return sq.size() == 2;
+        reset();
+        init(position);
     }
 
-    bool verify_sq_rank(const char rank)
+    void Data::reset()
     {
-        std::string valid_ranks = "123456789";
-        return valid_ranks.find(rank) != std::string::npos;
+        std::memset(this, 0, sizeof(Data));
     }
 
-    bool verify_sq_file(const char file)
+    void Data::init(Position const &position)
     {
-        std::string valid_files = "abcdefgh";
-        return valid_files.find(file) != std::string::npos;
+        king_ring[White] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
+        king_ring[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
     }
-}
-bool is_valid_sq(std::string_view sq)
-{
-    return verify_sq_size(sq) && verify_sq_file(sq[0]) && verify_sq_rank(sq[1]);
-}
 
-std::ostream &operator<<(std::ostream &o, const Square sq)
-{
-    if (sq == Square::bad_sq)
+    void Data::update_attackers_count(uint64_t attacks, Color by)
     {
-        return o << '-';
+        attackers_count[by] += popcount64(attacks);
     }
-    return o << file_of(sq) << rank_of(sq);
-}
+}   

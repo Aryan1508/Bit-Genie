@@ -15,38 +15,21 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "Square.h"
-#include "board.h"
+#include "misc.h"
 
-namespace
+namespace Eval 
 {
-    bool verify_sq_size(std::string_view sq)
+    struct Data
     {
-        return sq.size() == 2;
-    }
+        int king_attackers_count[2] = {0};
+        int king_attackers_weight[2] = {0};
+        uint64_t king_ring[2] = {0};
+        int attackers_count[2];
 
-    bool verify_sq_rank(const char rank)
-    {
-        std::string valid_ranks = "123456789";
-        return valid_ranks.find(rank) != std::string::npos;
-    }
+        Data(Position const&);
 
-    bool verify_sq_file(const char file)
-    {
-        std::string valid_files = "abcdefgh";
-        return valid_files.find(file) != std::string::npos;
-    }
-}
-bool is_valid_sq(std::string_view sq)
-{
-    return verify_sq_size(sq) && verify_sq_file(sq[0]) && verify_sq_rank(sq[1]);
-}
-
-std::ostream &operator<<(std::ostream &o, const Square sq)
-{
-    if (sq == Square::bad_sq)
-    {
-        return o << '-';
-    }
-    return o << file_of(sq) << rank_of(sq);
+        void reset();
+        void init(Position const &position);
+        void update_attackers_count(uint64_t attacks, Color by);
+    };
 }
