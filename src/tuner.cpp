@@ -306,12 +306,12 @@ void print_single(TVector params, std::string_view name, std::ostream& o, int& o
 
 void print_array(TVector params, int count, std::string_view name, std::ostream& o, int& offset)
 {
-    o << "\nconstexpr int " << name << "[" << count << "]\n    {";
+    o << "\nconstexpr int " << name << "[" << count << "]\n{";
 
     for(int i = 0;i < count;i++)
     {
         if (i % 8 == 0)
-            o << "\n";
+            o << "\n    ";
         
         o << print_param(params[offset + i]) << ", ";
     }
@@ -360,7 +360,7 @@ void save_params(TVector params, TVector current_params)
 
     print_single(tparams, "PAWN_VALUE", fil, c);
     print_single(tparams, "PAWN_STACKED", fil, c);
-    print_single(tparams, "ISOLATED", fil, c);
+    print_single(tparams, "PAWN_ISOLATED", fil, c);
     print_single(tparams, "SUPPORTED_PASSER", fil, c);
     print_single(tparams, "PASSER_TEMPO", fil, c);
     print_single(tparams, "PAWN_SUPPORT", fil, c);

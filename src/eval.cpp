@@ -67,36 +67,37 @@ namespace
 
             int count = popcount64(attacks & ~attacked);
             TRACE_3(mobility, pt, count);
-
             return mobility_scores[count];
         }
         else  
         {
             int count = popcount64(attacks);
             TRACE_3(mobility, pt, count);
-
             return mobility_scores[count];
         }
     }
 
-    bool pawn_passed(uint64_t enemy_pawns, Color us, Square sq)
-    {
-        return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
-    }
-
-    bool pawn_is_isolated(uint64_t friend_pawns, Square sq)
-    {
-        return !(friend_pawns & BitMask::neighbor_files[sq]);
-    }
-
-    bool pawn_is_stacked(uint64_t friend_pawns, Square sq)
-    {
-        uint64_t sq_bb = 1ull << sq;
-        return (shift<Direction::north>(sq_bb) & friend_pawns) | (shift<Direction::south>(sq_bb) & friend_pawns);
-    }
-
     int evaluate_pawn(Position const &position, Eval::Data& data, Square sq, Color us)
-    {
+    {   
+        auto pawn_is_passed = 
+        [](uint64_t enemy_pawns, Color us, Square sq)
+        {
+            return !(enemy_pawns & BitMask::passed_pawn[us][sq]);
+        };
+
+        auto pawn_is_stacked = 
+        [](uint64_t friend_pawns, Square sq)
+        {
+            uint64_t sq_bb = 1ull << sq;
+            return (shift<Direction::north>(sq_bb) & friend_pawns) | (shift<Direction::south>(sq_bb) & friend_pawns);
+        };
+
+        auto pawn_is_isolated = 
+        [](uint64_t friend_pawns, Square sq)
+        {
+            return !(friend_pawns & BitMask::neighbor_files[sq]);
+        };
+
         int score = 0;
         uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
         uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
@@ -121,21 +122,21 @@ namespace
             score += PAWN_STACKED;
         }
 
-        if (pawn_passed(enemy_pawns, us, sq))
+        if (pawn_is_passed(enemy_pawns, us, sq))
         {
             if (ahead_squares & enemy)
             {
                 score += BLOCKED_PASSER[relative_sq];
-                TRACE_2(passer_blocked, relative_sq);
+                TRACE_2(blocked_passer, relative_sq);
             }
             else 
             {
                 score += PASSER[relative_sq];
-                TRACE_2(passed, relative_sq);
+                TRACE_2(passer, relative_sq);
 
                 if (position.side == us)
                 {
-                    TRACE_1(passed_tempo);
+                    TRACE_1(passer_tempo);
                     score += PASSER_TEMPO;
                 }
             }
@@ -169,23 +170,41 @@ namespace
         return score;
     }
 
-    bool is_on_open_file(Position const &position, Square sq)
+    int evaluate_bishop(Position const &position, Eval::Data &data, Square sq, Color us)
     {
-        uint64_t file = BitMask::files[sq];
-        return !(file & position.pieces.bitboards[Pawn]);
-    }
+        int score = 0;
+        Square relative_sq = psqt_sq(sq, us);
 
-    bool is_on_semiopen_file(Position const &position, Square sq)
-    {
-        uint64_t file = BitMask::files[sq];
-        uint64_t white = position.pieces.get_piece_bb<Pawn>(White);
-        uint64_t black = position.pieces.get_piece_bb<Pawn>(Black);
+        score += BISHOP_PSQT[relative_sq];
+        TRACE_3(psqt, Bishop, relative_sq);
 
-        return !(file & white) || !(file & black);
+        score += calculate_moblity<Bishop>(position, data, sq, us, BISHOP_MOBILITY);
+
+        score += BISHOP_VALUE;
+        TRACE_2(material, Bishop);
+
+        return score;
     }
 
     int evaluate_rook(Position const &position, Eval::Data &data, Square sq, Color us)
     {
+        auto is_on_semi_open_file = 
+        [](Position const &position, Square sq)
+        {
+            uint64_t file  = BitMask::files[sq];
+            uint64_t white = position.pieces.get_piece_bb<Pawn>(White);
+            uint64_t black = position.pieces.get_piece_bb<Pawn>(Black);
+
+            return !(file & white) || !(file & black);
+        };
+
+        auto is_on_open_file = 
+        [](Position const &position, Square sq)
+        {
+            uint64_t file = BitMask::files[sq];
+            return !(file & position.pieces.bitboards[Pawn]);
+        };
+
         int score = 0;
         Square relative_sq = psqt_sq(sq, us);
         uint64_t friend_rooks = position.pieces.get_piece_bb<Rook>(us) ^ (1ull << sq);
@@ -201,7 +220,7 @@ namespace
             score += OPEN_FILE;
         }
 
-        if (is_on_semiopen_file(position, sq))
+        if (is_on_semi_open_file(position, sq))
         {
             TRACE_1(semi_open_file);
             score += SEMI_OPEN_FILE;
@@ -235,34 +254,6 @@ namespace
         return score;
     }
 
-    int evaluate_bishop(Position const &position, Eval::Data &data, Square sq, Color us)
-    {
-        int score = 0;
-        Square relative_sq = psqt_sq(sq, us);
-
-        score += BISHOP_PSQT[relative_sq];
-        TRACE_3(psqt, Bishop, relative_sq);
-
-        score += calculate_moblity<Bishop>(position, data, sq, us, BISHOP_MOBILITY);
-
-        score += BISHOP_VALUE;
-        TRACE_2(material, Bishop);
-
-        return score;
-    }
-
-    template <typename Callable>
-    int evaluate_piece(Position const &position, Eval::Data &data, Callable F, uint64_t pieces, Color us)
-    {
-        int score = 0;
-        while (pieces)
-        {
-            Square sq = pop_lsb(pieces);
-            score += F(position, data, sq, us);
-        }
-        return score;
-    }
-
     int evaluate_king(Position const &position, Eval::Data &data, Square sq, Color us)
     {
         Square relative_sq = psqt_sq(sq, us);
@@ -293,13 +284,25 @@ namespace
         return score;
     }
 
+    template <typename Callable>
+    int evaluate_piece(Position const &position, Eval::Data &data, Callable F, uint64_t pieces, Color us)
+    {
+        int score = 0;
+        while (pieces)
+        {
+            Square sq = pop_lsb(pieces);
+            score += F(position, data, sq, us);
+        }
+        return score;
+    }
+
     template <PieceType type, typename Callable>
     int evaluate_piece(Position const &position, Eval::Data &data, Callable F)
     {
         int score = 0;
 
-        uint64_t white = position.pieces.bitboards[type] & position.pieces.colors[White];
-        uint64_t black = position.pieces.bitboards[type] & position.pieces.colors[Black];
+        uint64_t white = position.pieces.get_piece_bb<type>(White);
+        uint64_t black = position.pieces.get_piece_bb<type>(Black);
 
         score += evaluate_piece(position, data, F, white, Color::White);
         score -= evaluate_piece(position, data, F, black, Color::Black);
@@ -310,7 +313,6 @@ namespace
     {
         int phase = Eval::get_phase(position);
         int scale = Eval::get_scale_factor(position, score);
-
         return ((mg_score(score) * (256 - phase)) + (eg_score(score) * phase * (scale / 128.0f))) / 256;
     }
 
@@ -344,7 +346,6 @@ namespace
     int evaluate_pawn_structure(Position const& position)
     {
         int score = 0;
-
         uint64_t pawns = position.pieces.get_piece_bb<Pawn>(us);
 
         int supported = popcount64(pawns & Attacks::pawn(pawns, !us));
@@ -378,7 +379,6 @@ namespace Eval
             return 64;
 
         Color stronger = eval > 0 ? White : Black;
-
         uint64_t pawns = position.pieces.get_piece_bb<Pawn>(stronger);
         int count =  8 - popcount64(pawns);
 
@@ -391,12 +391,12 @@ namespace Eval
 
         Data data(position);
 
-        score += evaluate_piece<Pawn  >(position, data, evaluate_pawn);
+        score += evaluate_piece<Pawn  >(position, data, evaluate_pawn  );
         score += evaluate_piece<Knight>(position, data, evaluate_knight);
-        score += evaluate_piece<Rook  >(position, data, evaluate_rook);
+        score += evaluate_piece<Rook  >(position, data, evaluate_rook  );
         score += evaluate_piece<Bishop>(position, data, evaluate_bishop);
-        score += evaluate_piece<Queen >(position, data, evaluate_queen);
-        score += evaluate_piece<King  >(position, data, evaluate_king);
+        score += evaluate_piece<Queen >(position, data, evaluate_queen );
+        score += evaluate_piece<King  >(position, data, evaluate_king  );
 
         score += evaluate_control<White>(data);
         score -= evaluate_control<Black>(data); 
@@ -405,7 +405,6 @@ namespace Eval
         score -= evaluate_pawn_structure<Black>(position);
 
         TRACE_VAL(eval, score);
-
         score = scale_score(position, score);
 
         return position.side == White ? score : -score;
