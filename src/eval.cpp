@@ -63,6 +63,10 @@ template <PieceType pt, bool safe = false>
 static constexpr int calculate_moblity(Position const &position, EvalData &data, Square sq, Color us, const int *mobility_scores)
 {
     uint64_t occupancy = position.total_bb();
+    
+    if (pt == Rook)
+        occupancy ^= position.pieces.get_piece_bb<Rook>(us);
+
     uint64_t attacks = Attacks::generate(pt, sq, occupancy);
 
     data.update_attackers_count(attacks, us);
