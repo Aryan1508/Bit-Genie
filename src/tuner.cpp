@@ -69,6 +69,7 @@ void init_coeffs(TCoeffs coeffs)
     coeffs[c++] = ET.material[Rook];
     coeffs[c++] = ET.open_file;
     coeffs[c++] = ET.semi_open_file;
+    coeffs[c++] = ET.friendly_file;
     for(int i = 0;i < 15;i++) coeffs[c++] = ET.mobility[Rook][i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Rook][i];
 
@@ -198,6 +199,7 @@ void init_base_params(TVector params)
     init_param(params[c++], RookEval::value);
     init_param(params[c++], RookEval::open_file);
     init_param(params[c++], RookEval::semi_open_file);
+    init_param(params[c++], RookEval::friendly_file);
     for(int i = 0;i < 15;i++)  init_param(params[c++], RookEval::mobility[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], RookEval::psqt[i]);
 
@@ -384,6 +386,7 @@ void save_params(TVector params, TVector current_params)
     print_single(tparams, "value", fil, c);
     print_single(tparams, "open_file", fil, c);
     print_single(tparams, "semi_open_file", fil, c);
+    print_single(tparams, "friendly_file", fil, c);
     print_array(tparams, 15, "mobility", fil, c);
     print_array(tparams, 64, "psqt", fil, c);
     fil << "}\n";
