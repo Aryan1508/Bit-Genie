@@ -232,6 +232,12 @@ namespace
             score += FRIENDLY_FILE;
         }
 
+        if (BitMask::ranks[sq] & friend_rooks)
+        {
+            TRACE_1(friendly_rank);
+            score += FRIENDLY_RANK;
+        }
+
         score += ROOK_VALUE;
         TRACE_2(material, Rook);
 
