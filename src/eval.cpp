@@ -143,7 +143,7 @@ namespace
             if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
             {
                 score += SUPPORTED_PASSER;
-                TRACE_1(passed_connected);
+                TRACE_1(supported_passer);
             }
         }
 
@@ -367,6 +367,7 @@ namespace Eval
         int phase = 24 - 1 * popcount64(knights | bishops)
                        - 2 * popcount64(rooks)
                        - 4 * popcount64(queens);
+        phase = (phase * 256 + 12) / 24;
 
         return phase;
     }
