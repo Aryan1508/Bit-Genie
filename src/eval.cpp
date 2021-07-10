@@ -54,7 +54,7 @@ namespace
         uint64_t attacks = Attacks::generate(pt, sq, occupancy);
         data.update_attackers_count(attacks, us);
 
-        attacks &= ~occupancy;
+        attacks &= ~position.pieces.bitboards[us];
 
         if (attacks & data.king_ring[!us])
         {
