@@ -194,7 +194,7 @@ namespace
         if (!at_root && !in_check && depth < 6 && (eval - rfp_margin[depth]) >= beta )
             return eval;
 
-        if (!pv_node && !in_check && depth >= 4 && !at_root && do_null && position.should_do_null())
+        if (!pv_node && !in_check && depth >= 4 && !at_root && do_null && position.should_do_null() && eval + 300 >= beta)
         {
             int R = std::max(4, 3 + depth / 3);
 
