@@ -39,7 +39,7 @@ namespace
 
     constexpr int see_pruning_margins[5] 
     {
-        0, -100, -100, -300, -325
+        0, -100, -200, -300, -325
     };
 
     enum
