@@ -60,7 +60,7 @@ struct EvalData
 };
 
 template <PieceType pt, bool safe = false>
-static constexpr int calculate_moblity(Position const &position, EvalData &data, Square sq, Color us, const int *mobility_scores)
+static int calculate_moblity(Position const &position, EvalData &data, Square sq, Color us, const int *mobility_scores)
 {
     uint64_t occupancy = position.total_bb();
     
@@ -217,6 +217,7 @@ static int evaluate_rook(Position const &position, EvalData &data, Square sq, Co
 {
     int score = 0;
     Square relative_sq = psqt_sq(sq, us);
+    uint64_t friend_rooks = position.pieces.get_piece_bb<Rook>(us) ^ (1ull << sq);
 
     score += RookEval::psqt[relative_sq];
     TRACE_3(psqt, Rook, relative_sq);
@@ -233,6 +234,12 @@ static int evaluate_rook(Position const &position, EvalData &data, Square sq, Co
     {
         TRACE_1(semi_open_file);
         score += RookEval::semi_open_file;
+    }
+
+    if (BitMask::files[sq] & friend_rooks)
+    {
+        TRACE_1(friendly_file);
+        score += RookEval::friendly_file;
     }
 
     score += RookEval::value;
