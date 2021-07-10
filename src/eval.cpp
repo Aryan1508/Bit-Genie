@@ -54,6 +54,8 @@ namespace
         uint64_t attacks = Attacks::generate(pt, sq, occupancy);
         data.update_attackers_count(attacks, us);
 
+        attacks &= ~occupancy;
+
         if (attacks & data.king_ring[!us])
         {
             data.king_attackers_weight[us] += KING_ATTACK_WEIGHT[pt] * popcount64(attacks & data.king_ring[!us]);
