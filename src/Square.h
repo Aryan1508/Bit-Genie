@@ -90,9 +90,9 @@ constexpr Direction relative_forward(Color side)
     return side == White ? Direction::north : Direction::south;
 }
 
-constexpr Square psqt_sq(Square sq, Color side)
+constexpr Square psqt_sq(Square sq, Color color)
 {
-    return side == White ? sq : flip_square(sq);
+    return color == White ? flip_square(sq) : sq;
 }
 
 bool is_valid_sq(std::string_view);
