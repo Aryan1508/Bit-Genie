@@ -51,12 +51,12 @@ void init_coeffs(TCoeffs coeffs)
     coeffs[c++] = ET.material[Pawn];
     coeffs[c++] = ET.stacked;
     coeffs[c++] = ET.isolated;
-    coeffs[c++] = ET.passed_connected;
-    coeffs[c++] = ET.passed_tempo;
+    coeffs[c++] = ET.supported_passer;
+    coeffs[c++] = ET.passer_tempo;
     coeffs[c++] = ET.support;
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Pawn][i];
-    for(int i = 0;i < 64;i++) coeffs[c++] = ET.passed[i];
-    for(int i = 0;i < 64;i++) coeffs[c++] = ET.passer_blocked[i];
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.passer[i];
+    for(int i = 0;i < 64;i++) coeffs[c++] = ET.blocked_passer[i];
 
     coeffs[c++] = ET.material[Knight];
     for(int i = 0;i < 9;i++) coeffs[c++] =  ET.mobility[Knight][i];
@@ -122,7 +122,7 @@ void init_tuner_entry(TPos* entry, Position* position)
     entry->phase        = (phase * 256 + 12) / 24.0f;
 
     ET.reset();
-    entry->seval = position->side == White ? eval_position(*position) : -eval_position(*position);
+    entry->seval = position->side == White ? Eval::evaluate(*position) : -Eval::evaluate(*position);
 
     TCoeffs coeffs;
     init_coeffs(coeffs);
@@ -130,7 +130,7 @@ void init_tuner_entry(TPos* entry, Position* position)
 
     entry->eval = ET.eval;
     entry->turn = position->side;
-    entry->scale = scale_factor(*position, entry->seval) / 128.0f;
+    entry->scale = Eval::get_scale_factor(*position, entry->seval) / 128.0f;
 }
 
 void init_tuner_entries(TPos* entries)
@@ -175,46 +175,46 @@ void init_base_params(TVector params)
     int c = 0;
 
     // Pawn eval
-    init_param(params[c++], PawnEval::value);
-    init_param(params[c++], PawnEval::stacked);
-    init_param(params[c++], PawnEval::isolated);
-    init_param(params[c++], PawnEval::passed_connected);
-    init_param(params[c++], PawnEval::passed_tempo);
-    init_param(params[c++], PawnEval::support);
-    for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::psqt[i]);
-    for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passed[i]);
-    for(int i = 0;i < 64;i++) init_param(params[c++], PawnEval::passer_blocked[i]);
+    init_param(params[c++], PAWN_VALUE);
+    init_param(params[c++], PAWN_STACKED);
+    init_param(params[c++], PAWN_ISOLATED);
+    init_param(params[c++], SUPPORTED_PASSER);
+    init_param(params[c++], PASSER_TEMPO);
+    init_param(params[c++], PAWN_SUPPORT);
+    for(int i = 0;i < 64;i++) init_param(params[c++], PAWN_PSQT[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], PASSER[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], BLOCKED_PASSER[i]);
 
     // Knight eval 
-    init_param(params[c++], KnightEval::value);
-    for(int i = 0;i < 9;i++)  init_param(params[c++], KnightEval::mobility[i]);
-    for(int i = 0;i < 64;i++) init_param(params[c++], KnightEval::psqt[i]);
+    init_param(params[c++], KNIGHT_VALUE);
+    for(int i = 0;i < 9;i++)  init_param(params[c++], KNIGHT_MOBILITY[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], KNIGHT_PSQT[i]);
 
     // Bishop eval
-    init_param(params[c++], BishopEval::value);
-    for(int i = 0;i < 14;i++)  init_param(params[c++], BishopEval::mobility[i]);
-    for(int i = 0;i < 64;i++) init_param(params[c++], BishopEval::psqt[i]);
+    init_param(params[c++], BISHOP_VALUE);
+    for(int i = 0;i < 14;i++)  init_param(params[c++], BISHOP_MOBILITY[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], BISHOP_PSQT[i]);
 
     // Rook eval 
-    init_param(params[c++], RookEval::value);
-    init_param(params[c++], RookEval::open_file);
-    init_param(params[c++], RookEval::semi_open_file);
-    init_param(params[c++], RookEval::friendly_file);
-    for(int i = 0;i < 15;i++)  init_param(params[c++], RookEval::mobility[i]);
-    for(int i = 0;i < 64;i++) init_param(params[c++], RookEval::psqt[i]);
+    init_param(params[c++], ROOK_VALUE);
+    init_param(params[c++], OPEN_FILE);
+    init_param(params[c++], SEMI_OPEN_FILE);
+    init_param(params[c++], FRIENDLY_FILE);
+    for(int i = 0;i < 15;i++)  init_param(params[c++], ROOK_MOBILITY[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++] , ROOK_PSQT[i]);
 
     // Queen eval 
-    init_param(params[c++], QueenEval::value);
-    for(int i = 0;i < 28;i++)  init_param(params[c++], QueenEval::mobility[i]);
-    for(int i = 0;i < 64;i++) init_param(params[c++], QueenEval::psqt[i]);
+    init_param(params[c++], QUEEN_VALUE);
+    for(int i = 0;i < 28;i++)  init_param(params[c++], QUEEN_MOBILITY[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], QUEEN_PSQT[i]);
 
     // King eval
-    for(int i = 0;i <  4;i++) init_param(params[c++], KingEval::pawn_shield[i]);
-    for(int i = 0;i < 64;i++) init_param(params[c++], KingEval::psqt[i]);
-    for(int i = 0;i < 100;i++) init_param(params[c++], KingEval::safety_table[i]);
+    for(int i = 0;i <  4;i++) init_param(params[c++], PAWN_SHIELD[i]);
+    for(int i = 0;i < 64;i++) init_param(params[c++], KING_PSQT[i]);
+    for(int i = 0;i < 100;i++) init_param(params[c++], KING_SAFETY_TABLE[i]);
 
     // Misc eval
-    init_param(params[c++], MiscEval::control);
+    init_param(params[c++], CONTROL);
 
     if (c != NTERMS)
     {
@@ -300,22 +300,22 @@ std::string print_param(double param[2])
 
 void print_single(TVector params, std::string_view name, std::ostream& o, int& offset)
 {
-    o << "\n    constexpr int " << name << " = " << print_param(params[offset]) << ";\n";
+    o << "\nconstexpr int " << name << " = " << print_param(params[offset]) << ";\n";
     offset++;
 }
 
 void print_array(TVector params, int count, std::string_view name, std::ostream& o, int& offset)
 {
-    o << "\n    constexpr int " << name << "[" << count << "]\n    {";
+    o << "\nconstexpr int " << name << "[" << count << "]\n    {";
 
     for(int i = 0;i < count;i++)
     {
         if (i % 8 == 0)
-            o << "\n        ";
+            o << "\n";
         
         o << print_param(params[offset + i]) << ", ";
     }
-    o << "\n    };\n";
+    o << "\n};\n";
     offset += count;
 }
 
@@ -358,63 +358,48 @@ void save_params(TVector params, TVector current_params)
 #define eg_score(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
 )~";
 
-    fil << "\nnamespace PawnEval\n{";
-    print_single(tparams, "value", fil, c);
-    print_single(tparams, "stacked", fil, c);
-    print_single(tparams, "isolated", fil, c);
-    print_single(tparams, "passed_connected", fil, c);
-    print_single(tparams, "passed_tempo", fil, c);
-    print_single(tparams, "support", fil, c);
-    print_array(tparams, 64, "psqt", fil, c);
-    print_array(tparams, 64, "passed", fil, c);
-    print_array(tparams, 64, "passer_blocked", fil, c);
-    fil << "}\n";
+    print_single(tparams, "PAWN_VALUE", fil, c);
+    print_single(tparams, "PAWN_STACKED", fil, c);
+    print_single(tparams, "ISOLATED", fil, c);
+    print_single(tparams, "SUPPORTED_PASSER", fil, c);
+    print_single(tparams, "PASSER_TEMPO", fil, c);
+    print_single(tparams, "PAWN_SUPPORT", fil, c);
+    print_array(tparams, 64, "PAWN_PSQT", fil, c);
+    print_array(tparams, 64, "PASSER", fil, c);
+    print_array(tparams, 64, "BLOCKED_PASSER", fil, c);
 
-    fil << "\nnamespace KnightEval\n{";
-    print_single(tparams, "value", fil, c);
-    print_array(tparams, 9, "mobility", fil, c);
-    print_array(tparams, 64, "psqt", fil, c);
-    fil << "}\n";
+    print_single(tparams, "KNIGHT_VALUE", fil, c);
+    print_array(tparams, 9, "KNIGHT_MOBILITY", fil, c);
+    print_array(tparams, 64, "KNIGHT_PSQT", fil, c);
 
-    fil << "\nnamespace BishopEval\n{";
-    print_single(tparams, "value", fil, c);
-    print_array(tparams, 14, "mobility", fil, c);
-    print_array(tparams, 64, "psqt", fil, c);
-    fil << "}\n";
+    print_single(tparams, "BISHOP_VALUE", fil, c);
+    print_array(tparams, 14, "BISHOP_MOBILITY", fil, c);
+    print_array(tparams, 64, "BISHOP_PSQT", fil, c);
 
-    fil << "\nnamespace RookEval\n{";
-    print_single(tparams, "value", fil, c);
-    print_single(tparams, "open_file", fil, c);
-    print_single(tparams, "semi_open_file", fil, c);
-    print_single(tparams, "friendly_file", fil, c);
-    print_array(tparams, 15, "mobility", fil, c);
-    print_array(tparams, 64, "psqt", fil, c);
-    fil << "}\n";
+    print_single(tparams, "ROOK_VALUE", fil, c);
+    print_single(tparams, "OPEN_FILE", fil, c);
+    print_single(tparams, "SEMI_OPEN_FILE", fil, c);
+    print_single(tparams, "FRIENDLY_FILE", fil, c);
+    print_array(tparams, 15, "ROOK_MOBILITY", fil, c);
+    print_array(tparams, 64, "ROOK_PSQT", fil, c);
 
-    fil << "\nnamespace QueenEval\n{";
-    print_single(tparams, "value", fil, c);
-    print_array(tparams, 28, "mobility", fil, c);
-    print_array(tparams, 64, "psqt", fil, c);
-    fil << "}\n";
+    print_single(tparams, "QUEEN_VALUE", fil, c);
+    print_array(tparams, 28, "QUEEN_MOBILITY", fil, c);
+    print_array(tparams, 64, "QUEEN_PSQT", fil, c);
 
-    fil << "\nnamespace KingEval\n{";
-    print_array(tparams, 4, "pawn_shield", fil, c);
-    print_array(tparams, 64, "psqt", fil, c);
-    print_array(tparams, 100, "safety_table", fil, c);
+    print_array(tparams, 4, "PAWN_SHIELD", fil, c);
+    print_array(tparams, 64, "KING_PSQT", fil, c);
+    print_array(tparams, 100, "KING_SAFETY_TABLE", fil, c);
 
 fil << 
 R"~(
-    constexpr int attack_weight[5]
-    {
-        0, 2, 2, 3, 5
-    };
+constexpr int KING_ATTACK_WEIGHT[5]
+{
+    0, 2, 2, 3, 5
+};
 )~";
 
-    fil << "}\n";
-
-    fil << "\nnamespace MiscEval\n{";
-    print_single(tparams, "control", fil, c);
-    fil << "}\n";
+    print_single(tparams, "CONTROL", fil, c);
 
     if (c != NTERMS)
     {

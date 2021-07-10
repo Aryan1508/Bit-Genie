@@ -90,9 +90,10 @@ constexpr Direction relative_forward(Color side)
     return side == White ? Direction::north : Direction::south;
 }
 
-inline bool is_ok(const Square sq)
+constexpr Square psqt_sq(Square sq, Color side)
 {
-    return sq <= Square::H8;
+    return side == White ? sq : flip_square(sq);
 }
+
 bool is_valid_sq(std::string_view);
 std::ostream &operator<<(std::ostream &, const Square);

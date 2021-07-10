@@ -359,7 +359,7 @@ Piece Position::apply_castle(Move move)
         break;
 
     default:
-        assert(false);
+        throw std::runtime_error("Invalid move");
         break;
     }
 
@@ -421,7 +421,6 @@ void Position::revert_castle(Move move)
         break;
 
     default:
-        assert(false);
         break;
     }
 
