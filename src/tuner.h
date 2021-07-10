@@ -25,8 +25,8 @@
 #ifdef TUNE
 #include "misc.h"
 
-#define DATASET     ("C:/tuning/lichess-quiet.txt")
-#define NPOSITIONS  (2000005)
+#define DATASET     ("C:/tuning/lichess-big3.txt")
+#define NPOSITIONS  (7153653)
 #define ADAM_BETA1  (0.9)
 #define ADAM_BETA2  (0.999)
 #define NTERMS      (697)

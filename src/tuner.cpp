@@ -151,11 +151,11 @@ void init_tuner_entries(TPos* entries)
 
         if (i >= NPOSITIONS) break;
 
-        if (line.find("White") != line.npos)      entries[i].result = 1.0;
-        else if (line.find("Black") != line.npos) entries[i].result = 0.0;
+        if (line.find("[1.0]") != line.npos)      entries[i].result = 1.0;
+        else if (line.find("[0.0]") != line.npos) entries[i].result = 0.0;
         else                                      entries[i].result = 0.5;
 
-        std::string fen = line.substr(0, line.find("|") - 1);
+        std::string fen = line.substr(0, line.find("[") - 1);
 
         position.set_fen(fen);
         init_tuner_entry(&entries[i++], &position);
