@@ -235,7 +235,11 @@ namespace
                 int R = lmr_reductions_array[std::min(63, depth)][std::min(63, move_num)];
                 int new_depth = depth - 1;
 
-                R -= pv_node;
+                if (pv_node)
+                    R--;
+                else 
+                    R += !improving;
+
                 R -= (picker.move_stage == MovePicker::Stage::Killer1);
 
                 if (picker.move_stage == MovePicker::Stage::GiveQuiet)
