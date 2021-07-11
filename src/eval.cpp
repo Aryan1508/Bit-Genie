@@ -361,11 +361,16 @@ namespace
 
         uint64_t passers = data.passers[us];
         uint64_t connected = shift<Direction::east>(passers) & passers;
-        int connected_count = popcount64(connected);
 
-        score += connected_count * CONNECTED_PASSER;
-        TRACE_COUNT(connected_passer, connected_count);
-        
+        while(connected)
+        {
+            Square sq = pop_lsb(connected);
+            int r = int(rank_of(sq, us));
+
+            TRACE_2(connected_passer, r);
+            score += CONNECTED_PASSER[r];
+        }
+
         return score;
     }
 }

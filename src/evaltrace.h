@@ -32,7 +32,7 @@ struct EvalTrace
     int supported_passer;
     int passer_tempo;
     int support;
-    int connected_passer;
+    int connected_passer[8];
     int open_file;
     int semi_open_file;
     int friendly_file;
