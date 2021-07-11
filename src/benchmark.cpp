@@ -20,6 +20,7 @@
 #include "stopwatch.h"
 #include "search.h"
 #include <iomanip>
+#include <cmath>
 
 // Benchmark positions from Halogen
 const std::array<std::string, 50> benchmark_fens
@@ -73,12 +74,8 @@ namespace BenchMark
             nodes += count;
         }
         watch.stop();
+        long long elapsed = watch.elapsed_time().count();
 
-        std::cout << "Time elapsed: " << watch.elapsed_time().count() / 1000.0f << std::endl;
-
-        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(watch.elapsed_time()).count();
-        elapsed = std::max(static_cast<int64_t>(1ll), elapsed);
-
-        std::cout << nodes << " nodes " << int((nodes / elapsed)) << " nps" << std::endl;
+        std::cout << nodes << " nodes " << std::fixed << std::setprecision(0) << std::round(nodes / (elapsed / 1000.0f)) << " nps" << std::endl;
     }
 }
