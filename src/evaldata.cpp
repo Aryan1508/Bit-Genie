@@ -45,4 +45,9 @@ namespace Eval
     {
         attackers_count[by] += popcount64(attacks);
     }
+
+    void Data::update_passers(Square sq, Color side)
+    {
+        set_bit(sq, passers[side]);
+    }
 }   

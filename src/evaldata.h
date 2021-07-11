@@ -23,13 +23,15 @@ namespace Eval
     {
         int king_attackers_count[2] = {0};
         int king_attackers_weight[2] = {0};
-        uint64_t king_ring[2] = {0};
         int attackers_count[2];
+        uint64_t king_ring[2] = {0};
+        uint64_t passers[2]   = {0};
 
         Data(Position const&);
 
         void reset();
         void init(Position const &position);
         void update_attackers_count(uint64_t attacks, Color by);
+        void update_passers(Square, Color);
     };
 }

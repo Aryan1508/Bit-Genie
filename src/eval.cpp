@@ -124,6 +124,7 @@ namespace
 
         if (pawn_is_passed(enemy_pawns, us, sq))
         {
+            data.update_passers(sq, us);
             if (ahead_squares & enemy)
             {
                 score += BLOCKED_PASSER[relative_sq];
@@ -349,7 +350,7 @@ namespace
     }
 
     template<Color us>
-    int evaluate_pawn_structure(Position const& position)
+    int evaluate_pawn_structure(Position const& position, Eval::Data& data)
     {
         int score = 0;
         uint64_t pawns = position.pieces.get_piece_bb<Pawn>(us);
@@ -357,7 +358,14 @@ namespace
         int supported = popcount64(pawns & Attacks::pawn(pawns, !us));
         score += supported * PAWN_SUPPORT;
         TRACE_COUNT(support, supported);
-    
+
+        uint64_t passers = data.passers[us];
+        uint64_t connected = shift<Direction::east>(passers) & passers;
+        int connected_count = popcount64(connected);
+
+        score += connected_count * CONNECTED_PASSER;
+        TRACE_COUNT(connected_passer, connected_count);
+        
         return score;
     }
 }
@@ -407,8 +415,8 @@ namespace Eval
         score += evaluate_control<White>(data);
         score -= evaluate_control<Black>(data); 
 
-        score += evaluate_pawn_structure<White>(position);
-        score -= evaluate_pawn_structure<Black>(position);
+        score += evaluate_pawn_structure<White>(position, data);
+        score -= evaluate_pawn_structure<Black>(position, data);
 
         TRACE_VAL(eval, score);
         score = scale_score(position, score);
