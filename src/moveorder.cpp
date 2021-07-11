@@ -131,14 +131,14 @@ namespace
 MovePicker::MovePicker(Search::Info& s)
     : search(&s)
 {
-    stage = Stage::HashMove;
+    picker_stage = Stage::HashMove;
 }
 
 bool MovePicker::qnext(Move &move)
 {
     Position& position = *search->position;
 
-    if (stage == Stage::HashMove) 
+    if (picker_stage == Stage::HashMove) 
     {
         position.generate_noisy_moves(movelist);
         
@@ -146,12 +146,12 @@ bool MovePicker::qnext(Move &move)
         bubble_top_move(movelist.begin(), movelist.end());
         current = movelist.begin();
 
-        stage = Stage::GiveGoodNoisy;
+        picker_stage = Stage::GiveGoodNoisy;
     }
 
-    if (stage == Stage::GiveGoodNoisy)
+    if (picker_stage == Stage::GiveGoodNoisy)
     {
-        stage = Stage::GenQuiet;
+        picker_stage = Stage::GenQuiet;
         if (current != movelist.end() && current->score >= 0)
         {
             move = *current++;
@@ -172,9 +172,9 @@ bool MovePicker::next(Move &move)
         return position.move_is_pseudolegal(m) && position.move_is_legal(m);
     };
 
-    if (stage == Stage::HashMove)
+    if (picker_stage == Stage::HashMove)
     {
-        stage = Stage::GenNoisy;
+        picker_stage = Stage::GenNoisy;
         auto& entry = TT.retrieve(position);
         
         Move hmove = Move(entry.move);
@@ -182,11 +182,12 @@ bool MovePicker::next(Move &move)
         if (entry.hash == position.key.data() && can_move(hmove))
         {
             move = hmove;
+            move_stage = Stage::HashMove;
             return true;
         }
     }
 
-    if (stage == Stage::GenNoisy)
+    if (picker_stage == Stage::GenNoisy)
     {
         position.generate_noisy_moves(movelist);
 
@@ -194,56 +195,60 @@ bool MovePicker::next(Move &move)
         bubble_top_move(movelist.begin(), movelist.end());
         current = movelist.begin();
 
-        stage = Stage::GiveGoodNoisy;
+        picker_stage = Stage::GiveGoodNoisy;
     }
 
-    if (stage == Stage::GiveGoodNoisy)
+    if (picker_stage == Stage::GiveGoodNoisy)
     {
         if (current != movelist.end() && current->score >= 0)
         {
             move = *current++;
             bubble_top_move(current, movelist.end());
+            move_stage = Stage::GiveGoodNoisy;
             return true;
         }
-        stage = Stage::Killer1;
+        picker_stage = Stage::Killer1;
     }
 
-    if (stage == Stage::Killer1)
+    if (picker_stage == Stage::Killer1)
     {
-        stage = Stage::Killer2;
+        picker_stage = Stage::Killer2;
         Move killer = search->killers[search->stats.ply][0];
 
         if (can_move(killer))
         {
             move = killer;
+            move_stage = Stage::Killer1;
             return true;
         }
     }
 
-    if (stage == Stage::Killer2)
+    if (picker_stage == Stage::Killer2)
     {
-        stage = Stage::GiveBadNoisy;
+        picker_stage = Stage::GiveBadNoisy;
         Move killer = search->killers[search->stats.ply][1];
 
         if (can_move(killer))
         {
             move = killer;
+            move_stage = Stage::Killer2;
             return true;
         }
     }
 
-    if (stage == Stage::GiveBadNoisy)
+    if (picker_stage == Stage::GiveBadNoisy)
     {
         if (current != movelist.end())
         {
             move = *current++;
             bubble_top_move(current, movelist.end());
+            move_stage = Stage::GiveBadNoisy;
             return true;
         }
-        stage = Stage::GenQuiet;
+        picker_stage = Stage::GenQuiet;
     }
 
-    if (stage == Stage::GenQuiet && !skip_quiets)
+    if (picker_stage == Stage::GenQuiet && !skip_quiets)
     {
         movelist.clear();
         position.generate_quiet_moves(movelist);
@@ -251,15 +256,16 @@ bool MovePicker::next(Move &move)
         score_movelist<true>(movelist, *search);
         bubble_top_move(movelist.begin(), movelist.end());
         current = movelist.begin();
-        stage = Stage::GiveQuiet;
+        picker_stage = Stage::GiveQuiet;
     }
 
-    if (stage == Stage::GiveQuiet && !skip_quiets)
+    if (picker_stage == Stage::GiveQuiet && !skip_quiets)
     {
         if (current != movelist.end())
         {
             move = *current++;
             bubble_top_move(current, movelist.end());
+            move_stage = Stage::GiveQuiet;
             return true;
         }
         return false;

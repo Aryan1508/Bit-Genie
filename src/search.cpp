@@ -214,17 +214,18 @@ namespace
 
         for (Move move; picker.next(move);)
         {
+            bool is_quiet = !move_is_capture(position, move);
+
             if (move_num > lmp_margin[depth][improving])
                 picker.skip_quiets = true;
 
-            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > quiet_lmp_margin[depth][improving])
+            if (picker.move_stage == MovePicker::Stage::GiveQuiet && move_num > quiet_lmp_margin[depth][improving])
                 break;
 
-            if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
+            if (depth < 5 && !is_quiet && move.score < see_pruning_margins[depth])
                 continue;
 
             move_num++;
-
             position.apply_move(move, search.stats.ply);
 
             int score = 0;
@@ -235,9 +236,9 @@ namespace
                 int new_depth = depth - 1;
 
                 R -= pv_node;
-                R -= (picker.stage == MovePicker::Stage::Killer1 || picker.stage == MovePicker::Stage::Killer2);
+                R -= (picker.move_stage == MovePicker::Stage::Killer1);
 
-                if (picker.stage == MovePicker::Stage::GiveQuiet)
+                if (picker.move_stage == MovePicker::Stage::GiveQuiet)
                     R -= (get_history(search.history, position, move) / 14000);
 
                 int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
@@ -274,7 +275,7 @@ namespace
 
             if (alpha >= beta)
             {
-                if (!move_is_capture(position, move))
+                if (is_quiet)
                 {
                     update_history(search.history, position, move, picker.movelist, depth);
                     add_killer(search, move);

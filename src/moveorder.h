@@ -40,7 +40,8 @@ public:
     bool qnext(Move &);
 
     Movelist movelist;
-    Stage stage = Stage::HashMove;
+    Stage move_stage   = Stage::HashMove;
+    Stage picker_stage = Stage::HashMove;
     bool skip_quiets = false;
 private:
     Search::Info *search;
