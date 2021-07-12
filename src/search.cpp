@@ -389,6 +389,7 @@ namespace Search
 
         SEARCH_ABORT = false;
         Move best_move = NullMove;
+        SearchResult result;
         int score = 0;
 
         for (int depth = 1; depth <= search.limits.max_depth; depth++)
@@ -408,10 +409,9 @@ namespace Search
 
             while(true)
             {
-                auto result = pvs(search, depth, alpha, beta);
+                result = pvs(search, depth, alpha, beta);
                 if (search.limits.stopped) goto conc;
 
-                best_move = result.best_move;
                 score     = result.score;
 
                 if (score <= alpha)
@@ -420,12 +420,16 @@ namespace Search
                     alpha = std::max(alpha - delta, (int)MinEval);
                 }
                 else if (score >= beta)
+                {
                     beta = std::min(beta + delta, (int)MaxEval);
+                    best_move = result.best_move;
+                }
                 else 
                     break;
 
                 delta *= 1.5;
             }
+            best_move = result.best_move;
 
             if (log)
                 print_info_string({ score, best_move }, search, depth);
