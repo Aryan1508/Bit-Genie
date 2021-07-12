@@ -351,12 +351,22 @@ namespace
     template<Color us>
     int evaluate_pawn_structure(Position const& position)
     {
+        auto get_phalanx = 
+        [](uint64_t pawns, Color side)
+        {
+            return shift<Direction::east>(pawns) & pawns & ~(side == White ? BitMask::rank2 : BitMask::rank7);
+        };
+
         int score = 0;
         uint64_t pawns = position.pieces.get_piece_bb<Pawn>(us);
 
-        int supported = popcount64(pawns & Attacks::pawn(pawns, !us));
-        score += supported * PAWN_SUPPORT;
-        TRACE_COUNT(support, supported);
+        int supported_count = popcount64(pawns & Attacks::pawn(pawns, !us));
+        score += supported_count * PAWN_SUPPORT;
+        TRACE_COUNT(support, supported_count);
+
+        int phalanx_count = popcount64(get_phalanx(pawns, us));
+        score += phalanx_count * PHALANX;
+        TRACE_COUNT(phalanx, phalanx_count);
     
         return score;
     }
