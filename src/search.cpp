@@ -214,6 +214,8 @@ namespace
 
         for (Move move; picker.next(move);)
         {
+            if (move == NullMove) continue;
+
             if (move_num > lmp_margin[depth][improving])
                 picker.skip_quiets = true;
 

@@ -40,9 +40,12 @@ public:
     bool qnext(Move &);
 
     Movelist movelist;
-    Stage stage = Stage::HashMove;
-    bool skip_quiets = false;
-private:
-    Search::Info *search;
     Movelist::iterator current;
+    Search::Info *search;
+
+    Stage stage = Stage::HashMove;
+    Move killer2   = NullMove;
+    Move killer1   = NullMove;
+    Move hash_move = NullMove;
+    bool skip_quiets = false;
 };

@@ -93,11 +93,19 @@ namespace
     }
 
     template <bool quiet = false>
-    void score_movelist(Movelist &movelist, Search::Info& search)
+    void score_movelist(MovePicker& mp)
     {
-        Position& position = *search.position;
-        for (auto &move : movelist)
+        auto& position = *mp.search->position;
+        auto& search   = *mp.search;
+
+        for (auto &move : mp.movelist)
         {
+            if (move == mp.hash_move || move == mp.killer1 || move == mp.killer2)
+            {
+                move = NullMove;
+                continue;
+            }
+
             if constexpr (!quiet)
             {
                 int score = see(position, move);
@@ -142,7 +150,7 @@ bool MovePicker::qnext(Move &move)
     {
         position.generate_noisy_moves(movelist);
         
-        score_movelist<false>(movelist, *search);
+        score_movelist<false>(*this);
         bubble_top_move(movelist.begin(), movelist.end());
         current = movelist.begin();
 
@@ -177,11 +185,12 @@ bool MovePicker::next(Move &move)
         stage = Stage::GenNoisy;
         auto& entry = TT.retrieve(position);
         
-        Move hmove = Move(entry.move);
+        Move m = Move(entry.move);
 
-        if (entry.hash == position.key.data() && can_move(hmove))
+        if (entry.hash == position.key.data() && can_move(m))
         {
-            move = hmove;
+            move = m;
+            hash_move = m;
             return true;
         }
     }
@@ -190,7 +199,7 @@ bool MovePicker::next(Move &move)
     {
         position.generate_noisy_moves(movelist);
 
-        score_movelist(movelist, *search);
+        score_movelist(*this);
         bubble_top_move(movelist.begin(), movelist.end());
         current = movelist.begin();
 
@@ -211,11 +220,12 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::Killer1)
     {
         stage = Stage::Killer2;
-        Move killer = search->killers[search->stats.ply][0];
+        Move m = search->killers[search->stats.ply][0];
 
-        if (can_move(killer))
+        if (can_move(m))
         {
-            move = killer;
+            move = m;
+            killer1 = m;
             return true;
         }
     }
@@ -223,11 +233,12 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::Killer2)
     {
         stage = Stage::GiveBadNoisy;
-        Move killer = search->killers[search->stats.ply][1];
+        Move m = search->killers[search->stats.ply][1];
 
-        if (can_move(killer))
+        if (can_move(m))
         {
-            move = killer;
+            move = m;
+            killer2 = m;
             return true;
         }
     }
@@ -248,7 +259,7 @@ bool MovePicker::next(Move &move)
         movelist.clear();
         position.generate_quiet_moves(movelist);
         
-        score_movelist<true>(movelist, *search);
+        score_movelist<true>(*this);
         bubble_top_move(movelist.begin(), movelist.end());
         current = movelist.begin();
         stage = Stage::GiveQuiet;
