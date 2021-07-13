@@ -137,6 +137,36 @@ namespace
                score  < -MinMateScore ? score + ply : score;
     }
 
+    int nmp_depth(int depth)
+    {
+        return depth - std::max(4, 3 + depth / 3);
+    }
+
+    void update_tt_after_search(Search::Info& search, SearchResult result, int depth, int original, int beta, int eval)
+    {
+        TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::exact;
+        TT.add(*search.position, result.best_move, mate_score_to_tt(result.score, search.stats.ply), depth, flag, eval);
+    }
+
+    void update_history_tables_on_cutoff(Search::Info& search, Movelist& other, Move move, int depth)
+    {
+        Position& p = *search.position;
+
+        if (move_is_capture(p, move))
+            history_bonus(get_history(search.capture_history, p, move), depth);
+        else 
+            update_history(search.history, p, move, other, depth);
+    }
+
+    void update_search_result(SearchResult& result, int score, Move move)
+    {
+        if (score > result.score)
+        {
+            result.best_move = move;
+            result.score = score;
+        }
+    }
+
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
@@ -196,10 +226,8 @@ namespace
 
         if (!pv_node && !in_check && depth >= 4 && do_null && position.should_do_null() && eval + 300 >= beta)
         {
-            int R = std::max(4, 3 + depth / 3);
-
             position.apply_null_move(search.stats.ply);
-            int score = -pvs(search, depth - R, -beta, -beta + 1, false).score;
+            int score = -pvs(search, nmp_depth(depth), -beta, -beta + 1, false).score;
             position.revert_null_move(search.stats.ply);
 
             if (search.limits.stopped)
@@ -228,6 +256,7 @@ namespace
             position.apply_move(move, search.stats.ply);
 
             int score = 0;
+            int new_search_depth = depth - 1;
             
             if (move_num > 3 && depth > 2)
             {
@@ -235,7 +264,7 @@ namespace
                 int new_depth = depth - 1;
 
                 R -= pv_node;
-                R -= (picker.stage == MovePicker::Stage::Killer1 || picker.stage == MovePicker::Stage::Killer2);
+                R -= picker.stage == MovePicker::Stage::Killer2;
 
                 if (picker.stage == MovePicker::Stage::GiveQuiet)
                     R -= (get_history(search.history, position, move) / 14000);
@@ -264,43 +293,26 @@ namespace
             if (search.limits.stopped)
                 return 0;
 
-            if (score > result.score)
-            {
-                result.best_move = move;
-                result.score = score;
-            }
+            update_search_result(result, score, move);
 
             alpha = std::max(alpha, score);
-
             if (alpha >= beta)
             {
-                if (!move_is_capture(position, move))
-                {
-                    update_history(search.history, position, move, picker.movelist, depth);
-                    add_killer(search, move);
-                }
-                else 
-                    update_history(search.capture_history, position, move, picker.movelist, depth);
-
+                update_history_tables_on_cutoff(search, picker.movelist, move, depth);
                 break;
             }
         }
 
         if (move_num == 0)
         {
-            if (in_check)
-                return search.stats.ply - MateEval;
-
-            else
-                return 0;
+            if (in_check) return search.stats.ply - MateEval;
+            else return 0;
         }
 
         if (search.limits.stopped)
             return 0;
 
-        TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::exact;
-        TT.add(position, result.best_move, mate_score_to_tt(result.score, search.stats.ply), depth, flag, eval);
-
+        update_tt_after_search(search, result, depth, original, beta, eval);
         return result;
     }
 
