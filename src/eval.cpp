@@ -102,7 +102,9 @@ namespace
         uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
         uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
         uint64_t enemy = position.pieces.get_occupancy(!us);
-        uint64_t ahead_squares = BitMask::passed_pawn[us][sq] & BitMask::files[sq];
+        uint64_t ahead_squares  = BitMask::passed_pawn[us][sq] & BitMask::files[sq];
+        uint64_t behind_squares = BitMask::files[sq] & ~ahead_squares;
+        uint64_t friend_rooks   = position.pieces.get_piece_bb<Rook>(us);
         Square relative_sq = psqt_sq(sq, us);
 
         data.update_attackers_count(BitMask::pawn_attacks[us][sq], us);
@@ -145,6 +147,12 @@ namespace
             {
                 score += SUPPORTED_PASSER;
                 TRACE_1(supported_passer);
+            }
+
+            if (Attacks::rook(sq, position.total_bb()) & behind_squares & friend_rooks)
+            {
+                score += PASSER_ROOK_SUPPORT;
+                TRACE_1(passer_rook_support);
             }
         }
 

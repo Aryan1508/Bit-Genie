@@ -31,6 +31,7 @@ struct EvalTrace
     int isolated;
     int supported_passer;
     int passer_tempo;
+    int passer_rook_support;
     int phalanx[8];
     int support;
     int open_file;

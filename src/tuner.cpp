@@ -54,6 +54,7 @@ void init_coeffs(TCoeffs coeffs)
     coeffs[c++] = ET.supported_passer;
     coeffs[c++] = ET.passer_tempo;
     coeffs[c++] = ET.support;
+    coeffs[c++] = ET.passer_rook_support;
     for(int i = 0;i <  8;i++) coeffs[c++] = ET.phalanx[i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Pawn][i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.passer[i];
@@ -183,6 +184,7 @@ void init_base_params(TVector params)
     init_param(params[c++], SUPPORTED_PASSER);
     init_param(params[c++], PASSER_TEMPO);
     init_param(params[c++], PAWN_SUPPORT);
+    init_param(params[c++], PASSER_ROOK_SUPPORT);
     for(int i = 0;i <  8;i++) init_param(params[c++], PHALANX[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PAWN_PSQT[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++], PASSER[i]);
@@ -368,6 +370,7 @@ void save_params(TVector params, TVector current_params)
     print_single(tparams, "SUPPORTED_PASSER", fil, c);
     print_single(tparams, "PASSER_TEMPO", fil, c);
     print_single(tparams, "PAWN_SUPPORT", fil, c);
+    print_single(tparams, "PASSER_ROOK_SUPPORT", fil, c);
     print_array(tparams, 8, "PHALANX", fil, c);
     print_array(tparams, 64, "PAWN_PSQT", fil, c);
     print_array(tparams, 64, "PASSER", fil, c);
