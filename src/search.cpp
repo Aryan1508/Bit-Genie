@@ -148,14 +148,22 @@ namespace
         TT.add(*search.position, result.best_move, mate_score_to_tt(result.score, search.stats.ply), depth, flag, eval);
     }
 
-    void update_history_tables_on_cutoff(Search::Info& search, Movelist& other, Move move, int depth)
+    void update_history_tables_on_cutoff(Search::Info& search, Movelist const& other, Move move, int depth)
     {
         Position& p = *search.position;
 
         if (move_is_capture(p, move))
-            history_bonus(get_history(search.capture_history, p, move), depth);
+            update_history(search.capture_history, p, move, other, depth);
         else 
+        {
             update_history(search.history, p, move, other, depth);
+            add_killer(search, move);
+        }
+    }
+
+    bool use_lmr(int depth, int move_i)
+    {
+        return depth > 2 && move_i > 3;
     }
 
     void update_search_result(SearchResult& result, int score, Move move)
@@ -165,6 +173,20 @@ namespace
             result.best_move = move;
             result.score = score;
         }
+    }
+
+    int calculate_lmr_depth(Search::Info& search, MovePicker& picker, Move move, int depth, int move_i, bool pv_node)
+    {
+        int R = lmr_reductions_array[std::min(63, depth)][std::min(63, move_i)];
+        int new_depth = depth - 1;
+
+        R -= pv_node;
+        R -= picker.stage == MovePicker::Stage::Killer2;
+
+        if (picker.stage == MovePicker::Stage::GiveQuiet)
+            R -= (get_history(search.history, *search.position, move) / 14000);
+
+        return std::clamp(new_depth - R, 1, new_depth - 1);
     }
 
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
@@ -252,26 +274,15 @@ namespace
                 continue;
 
             move_num++;
-
             position.apply_move(move, search.stats.ply);
-
-            int score = 0;
-            int new_search_depth = depth - 1;
             
-            if (move_num > 3 && depth > 2)
+            int score = 0;
+            
+            if (use_lmr(depth, move_num))
             {
-                int R = lmr_reductions_array[std::min(63, depth)][std::min(63, move_num)];
-                int new_depth = depth - 1;
+                int new_depth = calculate_lmr_depth(search, picker, move, depth, move_num, pv_node);
 
-                R -= pv_node;
-                R -= picker.stage == MovePicker::Stage::Killer2;
-
-                if (picker.stage == MovePicker::Stage::GiveQuiet)
-                    R -= (get_history(search.history, position, move) / 14000);
-
-                int RDepth = std::clamp(new_depth - R, 1, new_depth - 1);
-                score = -pvs(search, RDepth, -alpha - 1, -alpha).score;
-
+                score = -pvs(search, new_depth, -alpha - 1, -alpha).score;
                 if (score > alpha)
                     score = -pvs(search, depth - 1, -beta, -alpha).score;
             }
