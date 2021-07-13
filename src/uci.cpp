@@ -27,7 +27,7 @@
 #include "polyglot.h"
 #include <cstring>
 
-const char *version = "8.16";
+const char *version = "8.17";
 
 namespace
 {
@@ -94,6 +94,7 @@ namespace
         if (options.movetime == -1)
         {
             auto &t = position.side == White ? options.wtime : options.btime;
+            auto &inc = position.side == White ? options.winc  : options.binc;
 
             if (t == -1)
                 search.limits.movetime = std::numeric_limits<int64_t>::max();
@@ -101,7 +102,7 @@ namespace
             else
             {
                 search.limits.time_set = true;
-                search.limits.movetime = t / options.movestogo - 50;
+                search.limits.movetime = t / options.movestogo + inc - 50;
             }
         }
         else
