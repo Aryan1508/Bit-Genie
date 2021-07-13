@@ -352,9 +352,9 @@ namespace
     int evaluate_pawn_structure(Position const& position)
     {
         auto get_phalanx = 
-        [](uint64_t pawns, Color side)
+        [](uint64_t pawns)
         {
-            return shift<Direction::east>(pawns) & pawns & ~(side == White ? BitMask::rank2 : BitMask::rank7);
+            return shift<Direction::east>(pawns) & pawns;
         };
 
         int score = 0;
@@ -364,10 +364,15 @@ namespace
         score += supported_count * PAWN_SUPPORT;
         TRACE_COUNT(support, supported_count);
 
-        int phalanx_count = popcount64(get_phalanx(pawns, us));
-        score += phalanx_count * PHALANX;
-        TRACE_COUNT(phalanx, phalanx_count);
-    
+        uint64_t phalanx_pawns = get_phalanx(pawns);
+        while(phalanx_pawns)
+        {
+            Square sq = pop_lsb(phalanx_pawns);
+            int r = (int)rank_of(sq, us);
+            score += PHALANX[r];
+            TRACE_2(phalanx, r);
+        }
+
         return score;
     }
 }
