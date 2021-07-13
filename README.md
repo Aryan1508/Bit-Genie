@@ -23,6 +23,7 @@ The estimated strength over the different versions
 | Bit-Genie 2     |  1879  |
 | Bit-Genie 4     |  2230  |
 | Bit-Genie 5     |  2400  |
+| Bit-Genie 7     |  2727  |
 
 
 [Bit-Genie on the CCRL](https://ccrl.chessdom.com/ccrl/404/cgi/compare_engines.cgi?family=Bit-Genie&print=Rating+list&print=Results+table&print=LOS+table&print=Ponder+hit+table&print=Eval+difference+table&print=Comopp+gamenum+table&print=Overlap+table&print=Score+with+common+opponents)
@@ -50,8 +51,8 @@ Bit-Genie is **not** a complete chess software, but a chess engine which still n
 Bit-Genie comes with a [makefile](https://github.com/Aryan1508/Bit-Genie/blob/master/Bit-Genie/makefile "makefile") that you can use to build your own binaries. 
 
 ```
-git clone --single-branch --branch master https://github.com/Aryan1508/Bit-Genie
-cd Bit-Genie/Bit-Genie
+git clone https://github.com/Aryan1508/Bit-Genie
+cd Bit-Genie/src
 make 
 ./Bit-Genie
 ```
