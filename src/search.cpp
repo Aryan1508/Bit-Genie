@@ -275,7 +275,7 @@ namespace
 
             move_num++;
             position.apply_move(move, search.stats.ply);
-            
+
             int score = 0;
             
             if (use_lmr(depth, move_num))
@@ -283,7 +283,8 @@ namespace
                 int new_depth = calculate_lmr_depth(search, picker, move, depth, move_num, pv_node);
 
                 score = -pvs(search, new_depth, -alpha - 1, -alpha).score;
-                if (score > alpha)
+
+                if (score > alpha && new_depth < depth - 1)
                     score = -pvs(search, depth - 1, -beta, -alpha).score;
             }
             else
