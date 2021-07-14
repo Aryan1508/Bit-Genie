@@ -36,11 +36,6 @@ namespace
         return 0;
     }
 
-    bool lost_material(int16_t scores[16], int index)
-    {
-        return (-scores[index - 1] < 0 && scores[index] < 0);
-    }
-
     int16_t see(Position &position, Move move)
     {
         static constexpr int see_piece_vals[]{
@@ -73,9 +68,6 @@ namespace
             index++;
             attacker = !attacker;
             scores[index] = see_piece_vals[capturing] - scores[index - 1];
-
-            if (lost_material(scores, index))
-                break;
 
             attack_def ^= from_set;
             occ ^= from_set;
