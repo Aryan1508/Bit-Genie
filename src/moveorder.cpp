@@ -66,6 +66,10 @@ namespace
         bishops |= position.pieces.bitboards[Bishop];
         rooks   |= position.pieces.bitboards[Rook];
 
+        int16_t scores[16] = {0};
+        int16_t index = 0;
+        scores[index++] = score;
+
         while(true)
         {
             int next = next_attacker(position, attackers, occ, side);
@@ -74,12 +78,23 @@ namespace
             score += (position.side == side ? a_val : -a_val);
             a_val = next;
 
+            scores[index++] = score;        
+
             attackers |= occ & ((Attacks::bishop(to, occ) & bishops) | (Attacks::rook(to, occ) & rooks));
             side = !side;
         }
-        return score;
-    }
 
+        while(--index)
+        {
+            side = !side;
+            if (position.side == side)
+                scores[index - 1] = std::max<int16_t>(scores[index - 1], scores[index]);
+            else 
+                scores[index - 1] = std::min<int16_t>(scores[index - 1], scores[index]);
+        }
+
+        return scores[0];
+    }
 
     template <bool quiet = false>
     void score_movelist(Movelist &movelist, Search::Info& search)
