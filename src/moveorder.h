@@ -39,10 +39,13 @@ public:
     bool next(Move &);
     bool qnext(Move &);
 
-    Movelist movelist;
+    Movelist cap_movelist;
+    Movelist qui_movelist;
     Stage stage = Stage::HashMove;
     bool skip_quiets = false;
+
 private:
     Search::Info *search;
-    Movelist::iterator current;
+    Movelist::iterator cap_current;
+    Movelist::iterator qui_current;
 };

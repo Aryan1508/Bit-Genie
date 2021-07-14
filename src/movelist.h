@@ -74,7 +74,6 @@ public:
         return std::find(begin(), end(), move) != end();
     }
 
-private:
     movelist_type moves;
-    std::ptrdiff_t cap;
+    uint16_t cap;
 };

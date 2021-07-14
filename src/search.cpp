@@ -310,7 +310,7 @@ namespace
             alpha = std::max(alpha, score);
             if (alpha >= beta)
             {
-                update_history_tables_on_cutoff(search, picker.movelist, move, depth);
+                update_history_tables_on_cutoff(search, picker.qui_movelist, move, depth);
                 break;
             }
         }

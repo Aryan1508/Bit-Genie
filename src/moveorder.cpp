@@ -140,11 +140,11 @@ bool MovePicker::qnext(Move &move)
 
     if (stage == Stage::HashMove) 
     {
-        position.generate_noisy_moves(movelist);
+        position.generate_noisy_moves(cap_movelist);
         
-        score_movelist<false>(movelist, *search);
-        bubble_top_move(movelist.begin(), movelist.end());
-        current = movelist.begin();
+        score_movelist<false>(cap_movelist, *search);
+        bubble_top_move(cap_movelist.begin(), cap_movelist.end());
+        cap_current = cap_movelist.begin();
 
         stage = Stage::GiveGoodNoisy;
     }
@@ -152,10 +152,10 @@ bool MovePicker::qnext(Move &move)
     if (stage == Stage::GiveGoodNoisy)
     {
         stage = Stage::GenQuiet;
-        if (current != movelist.end() && current->score >= 0)
+        if (cap_current != cap_movelist.end() && cap_current->score >= 0)
         {
-            move = *current++;
-            bubble_top_move(current, movelist.end());
+            move = *cap_current++;
+            bubble_top_move(cap_current, cap_movelist.end());
             return true;
         }
         return false;
@@ -188,21 +188,21 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GenNoisy)
     {
-        position.generate_noisy_moves(movelist);
+        position.generate_noisy_moves(cap_movelist);
 
-        score_movelist(movelist, *search);
-        bubble_top_move(movelist.begin(), movelist.end());
-        current = movelist.begin();
+        score_movelist(cap_movelist, *search);
+        bubble_top_move(cap_movelist.begin(), cap_movelist.end());
+        cap_current = cap_movelist.begin();
 
         stage = Stage::GiveGoodNoisy;
     }
 
     if (stage == Stage::GiveGoodNoisy)
     {
-        if (current != movelist.end() && current->score >= 0)
+        if (cap_current != cap_movelist.end() && cap_current->score >= 0)
         {
-            move = *current++;
-            bubble_top_move(current, movelist.end());
+            move = *cap_current++;
+            bubble_top_move(cap_current, cap_movelist.end());
             return true;
         }
         stage = Stage::Killer1;
@@ -222,7 +222,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::Killer2)
     {
-        stage = Stage::GiveBadNoisy;
+        stage = Stage::GenQuiet;
         Move killer = search->killers[search->stats.ply][1];
 
         if (can_move(killer))
@@ -232,37 +232,35 @@ bool MovePicker::next(Move &move)
         }
     }
 
-    if (stage == Stage::GiveBadNoisy)
-    {
-        if (current != movelist.end())
-        {
-            move = *current++;
-            bubble_top_move(current, movelist.end());
-            return true;
-        }
-        stage = Stage::GenQuiet;
-    }
-
     if (stage == Stage::GenQuiet && !skip_quiets)
     {
-        movelist.clear();
-        position.generate_quiet_moves(movelist);
+        position.generate_quiet_moves(qui_movelist);
         
-        score_movelist<true>(movelist, *search);
-        bubble_top_move(movelist.begin(), movelist.end());
-        current = movelist.begin();
+        score_movelist<true>(qui_movelist, *search);
+        bubble_top_move(qui_movelist.begin(), qui_movelist.end());
+        qui_current = qui_movelist.begin();
         stage = Stage::GiveQuiet;
     }
 
     if (stage == Stage::GiveQuiet && !skip_quiets)
     {
-        if (current != movelist.end())
+        if (qui_current != qui_movelist.end())
         {
-            move = *current++;
-            bubble_top_move(current, movelist.end());
+            move = *qui_current++;
+            bubble_top_move(qui_current, qui_movelist.end());
             return true;
         }
-        return false;
+        stage = Stage::GiveBadNoisy;
+    }
+
+    if (stage == Stage::GiveBadNoisy)
+    {
+        if (cap_current != cap_movelist.end())
+        {
+            move = *cap_current++;
+            bubble_top_move(cap_current, cap_movelist.end());
+            return true;
+        }
     }
     return false;
 }
