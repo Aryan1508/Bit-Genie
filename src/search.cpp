@@ -34,7 +34,7 @@ namespace
 {
     constexpr int rfp_margin[6]
     {
-        0, 120, 280, 510, 680, 850
+        0, 120, 200, 510, 680, 850
     };
 
     constexpr int see_pruning_margins[5] 
