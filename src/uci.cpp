@@ -25,9 +25,12 @@
 #include "benchmark.h"
 #include "searchinit.h"
 #include "polyglot.h"
+#include "moveorder.h"
+#include "movelist.h"
 #include <cstring>
+#include <sstream>
 
-const char *version = "8.19";
+const char *version = "8.2";
 
 namespace
 {

@@ -23,66 +23,63 @@
 
 namespace 
 {
-    uint64_t least_valuable_attacker(Position &position, uint64_t attackers, Color side, Piece &capturing)
+    constexpr int see_piece_vals[]
     {
-        for (int i = 0; i < total_pieces; i++)
-        {
-            capturing = make_piece(PieceType(i), side);
-            uint64_t pieces = position.pieces.bitboards[i] & position.pieces.colors[side] & attackers;
+        100, 300, 325, 500, 900, 1000,
+        100, 300, 325, 500, 900, 1000, 0
+    };
 
-            if (pieces)     
-                return pieces & (~pieces + 1);
+    int next_attacker(Position const& position, uint64_t& attackers, uint64_t& occ, Color side)
+    {
+        for(int i = 0;i < 6;i++)
+        {
+            uint64_t pieces = position.pieces.bitboards[i] & position.pieces.colors[side];
+            uint64_t a = pieces & attackers;
+
+            if (a)
+            {
+                uint64_t x = a & -a;
+                attackers ^= x;
+                occ ^= x;
+                return see_piece_vals[i];
+            }
         }
         return 0;
     }
 
-    int16_t see(Position &position, Move move)
+    int16_t see(Position const& position, Move move)
     {
-        static constexpr int see_piece_vals[]{
-            100, 300, 325, 500, 900, 1000,
-            100, 300, 325, 500, 900, 1000, 0
-        };
-
-        int16_t scores[32] = {0};
-        int index = 0;
-
         Square from = move.from();
-        Square to = move.to();
+        Square to  =  move.to();
 
-        Piece capturing = position.pieces.squares[from];
-        Piece captured = position.pieces.squares[to];
-        Color attacker = color_of(capturing);
+        Piece attacker = position.pieces.squares[from];
+        Piece victim   = position.pieces.squares[to];
+        uint64_t occ = position.total_bb() ^ (1ull << from);
 
-        uint64_t from_set = (1ull << from);
-        uint64_t occ = position.total_bb(), bishops = 0, rooks = 0;
+        int16_t score = see_piece_vals[victim];
+        uint64_t attackers = Attacks::attackers_to_sq(position, to) ^ (1ull << from);
+        Color side = !position.side;
 
+        int a_val = see_piece_vals[attacker];
+        uint64_t bishops  =0, rooks = 0;
         bishops = rooks = position.pieces.bitboards[Queen];
         bishops |= position.pieces.bitboards[Bishop];
         rooks   |= position.pieces.bitboards[Rook];
 
-        uint64_t attack_def = Attacks::attackers_to_sq(position, to);
-        scores[index] = see_piece_vals[captured];
-
-        do
+        while(true)
         {
-            index++;
-            attacker = !attacker;
-            scores[index] = see_piece_vals[capturing] - scores[index - 1];
+            int next = next_attacker(position, attackers, occ, side);
+            if (!next) break;
+            
+            score += (position.side == side ? a_val : -a_val);
+            a_val = next;
 
-            attack_def ^= from_set;
-            occ ^= from_set;
-
-            attack_def |= occ & ((Attacks::bishop(to, occ) & bishops) | (Attacks::rook(to, occ) & rooks));
-            from_set = least_valuable_attacker(position, attack_def, attacker, capturing);
-        } while (from_set);
-
-        while (--index)
-        {
-            scores[index - 1] = -(-scores[index - 1] > scores[index] ? -scores[index - 1] : scores[index]);
+            attackers |= occ & ((Attacks::bishop(to, occ) & bishops) | (Attacks::rook(to, occ) & rooks));
+            side = !side;
         }
-
-        return scores[0];
+        return score;
     }
+
 
     template <bool quiet = false>
     void score_movelist(Movelist &movelist, Search::Info& search)
