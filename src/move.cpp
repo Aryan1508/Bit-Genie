@@ -24,13 +24,19 @@ bool move_is_capture(Position const &position, Move move)
     return position.pieces.squares[move.to()] != Empty;
 }
 
+std::string Move::to_str() const 
+{
+    std::stringstream o;
+
+    o << from() << to();
+
+    if (flag() == Move::Flag::promotion) 
+        o << promoted();
+
+    return o.str();
+}
+
 std::ostream& operator<<(std::ostream& o, Move move)
 {
-    o << move.from() << move.to();
-    if (move.flag() == Move::Flag::promotion)
-    {
-        o << move.promoted();
-    }
-
-    return o;
+    return o << move.to_str();
 }

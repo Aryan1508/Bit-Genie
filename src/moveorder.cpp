@@ -29,71 +29,17 @@ namespace
         100, 300, 325, 500, 900, 1000, 0
     };
 
-    int next_attacker(Position const& position, uint64_t& attackers, uint64_t& occ, Color side)
+    uint64_t next_attacker(Position const& position, uint64_t attackers, Color side, Piece& capturing)
     {
         for(int i = 0;i < 6;i++)
         {
+            capturing = make_piece(PieceType(i), side);
             uint64_t pieces = position.pieces.bitboards[i] & position.pieces.colors[side];
             uint64_t a = pieces & attackers;
-
             if (a)
-            {
-                uint64_t x = a & -a;
-                attackers ^= x;
-                occ ^= x;
-                return see_piece_vals[i];
-            }
+                return a & -a;
         }
         return 0;
-    }
-
-    int16_t see(Position const& position, Move move)
-    {
-        Square from = move.from();
-        Square to  =  move.to();
-
-        Piece attacker = position.pieces.squares[from];
-        Piece victim   = position.pieces.squares[to];
-        uint64_t occ = position.total_bb() ^ (1ull << from);
-
-        int16_t score = see_piece_vals[victim];
-        uint64_t attackers = Attacks::attackers_to_sq(position, to) ^ (1ull << from);
-        Color side = !position.side;
-
-        int a_val = see_piece_vals[attacker];
-        uint64_t bishops  =0, rooks = 0;
-        bishops = rooks = position.pieces.bitboards[Queen];
-        bishops |= position.pieces.bitboards[Bishop];
-        rooks   |= position.pieces.bitboards[Rook];
-
-        int16_t scores[16] = {0};
-        int16_t index = 0;
-        scores[index++] = score;
-
-        while(true)
-        {
-            int next = next_attacker(position, attackers, occ, side);
-            if (!next) break;
-            
-            score += (position.side == side ? a_val : -a_val);
-            a_val = next;
-
-            scores[index++] = score;        
-
-            attackers |= occ & ((Attacks::bishop(to, occ) & bishops) | (Attacks::rook(to, occ) & rooks));
-            side = !side;
-        }
-
-        while(--index)
-        {
-            side = !side;
-            if (position.side == side)
-                scores[index - 1] = std::max<int16_t>(scores[index - 1], scores[index]);
-            else 
-                scores[index - 1] = std::min<int16_t>(scores[index - 1], scores[index]);
-        }
-
-        return scores[0];
     }
 
     template <bool quiet = false>
@@ -131,6 +77,42 @@ namespace
         std::iter_swap(best, begin);
     }
 }
+
+int16_t see(Position const& position, Move move)
+{
+    std::array<int16_t, 32> scores;
+    uint8_t index = 0;
+
+    Square from     = move.from(), to = move.to();
+    Piece capturing = position.pieces.squares[from], captured = position.pieces.squares[to];
+
+    uint64_t occ = position.total_bb();
+    uint64_t att = Attacks::attackers_to_sq(position, to);
+    uint64_t from_bb = 1ull << from;
+
+    uint64_t bishops = position.pieces.bitboards[Bishop] | position.pieces.bitboards[Queen];
+    uint64_t rooks   = position.pieces.bitboards[Rook]   | position.pieces.bitboards[Queen];
+
+    scores[index] = see_piece_vals[captured];
+    do 
+    {
+        index++;
+        scores[index] = see_piece_vals[capturing] - scores[index - 1];
+
+        att ^= from_bb;
+        occ ^= from_bb;
+
+        att |= occ & ((Attacks::bishop(to, occ) & bishops) | (Attacks::rook(to, occ) & rooks));
+
+        from_bb = next_attacker(position, att, static_cast<Color>(index & 1), capturing);
+    } while(from_bb);
+
+    while(--index)
+        scores[index - 1] = -std::max<int16_t>(-scores[index - 1], scores[index]);
+
+    return scores[0];
+}
+
 
 MovePicker::MovePicker(Search::Info& s)
     : search(&s)

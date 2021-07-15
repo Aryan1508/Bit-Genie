@@ -46,3 +46,5 @@ private:
     Search::Info *search;
     Movelist::iterator current;
 };
+
+int16_t see(Position const& position, Move move);

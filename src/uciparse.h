@@ -34,7 +34,8 @@ enum class UciCommands
     // *debugging/other purpose commands*
     print,
     perft,
-    bench
+    bench, 
+    see, 
 };
 
 struct UciGo
@@ -65,6 +66,7 @@ public:
     std::pair<std::string, std::string>
     parse_setoption() const;
 
+    Move parse_see(Position&) const;
 public:
     std::string command;
 };

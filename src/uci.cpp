@@ -203,6 +203,14 @@ namespace UCI
                 uci_stop(worker);
                 TT.reset();
             }
+
+            else if (command == UciCommands::see)
+            {
+                Move see_move = command.parse_see(position);
+                if (!see_move.data) continue;
+
+                std::cout << "see: " << see(position, see_move) << std::endl;
+            }
         }
     }
 }

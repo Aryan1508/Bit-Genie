@@ -602,15 +602,12 @@ bool Position::apply_move(std::string const &move)
 
     for (Move m : legal_moves)
     {
-        std::stringstream s;
-        s << m;
-        if (s.str() == move)
+        if (m.to_str() == move)
         {
             apply_move(m);
             return true;
         }
     }
-
     return false;
 }
 

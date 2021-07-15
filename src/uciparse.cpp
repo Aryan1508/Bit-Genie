@@ -17,7 +17,10 @@
 */
 #include "uciparse.h"
 #include "stringparse.h"
+#include "position.h"
+#include "movelist.h"
 #include "piece.h"
+#include "move.h"
 #include <utility>
 
 bool UciParser::take_input()
@@ -77,15 +80,30 @@ bool UciParser::operator==(UciCommands type) const
     case UciCommands::ucinewgame:
         return command == "ucinewgame";
 
+    case UciCommands::see:
+        return starts_with(command, "see");
+
     default:
         return false;
         break;
     }
 }
 
-std::pair<std::string, std::vector<std::string>>
+Move UciParser::parse_see(Position& position) const 
+{
+    std::string_view str_move = split_string(command)[1];
 
-UciParser::parse_position_command() const
+    Movelist movelist;
+    position.generate_moves(movelist);
+
+    for(auto move : movelist)
+        if (move.to_str() == str_move)
+            return move;
+            
+    return NullMove;
+}
+
+std::pair<std::string, std::vector<std::string>> UciParser::parse_position_command() const
 {
     std::string fen;
     std::vector<std::string> moves;
