@@ -232,7 +232,7 @@ namespace
             score += RR_FILE;
         }
 
-        if (BitMask::ranks[sq] & friend_rooks)
+        if (BitMask::ranks[sq] & friend_rooks && rank_of(sq, us) == Rank::seven)
         {
             TRACE_1(rr_rank);
             score += RR_RANK;
