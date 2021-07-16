@@ -243,7 +243,7 @@ namespace
 
         bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];
 
-        if (!at_root && !in_check && depth < 6 && (eval - rfp_margin[depth]) >= beta )
+        if (!at_root && !in_check && depth < 6 && (eval - rfp_margin[depth] / (improving + 1)) >= beta )
             return eval;
 
         if (!pv_node && !in_check && depth >= 4 && do_null && position.should_do_null() && eval + 300 >= beta)
