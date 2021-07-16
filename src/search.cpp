@@ -387,7 +387,7 @@ namespace Search
     {
         for (int i = 0; i < 65; i++)
         {
-            for(int j = 0;j < 65;j++)
+            for(int j = 0;j < 64;j++)
             {
                 lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
             }
