@@ -26,9 +26,9 @@
 #include <cmath>
 #include <algorithm>
 
-int lmr_reductions_array[64][64]{0};
-int lmp_margin[64][2]{0};
-int quiet_lmp_margin[64][2]{0};
+int lmr_reductions_array[65][64]{0};
+int lmp_margin[65][2]{0};
+int quiet_lmp_margin[65][2]{0};
 
 namespace
 {
@@ -177,7 +177,7 @@ namespace
 
     int calculate_lmr_depth(Search::Info& search, MovePicker& picker, Move move, int depth, int move_i, bool pv_node)
     {
-        int R = lmr_reductions_array[std::min(63, depth)][std::min(63, move_i)];
+        int R = lmr_reductions_array[depth][std::min(63, move_i)];
         int new_depth = depth - 1;
 
         R -= pv_node;
@@ -385,9 +385,9 @@ namespace Search
 
     void init()
     {
-        for (int i = 0; i < 64; i++)
+        for (int i = 0; i < 65; i++)
         {
-            for(int j = 0;j < 64;j++)
+            for(int j = 0;j < 65;j++)
             {
                 lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
             }
