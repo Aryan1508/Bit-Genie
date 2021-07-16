@@ -70,8 +70,8 @@ void init_coeffs(TCoeffs coeffs)
     coeffs[c++] = ET.material[Rook];
     coeffs[c++] = ET.open_file;
     coeffs[c++] = ET.semi_open_file;
-    coeffs[c++] = ET.friendly_file;
-    coeffs[c++] = ET.friendly_rank;
+    coeffs[c++] = ET.rr_file;
+    coeffs[c++] = ET.rr_rank;
     for(int i = 0;i < 15;i++) coeffs[c++] = ET.mobility[Rook][i];
     for(int i = 0;i < 64;i++) coeffs[c++] = ET.psqt[Rook][i];
 
@@ -202,8 +202,8 @@ void init_base_params(TVector params)
     init_param(params[c++], ROOK_VALUE);
     init_param(params[c++], OPEN_FILE);
     init_param(params[c++], SEMI_OPEN_FILE);
-    init_param(params[c++], FRIENDLY_FILE);
-    init_param(params[c++], FRIENDLY_RANK);
+    init_param(params[c++], RR_FILE);
+    init_param(params[c++], RR_RANK);
     for(int i = 0;i < 15;i++)  init_param(params[c++], ROOK_MOBILITY[i]);
     for(int i = 0;i < 64;i++) init_param(params[c++] , ROOK_PSQT[i]);
 
@@ -384,8 +384,8 @@ void save_params(TVector params, TVector current_params)
     print_single(tparams, "ROOK_VALUE", fil, c);
     print_single(tparams, "OPEN_FILE", fil, c);
     print_single(tparams, "SEMI_OPEN_FILE", fil, c);
-    print_single(tparams, "FRIENDLY_FILE", fil, c);
-    print_single(tparams, "FRIENDLY_RANK", fil, c);
+    print_single(tparams, "RR_FILE", fil, c);
+    print_single(tparams, "RR_RANK", fil, c);
     print_array(tparams, 15, "ROOK_MOBILITY", fil, c);
     print_array(tparams, 64, "ROOK_PSQT", fil, c);
 

@@ -228,14 +228,14 @@ namespace
 
         if (BitMask::files[sq] & friend_rooks)
         {
-            TRACE_1(friendly_file);
-            score += FRIENDLY_FILE;
+            TRACE_1(rr_file);
+            score += RR_FILE;
         }
 
         if (BitMask::ranks[sq] & friend_rooks)
         {
-            TRACE_1(friendly_rank);
-            score += FRIENDLY_RANK;
+            TRACE_1(rr_rank);
+            score += RR_RANK;
         }
 
         score += ROOK_VALUE;

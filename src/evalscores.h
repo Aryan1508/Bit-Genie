@@ -121,9 +121,9 @@ constexpr int OPEN_FILE = S(  20,    7);
 
 constexpr int SEMI_OPEN_FILE = S(  21,    1);
 
-constexpr int FRIENDLY_FILE = S(  11,   -9);
+constexpr int RR_FILE = S(  11,   -9);
 
-constexpr int FRIENDLY_RANK = S(  -1,   -6);
+constexpr int RR_RANK = S(  -1,   -6);
 
 constexpr int ROOK_MOBILITY[15]
 {

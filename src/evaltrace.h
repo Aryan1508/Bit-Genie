@@ -35,8 +35,8 @@ struct EvalTrace
     int support;
     int open_file;
     int semi_open_file;
-    int friendly_file;
-    int friendly_rank;
+    int rr_file;
+    int rr_rank;
     int control;
     int eval;
 
