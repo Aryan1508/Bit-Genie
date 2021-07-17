@@ -124,15 +124,16 @@ namespace
 
         if (pawn_is_passed(enemy_pawns, us, sq))
         {
+            int r = (int)rank_of(sq, us);
             if (ahead_squares & enemy)
             {
-                score += BLOCKED_PASSER[relative_sq];
-                TRACE_2(blocked_passer, relative_sq);
+                score += BLOCKED_PASSER[r];
+                TRACE_2(blocked_passer, r);
             }
             else 
             {
-                score += PASSER[relative_sq];
-                TRACE_2(passer, relative_sq);
+                score += PASSER[r];
+                TRACE_2(passer, r);
 
                 if (position.side == us)
                 {

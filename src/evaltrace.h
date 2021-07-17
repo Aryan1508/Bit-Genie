@@ -23,8 +23,8 @@ struct EvalTrace
     int psqt[6][64];
     int mobility[5][28];
     int safety_table[100];
-    int passer[64];
-    int blocked_passer[64];
+    int passer[8];
+    int blocked_passer[8];
     int material[5];
     int pawn_shield[4];
     int stacked;
