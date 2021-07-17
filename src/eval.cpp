@@ -98,6 +98,12 @@ namespace
             return !(friend_pawns & BitMask::neighbor_files[sq]);
         };
 
+        auto get_edge_dist = 
+        [](File f)
+        {
+            return f >= File::E ? 7 - int(f) : int(f);
+        };
+
         int score = 0;
         uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
         uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
@@ -125,15 +131,23 @@ namespace
         if (pawn_is_passed(enemy_pawns, us, sq))
         {
             int r = (int)rank_of(sq, us);
+            int ed = get_edge_dist(file_of(sq));
+
             if (ahead_squares & enemy)
             {
                 score += BLOCKED_PASSER[r];
                 TRACE_2(blocked_passer, r);
+
+                score += BLOCKED_PASSER_EDGE_DISTANCE * ed;
+                TRACE_COUNT(blocked_passer_edge_distance, ed);
             }
             else 
             {
                 score += PASSER[r];
                 TRACE_2(passer, r);
+
+                score += PASSER_EDGE_DISTANCE * ed;
+                TRACE_COUNT(passer_edge_distance, ed);
 
                 if (position.side == us)
                 {
