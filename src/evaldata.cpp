@@ -41,8 +41,8 @@ namespace Eval
         king_ring[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
     }
 
-    void Data::update_attackers_count(uint64_t attacks, Color by)
+    void Data::update_attackers(uint64_t attacks, Color by)
     {
-        attackers_count[by] += popcount64(attacks);
+        squares_attacked[by] |= attacks;
     }
 }   

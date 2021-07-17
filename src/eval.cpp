@@ -25,6 +25,7 @@
 #include "evalscores.h"
 #include <math.h>
 #include <cstring>
+#include <algorithm>
 
 #ifdef TUNE 
 constexpr int SIDE_SCALAR[] = {1, -1};
@@ -52,7 +53,7 @@ namespace
             occupancy ^= position.pieces.get_piece_bb<Rook>(us);
 
         uint64_t attacks = Attacks::generate(pt, sq, occupancy);
-        data.update_attackers_count(attacks, us);
+        data.update_attackers(attacks, us);
 
         if (attacks & data.king_ring[!us])
         {
@@ -111,7 +112,7 @@ namespace
         uint64_t ahead_squares = BitMask::passed_pawn[us][sq] & BitMask::files[sq];
         Square relative_sq = psqt_sq(sq, us);
 
-        data.update_attackers_count(BitMask::pawn_attacks[us][sq], us);
+        data.update_attackers(BitMask::pawn_attacks[us][sq], us);
 
         score += PAWN_PSQT[relative_sq];
         TRACE_3(psqt, Pawn, relative_sq);
@@ -285,7 +286,7 @@ namespace
 
         Color enemy = !us;
 
-        data.update_attackers_count(BitMask::king_attacks[sq], us);
+        data.update_attackers(BitMask::king_attacks[sq], us);
 
         if (data.king_attackers_count[enemy] >= 2)
         {
@@ -358,7 +359,7 @@ namespace
     template<Color us>
     int evaluate_control(Eval::Data& data)
     {
-        int count = data.attackers_count[us] - data.attackers_count[!us];
+        int count = popcount64(data.squares_attacked[us]) - popcount64(data.squares_attacked[!us]);
         TRACE_COUNT(control, count);
         return CONTROL * count;    
     }
@@ -388,6 +389,24 @@ namespace
             TRACE_2(phalanx, r);
         }
 
+        return score;
+    }
+
+    template<Color us>
+    int evaluate_connectivity(Position const& position, Eval::Data& data)
+    {
+        int score = 0;
+        uint64_t pieces = position.pieces.colors[us];
+        uint64_t protected_pieces = pieces & data.squares_attacked[us];
+    
+        int piece_count = popcount64(pieces);
+        int index = popcount64(protected_pieces) - piece_count + 7;
+
+        index = std::clamp(index, 0, 7);     
+
+        score += CONNECTIVITY[index];
+        TRACE_2(connectivity, index);
+        
         return score;
     }
 }
@@ -439,6 +458,9 @@ namespace Eval
 
         score += evaluate_pawn_structure<White>(position);
         score -= evaluate_pawn_structure<Black>(position);
+
+        score += evaluate_connectivity<White>(position, data);
+        score -= evaluate_connectivity<Black>(position, data);
 
         TRACE_VAL(eval, score);
         score = scale_score(position, score);
