@@ -20,6 +20,7 @@
 template<typename T, std::size_t S>
 class FixedList
 {
+public:
     using iterator = std::array<T, S>::iterator;
 
     FixedList() = default;

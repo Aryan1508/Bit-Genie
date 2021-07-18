@@ -30,7 +30,11 @@ public:
 
     void apply_move(Move);
 
+    void apply_nullmove();
+
     void revert_move();
+
+    void revert_nullmove();
 
     Move last_played();
 
@@ -59,7 +63,7 @@ public:
         return colors[White] | colors[Black];
     }
 
-    Piece get_piece(Square sq) const 
+    Piece& get_piece(Square sq) 
     {
         return pieces[sq];
     }
