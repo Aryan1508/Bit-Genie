@@ -22,18 +22,51 @@
 class Position
 {
 public:
-    // Set the default fen 
     Position();
 
-    // Set a fen, does not do any validation (might crash on bad fens)
     void set_fen(std::string_view);
 
-    // convert position to fen
-    std::string get_fen();
+    std::string get_fen() const;
+
+    void apply_move(Move);
+
+    void revert_move();
+
+    Move last_played();
+
+    uint64_t& get_bb(PieceType pt)
+    {
+        return bitboards[pt];
+    }
+
+    uint64_t& get_bb(Color color)
+    {
+        return colors[color];
+    }
+
+    uint64_t get_bb(PieceType pt, Color color) const
+    {
+        return bitboards[pt] & colors[color];
+    }
+
+    uint64_t get_bb(Piece piece) const
+    {
+        return get_bb(type_of(piece), color_of(piece));
+    }
+
+    uint64_t get_bb() const
+    {
+        return colors[White] | colors[Black];
+    }
+
+    Piece get_piece(Square sq) const 
+    {
+        return pieces[sq];
+    }
 private:
     std::array<uint64_t,  6> bitboards;
     std::array<uint64_t,  2> colors;
-    std::array<Square  , 64> pieces; 
+    std::array<Piece   , 64> pieces; 
 
     ZobristKey key;
     Square     ep_sq;
