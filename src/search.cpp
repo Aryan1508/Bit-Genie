@@ -186,6 +186,8 @@ namespace
         if (picker.stage == MovePicker::Stage::GiveQuiet)
             R -= (get_history(search.history, *search.position, move) / 14000);
 
+        R -= (picker.stage == MovePicker::Stage::GiveGoodNoisy);
+
         return std::clamp(new_depth - R, 1, new_depth - 1);
     }
 
@@ -267,10 +269,7 @@ namespace
 
         for (Move move; picker.next(move);)
         {
-            if (move_num > lmp_margin[depth][improving])
-                picker.skip_quiets = true;
-
-            if (picker.stage >= MovePicker::Stage::GiveQuiet && move_num > quiet_lmp_margin[depth][improving])
+            if (move_num > quiet_lmp_margin[depth][improving])
                 break;
 
             if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
