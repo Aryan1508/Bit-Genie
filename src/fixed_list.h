@@ -15,46 +15,48 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once
 #include <array>
-#include "misc.h"
-#include "move.h"
-#include "zobrist.h"
 
-class PositionHistory
+template<typename T, std::size_t S>
+class FixedList
 {
-public:
-    struct Undo
-    {
-        int half_moves = 0;
-        Square ep_sq = Square::bad_sq;
-        CastleRights castle;
-        ZobristKey key;
-        Piece captured;
-        Move move;
-    };
+    using iterator = std::array<T, S>::iterator;
 
-    PositionHistory()
+    FixedList() = default;
+
+    iterator begin() 
     {
-        total = 0;
+        return data.begin();
+    }    
+
+    iterator end() 
+    {
+        return data.begin() + height;
     }
 
-    Undo &current()
+    void push_back(T const& elem) 
     {
-        return history[total];
+        data[height++] = elem;
     }
 
-    Undo const &previous() const
+    void pop() 
     {
-        return history[total - 1];
+        height--;
     }
 
-    void reset()
+    void clear()
     {
-        total = 0;
+        height = 0;
     }
 
-    int total = 0;
+    std::size_t size() const  
+    {
+        return height;
+    }
 
-    std::array<Undo, 2048> history;
+    T const& operator[](std::size_t pos) const { return data[pos]; }
+    T      & operator[](std::size_t pos)       { return data[pos]; }
+private:
+    std::array<T, S> data;
+    std::size_t height = 0;
 };

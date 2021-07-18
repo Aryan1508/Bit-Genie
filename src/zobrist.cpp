@@ -50,13 +50,13 @@ void ZobristKey::hash_piece(Square sq, Piece piece)
     hash ^= piece_keys[piece][sq];
 }
 
-void ZobristKey::hash_castle(const CastleRights old_rooks, const CastleRights new_rooks)
+void ZobristKey::hash_castle(uint64_t old, const uint64_t updated)
 {
-    uint64_t removed_rooks = old_rooks.data() ^ new_rooks.data();
+    uint64_t removed_rooks = old ^ updated;
     while (removed_rooks)
     {
         Square removed_rook = pop_lsb(removed_rooks);
-        hash ^= castle_keys[to_int(removed_rook)];
+        hash ^= castle_keys[removed_rook];
     }
 }
 

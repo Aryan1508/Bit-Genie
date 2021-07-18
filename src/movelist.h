@@ -17,64 +17,6 @@
 */
 #pragma once
 #include "move.h"
-#include <array>
-#include <algorithm>
+#include "fixed_list.h"
 
-class Movelist
-{
-public:
-    using movelist_type = std::array<Move, 256>;
-    using iterator = movelist_type::iterator;
-    using const_iterator = movelist_type::const_iterator;
-
-    Movelist()
-        : cap(0)
-    {
-    }
-
-    void clear()
-    {
-        cap = 0;
-    }
-
-    iterator begin()
-    {
-        return moves.begin();
-    }
-
-    const_iterator begin() const
-    {
-        return moves.begin();
-    }
-
-    iterator end()
-    {
-        return moves.begin() + cap;
-    }
-
-    const_iterator end() const
-    {
-        return moves.begin() + cap;
-    }
-
-    size_t size() const
-    {
-        return static_cast<size_t>(cap);
-    }
-
-    Move &operator[](size_t pos) { return moves[pos]; }
-
-    void add(Move move)
-    {
-        moves[cap++] = move;
-    }
-
-    bool find(Move move)
-    {
-        return std::find(begin(), end(), move) != end();
-    }
-
-private:
-    movelist_type moves;
-    std::ptrdiff_t cap;
-};
+using Movelist = FixedList<Move, 256>;

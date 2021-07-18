@@ -15,31 +15,14 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "fixed_list.h"
-#include "position_undo.h"
-#include <string_view>
+#include "move.h"
+#include "zobrist.h"
 
-class Position
+struct PositionUndo
 {
-public:
-    // Set the default fen 
-    Position();
-
-    // Set a fen, does not do any validation (might crash on bad fens)
-    void set_fen(std::string_view);
-
-    // convert position to fen
-    std::string get_fen();
-private:
-    std::array<uint64_t,  6> bitboards;
-    std::array<uint64_t,  2> colors;
-    std::array<Square  , 64> pieces; 
-
-    ZobristKey key;
-    Square     ep_sq;
-    Color      side;
-    int        halfmoves;
-    
-    int history_ply;
-    FixedList<PositionUndo, 2046> history;
+    int      halfmoves;
+    Square   ep_sq;
+    uint64_t castle_rooks, key;
+    Piece    captured;
+    Move     move;
 };
