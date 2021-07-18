@@ -86,6 +86,7 @@ void init_coeffs(TCoeffs coeffs)
     for(int i = 0;i < 100;i++) coeffs[c++] = ET.safety_table[i];
 
     coeffs[c++] = ET.control;
+    coeffs[c++] = ET.center_control;
     for(int i = 0;i < 8;i++) coeffs[c++] = ET.connectivity[i];
 
 
@@ -224,6 +225,7 @@ void init_base_params(TVector params)
 
     // Misc eval
     init_param(params[c++], CONTROL);
+    init_param(params[c++], CENTER_CONTROL);
     for(int i = 0;i < 8;i++) init_param(params[c++], CONNECTIVITY[i]);
 
     if (c != NTERMS)
@@ -414,6 +416,7 @@ constexpr int KING_ATTACK_WEIGHT[5]
 )~";
 
     print_single(tparams, "CONTROL", fil, c);
+    print_single(tparams, "CENTER_CONTROL", fil, c);
     print_array(tparams, 8, "CONNECTIVITY", fil, c);
 
     if (c != NTERMS)

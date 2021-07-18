@@ -356,12 +356,21 @@ namespace
             && popcount64(bishops & dark_squares) == 1;
     }
 
-    template<Color us>
     int evaluate_control(Eval::Data& data)
     {
+        constexpr Color us = White;
+        constexpr uint64_t center_squares = 0x3c3c3c3c0000;
+        int score = 0;
+
         int count = popcount64(data.squares_attacked[us]) - popcount64(data.squares_attacked[!us]);
+        score += CONTROL * count;
         TRACE_COUNT(control, count);
-        return CONTROL * count;    
+
+        int center_count = popcount64(data.squares_attacked[us] & center_squares) - popcount64(data.squares_attacked[!us] & center_squares);
+        score += CENTER_CONTROL * center_count;
+        TRACE_COUNT(center_control, center_count);
+
+        return score;    
     }
 
     template<Color us>
@@ -453,8 +462,7 @@ namespace Eval
         score += evaluate_piece<Queen >(position, data, evaluate_queen );
         score += evaluate_piece<King  >(position, data, evaluate_king  );
 
-        score += evaluate_control<White>(data);
-        score -= evaluate_control<Black>(data); 
+        score += evaluate_control(data);
 
         score += evaluate_pawn_structure<White>(position);
         score -= evaluate_pawn_structure<Black>(position);
