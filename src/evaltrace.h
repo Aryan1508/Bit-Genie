@@ -40,6 +40,7 @@ struct EvalTrace
     int friendly_file;
     int friendly_rank;
     int control;
+    int center_control;
     int connectivity[8];
     int eval;
 
