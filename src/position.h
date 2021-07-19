@@ -45,6 +45,9 @@ public:
     // Perform a move over the board, UB if move is not legal
     void apply_move(Move);
     
+    // Convert UCI move format and perform
+    void apply_move(std::string_view);
+
     // Perform a null move 
     void apply_nullmove();
 
