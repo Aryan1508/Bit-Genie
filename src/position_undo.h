@@ -20,9 +20,10 @@
 
 struct PositionUndo
 {
-    int      halfmoves;
-    Square   ep_sq;
-    uint64_t castle_rooks, key;
-    Piece    captured;
-    Move     move;
+    int        halfmoves;
+    Square     ep_sq;
+    ZobristKey key;
+    Piece      captured;
+    Move       move;
+    uint64_t   castle_rooks;
 };

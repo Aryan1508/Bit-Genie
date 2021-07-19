@@ -63,6 +63,11 @@ inline void set_bit(uint64_t &bb, Square sq)
     bb |= (1ull << sq);
 }
 
+inline void flip_bit(uint64_t& bb, Square sq)
+{
+    bb ^= (1ull << sq);
+}
+
 inline bool is_several(uint64_t bb)
 {
     return bb & (bb - 1);

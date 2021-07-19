@@ -17,6 +17,7 @@
 */
 #pragma once
 #include "movelist.h"
+#include "bitboard.h"
 #include "fixed_list.h"
 #include "position_undo.h"
 
@@ -24,6 +25,20 @@
 
 class Position
 {
+private:
+    std::array<uint64_t,  6> bitboards;
+    std::array<uint64_t,  2> colors;
+    std::array<Piece   , 64> pieces; 
+
+    ZobristKey key;
+    Square     ep_sq;
+    Color      side;
+    uint64_t   castle_rooks;
+    
+    int halfmoves;
+    int history_ply;
+    FixedList<PositionUndo, 2046> history;
+
 public:
     Position();
 
@@ -63,16 +78,69 @@ public:
     // Revert a null move made
     void revert_nullmove();
 
-    // Add a piece on the board, Assumes that 
-    // given square and piece are valid and the no other piece exists 
-    void add_piece(Square, Piece);
-
     // Check if position is drawn by repetition, 50-move rule or insufficient material
     bool drawn() const;
 
     // Check if side to move's king is under attack 
     bool king_in_check() const;
 
+    // Add a piece on the board 
+    void add_piece(Square sq, Piece piece)
+    {
+        get_piece(sq) = piece;
+        set_bit(get_bb(type_of(piece)), sq);
+        set_bit(get_bb(color_of(piece)), sq);
+    }
+
+    // Remove a piece from the board 
+    Piece remove_piece(Square sq)
+    {
+        Piece piece = get_piece(sq);
+        flip_bit(get_bb(type_of(piece)), sq);
+        flip_bit(get_bb(color_of(piece)), sq);
+        get_piece(sq) = Piece::Empty;
+        return piece;
+    }
+
+    // Move piece from square a to square b
+    void move_piece(Square a, Square b)
+    {
+        Piece piece = get_piece(a);
+        PieceType type = type_of(piece);
+        Color    color = color_of(piece);
+
+        flip_bit(get_bb(type) , a);
+        flip_bit(get_bb(color), a);
+        flip_bit(get_bb(type) , b);
+        flip_bit(get_bb(color), b);
+
+        get_piece(b) = piece;
+        get_piece(a) = Piece::Empty;
+    }   
+
+    // Add a piece on the board with hash update
+    void add_piece_hash(Square sq, Piece piece)
+    {
+        add_piece(sq, piece);
+        key.hash_piece(sq, piece);
+    }
+
+    // Remove a piece from the board  with hash update
+    Piece remove_piece_hash(Square sq)
+    {
+        Piece piece = remove_piece(sq);
+        key.hash_piece(sq, piece);
+        return piece;
+    }
+
+    // Move piece from square a to square b with hash update
+    void move_piece_hash(Square a, Square b)
+    {
+        Piece piece = get_piece(a);
+        move_piece(a, b);
+        key.hash_piece(a, piece);
+        key.hash_piece(b, piece);
+    }   
 
     uint64_t& get_bb(PieceType pt)
     {
@@ -140,17 +208,4 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream&, Position const&);
-private:
-    std::array<uint64_t,  6> bitboards;
-    std::array<uint64_t,  2> colors;
-    std::array<Piece   , 64> pieces; 
-
-    ZobristKey key;
-    Square     ep_sq;
-    Color      side;
-    int        halfmoves;
-    uint64_t   castle_rooks;
-    
-    int history_ply;
-    FixedList<PositionUndo, 2046> history;
 };
