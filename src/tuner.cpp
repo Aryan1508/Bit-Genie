@@ -20,11 +20,11 @@
     Tuner implementation based on "Evaluation & Tuning in Chess Engines" by Andrew Grant
     https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf
 */
-
-#ifdef TUNE
 #include "tuner.h"
+#ifdef TUNE
 
 #include "eval.h"
+#include "bitboard.h"
 #include "position.h"
 #include "evalscores.h"
 
@@ -114,10 +114,10 @@ void init_tuner_tuples(TPos *entry, TCoeffs coeffs) {
 
 void init_tuner_entry(TPos* entry, Position* position)
 {
-    uint64_t knights = position->pieces.bitboards[Knight];
-    uint64_t bishops = position->pieces.bitboards[Bishop];
-    uint64_t rooks   = position->pieces.bitboards[Rook];
-    uint64_t queens  = position->pieces.bitboards[Queen];
+    uint64_t knights = position->get_bb(Knight);
+    uint64_t bishops = position->get_bb(Bishop);
+    uint64_t rooks   = position->get_bb(Rook);
+    uint64_t queens  = position->get_bb(Queen);
 
     int phase = 24 - 4 * popcount64(queens)
                    - 2 * popcount64(rooks) 
@@ -128,14 +128,14 @@ void init_tuner_entry(TPos* entry, Position* position)
     entry->phase        = (phase * 256 + 12) / 24.0f;
 
     ET.reset();
-    entry->seval = position->side == White ? Eval::evaluate(*position) : -Eval::evaluate(*position);
+    entry->seval = position->get_side() == White ? Eval::evaluate(*position) : -Eval::evaluate(*position);
 
     TCoeffs coeffs;
     init_coeffs(coeffs);
     init_tuner_tuples(entry, coeffs);
 
     entry->eval = ET.eval;
-    entry->turn = position->side;
+    entry->turn = position->get_side();
     entry->scale = Eval::get_scale_factor(*position, entry->seval) / 128.0f;
 }
 
