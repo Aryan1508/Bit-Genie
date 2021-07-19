@@ -322,8 +322,8 @@ namespace
     {
         int score = 0;
 
-        uint64_t white = position.pieces.get_piece_bb<type>(White);
-        uint64_t black = position.pieces.get_piece_bb<type>(Black);
+        uint64_t white = position.get_bb(type, Color::White);
+        uint64_t black = position.get_bb(type, Color::Black);
 
         score += evaluate_piece(position, data, F, white, Color::White);
         score -= evaluate_piece(position, data, F, black, Color::Black);
@@ -382,7 +382,7 @@ namespace
         };
 
         int score = 0;
-        uint64_t pawns = position.pieces.get_piece_bb<Pawn>(us);
+        uint64_t pawns = position.get_bb(Pawn, us);
 
         int supported_count = popcount64(pawns & Attacks::pawn(pawns, !us));
         score += supported_count * PAWN_SUPPORT;
@@ -404,7 +404,7 @@ namespace
     int evaluate_connectivity(Position const& position, Eval::Data& data)
     {
         int score = 0;
-        uint64_t pieces = position.pieces.colors[us];
+        uint64_t pieces = position.get_bb(us);
         uint64_t protected_pieces = pieces & data.squares_attacked[us];
     
         int piece_count = popcount64(pieces);

@@ -53,7 +53,6 @@ namespace BenchMark
 {
     void perft(Position &position, int depth)
     {
-        uint64_t nodes = 0;
         StopWatch<> watch;
         watch.go();
         uint64_t nodes = ::perft(position, depth);

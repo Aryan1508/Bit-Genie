@@ -16,6 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "bitboard.h"
 #include "position.h"
 #include "magicmoves.hpp"
 
@@ -58,35 +59,35 @@ namespace Attacks
     }
 
     inline bool square_attacked(Position const &position, Square sq, Color enemy, uint64_t occupancy)
-    {
-        uint64_t pawns = position.pieces.get_piece_bb<Pawn>(enemy);
-        uint64_t knights = position.pieces.get_piece_bb<Knight>(enemy);
-        uint64_t bishops = position.pieces.get_piece_bb<Bishop>(enemy);
-        uint64_t rooks = position.pieces.get_piece_bb<Rook>(enemy);
-        uint64_t queens = position.pieces.get_piece_bb<Queen>(enemy);
-        uint64_t kings = position.pieces.get_piece_bb<King>(enemy);
+    { 
+        uint64_t pawns   = position.get_bb(Pawn  , enemy);
+        uint64_t knights = position.get_bb(Knight, enemy);
+        uint64_t queens  = position.get_bb(Queen , enemy);
+        uint64_t kings   = position.get_bb(King  , enemy);
+        uint64_t rooks   = position.get_bb(Rook  , enemy) | queens;
+        uint64_t bishops = position.get_bb(Bishop, enemy) | queens;
 
-        bishops |= queens;
-        rooks |= queens;
 
         return (BitMask::pawn_attacks[!enemy][sq] & pawns) || (bishop(sq, occupancy) & bishops) || (rook(sq, occupancy) & rooks) || (knight(sq) & knights) || (king(sq) & kings);
     }
 
     inline uint64_t attackers_to_sq(Position const &position, Square sq)
     {
-        uint64_t occ = position.total_bb();
-        uint64_t pawn_mask = (BitMask::pawn_attacks[White][sq] & position.pieces.bitboards[Pawn] & position.pieces.colors[Black]);
-        pawn_mask |= (BitMask::pawn_attacks[Black][sq] & position.pieces.bitboards[Pawn] & position.pieces.colors[White]);
+        uint64_t occ = position.get_bb();
+        uint64_t pawn_mask = (BitMask::pawn_attacks[White][sq] & position.get_bb(PieceType::Pawn) & position.get_bb(Color::Black));
+        pawn_mask |= (BitMask::pawn_attacks[Black][sq] & position.get_bb(PieceType::Pawn) & position.get_bb(Color::White));
 
-        uint64_t bishops = position.pieces.bitboards[Bishop] | position.pieces.bitboards[Queen];
-        uint64_t rooks = position.pieces.bitboards[Rook] | position.pieces.bitboards[Queen];
+        uint64_t bishops = position.get_bb(PieceType::Bishop) | position.get_bb(Queen);
+        uint64_t rooks   = position.get_bb(PieceType::Rook  ) | position.get_bb(Queen);
 
-        return (pawn_mask) | (knight(sq) & position.pieces.bitboards[Knight]) | (king(sq) & position.pieces.bitboards[King]) | (bishop(sq, occ) & bishops) | (rook(sq, occ) & rooks);
+        return (pawn_mask) | (knight(sq) & position.get_bb(PieceType::Knight)) 
+                           | (king(sq)   & position.get_bb(PieceType::King)) 
+                           | (bishop(sq, occ) & bishops) | (rook(sq, occ) & rooks);
     }
 
     inline bool square_attacked(Position const &position, Square sq, Color enemy)
     {
-        return square_attacked(position, sq, enemy, position.total_bb());
+        return square_attacked(position, sq, enemy, position.get_bb());
     }
 
     inline uint64_t generate(PieceType piece, Square sq, uint64_t occ)
@@ -107,11 +108,11 @@ namespace Attacks
 
         case King:
             return king(sq);
-
         default:
-            throw std::invalid_argument("Invalid argument in generate");
-            return 0;
+            throw "";
+            break;
         }
+        return 0;
     }
 
 }

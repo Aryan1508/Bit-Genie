@@ -17,6 +17,7 @@
 */
 #pragma once
 #include "misc.h"
+#include "movelist.h"
 
 typedef int16_t HistoryTable[2][64][64]; 
 

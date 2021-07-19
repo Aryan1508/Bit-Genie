@@ -129,6 +129,11 @@ public:
         return pieces[sq];
     }
 
+    Square get_ep() const 
+    {
+        return ep_sq;
+    }
+
     Color get_side() const 
     {
         return side;

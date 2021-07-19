@@ -15,9 +15,11 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "board.h"
+#include "bitboard.h"
 #include "polyglot.h"
 #include "position.h"
-#include "board.h"
+
 #include <fstream>
 
 std::vector<uint64_t> keys_64
@@ -41,9 +43,9 @@ static uint64_t hash_pieces(Position const& position)
     uint64_t hash = 0;
     for(int i = 0;i < 64;i++)
     {
-        Piece piece = position.pieces.squares[i];
+        Piece piece = position.get_piece(static_cast<Square>(i));
         if (piece != Piece::Empty)
-            hash ^= get_piece_key(piece, Square(i));
+            hash ^= get_piece_key(piece, static_cast<Square>(i));
     }
 
     return hash;
@@ -54,18 +56,18 @@ static uint64_t hash_castle(Position const& position)
     constexpr int offset = 768;
     uint64_t hash = 0;
     
-    uint64_t rights = position.castle_rights.data();
+    uint64_t rights = position.get_castle_rooks();
 
-    if (test_bit(Square::G1, rights))
+    if (test_bit(rights, Square::G1))
         hash ^= keys_64[offset + 0];
 
-    if (test_bit(Square::C1, rights))
+    if (test_bit(rights, Square::C1))
         hash ^= keys_64[offset + 1];
     
-    if (test_bit(Square::G8 , rights))
+    if (test_bit(rights, Square::G8))
         hash ^= keys_64[offset + 2];
 
-    if (test_bit(Square::C8, rights))
+    if (test_bit(rights, Square::C8))
         hash ^= keys_64[offset + 3];
 
     return hash;
@@ -76,15 +78,15 @@ static uint64_t hash_enpassant(Position const& position)
     uint64_t hash = 0;
     constexpr int offset = 772;
 
-    if (position.ep_sq != bad_sq)
-        hash ^= keys_64[offset + (int)file_of(position.ep_sq)];
+    if (position.get_ep() != bad_sq)
+        hash ^= keys_64[offset + (int)file_of(position.get_ep())];
 
     return hash;
 }
 
 static uint64_t hash_turn(Position const& position)
 {
-    if (position.side == White)
+    if (position.get_side() == White)
         return keys_64[780];
 
     return 0;
@@ -109,7 +111,7 @@ static Move decode_move(Position const& position, uint16_t move)
     Square from = Square(from_row * 8 + from_file);
     Square to   = Square(to_row * 8 + to_file);
 
-    Piece moving = position.pieces.squares[from];
+    Piece moving = position.get_piece(from);
 
     if (type_of(moving) == PieceType::King)
     {
@@ -126,10 +128,10 @@ static Move decode_move(Position const& position, uint16_t move)
             return Move(E8, C8, Move::Flag::castle);
     }
 
-    if (type_of(moving) == PieceType::Pawn && rank_of(from, position.side) == Rank::seven)
+    if (type_of(moving) == PieceType::Pawn && rank_of(from, position.get_side()) == Rank::seven)
         return Move(from, to, PieceType(promoted - 1));
 
-    if (type_of(moving) == PieceType::Pawn && to == position.ep_sq)
+    if (type_of(moving) == PieceType::Pawn && to == position.get_ep())
         return Move(from, to, Move::Flag::enpassant);
 
     return Move(from, to);

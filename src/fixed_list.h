@@ -15,13 +15,15 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once
 #include <array>
 
 template<typename T, std::size_t S>
 class FixedList
 {
 public:
-    using iterator = std::array<T, S>::iterator;
+    using iterator       = typename std::array<T, S>::iterator;
+    using const_iterator = typename std::array<T, S>::const_iterator;
 
     FixedList() = default;
 
@@ -33,6 +35,16 @@ public:
     iterator end() 
     {
         return data.begin() + height;
+    }
+
+    const_iterator begin() const
+    {
+        return begin();
+    }    
+
+    const_iterator end() const
+    {
+        return end();
     }
 
     void push_back(T const& elem) 

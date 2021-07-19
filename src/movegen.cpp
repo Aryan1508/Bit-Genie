@@ -27,9 +27,9 @@ namespace
     template<GenType type>
     uint64_t get_targets(Position const& position)
     {
-        return type == GenType::all   ? ~position.friend_bb()
-            :  type == GenType::noisy ?  position.enemy_bb()
-                                      : ~position.total_bb();
+        return type == GenType::all   ? ~position.get_bb(position.get_side())
+            :  type == GenType::noisy ?  position.get_bb(!position.get_side())
+                                      : ~position.get_bb();
     }
 
     constexpr uint64_t get_promotion_rank_bb(Color side)
@@ -50,7 +50,7 @@ namespace
     }
 
     template<Move::Flag flag = Move::Flag::normal> 
-    void serialize_bitboard(Movelist& movelist, Position& position, uint64_t bb, Direction moved)
+    void serialize_bitboard(Movelist& movelist, Position const& position, uint64_t bb, Direction moved)
     {
         while(bb)
         {
@@ -76,7 +76,7 @@ namespace
         while(pieces)
         {
             Square from = pop_lsb(pieces);
-            uint64_t moves = Attacks::generate(pt, from, position.total_bb()) & targets;
+            uint64_t moves = Attacks::generate(pt, from, position.get_bb()) & targets;
             serialize_bitboard(movelist, position, moves, from);
         }
     }
@@ -96,8 +96,8 @@ namespace
     {
         constexpr uint64_t promo_bb = get_promotion_rank_bb(side);
 
-        uint64_t captures_l = position.enemy_bb() & shift<Direction::west>(forwarded_pawns);
-        uint64_t captures_r = position.enemy_bb() & shift<Direction::east>(forwarded_pawns);
+        uint64_t captures_l = position.get_bb(!position.get_side()) & shift<Direction::west>(forwarded_pawns);
+        uint64_t captures_r = position.get_bb(!position.get_side()) & shift<Direction::east>(forwarded_pawns);
         
         serialize_bitboard(movelist, position, captures_l & ~promo_bb, relative_forward(side) + Direction::west);
         serialize_bitboard(movelist, position, captures_r & ~promo_bb, relative_forward(side) + Direction::east);
@@ -112,7 +112,7 @@ namespace
         constexpr uint64_t promo_bb   = get_promotion_rank_bb(side);
         constexpr uint64_t push_2r_bb = side == White ? BitMask::rank4 : BitMask::rank5;
 
-        uint64_t empty = ~position.total_bb();
+        uint64_t empty = ~position.get_bb();
 
         uint64_t push_1 = forwarded_pawns & empty;
         uint64_t push_2 = shift<relative_forward(side)>(push_1) & push_2r_bb & empty;
@@ -126,9 +126,9 @@ namespace
     template<Color side>
     void generate_enpassant(Position const& position, Movelist& movelist, uint64_t forwarded_pawns)
     {
-        if (position.ep_sq == bad_sq) return;
+        if (position.get_ep() == bad_sq) return;
 
-        uint64_t ep_bb = 1ull << position.ep_sq;
+        uint64_t ep_bb = 1ull << position.get_ep();
 
         uint64_t ep_l = ep_bb & shift<Direction::west>(forwarded_pawns);
         uint64_t ep_r = ep_bb & shift<Direction::east>(forwarded_pawns);
@@ -205,8 +205,8 @@ namespace
     template<GenType type>
     void generate_moves(Position const& position, Movelist& movelist)
     {
-        position.side == White ? generate_moves<type, White>(position, movelist)
-                               : generate_moves<type, Black>(position, movelist);
+        position.get_side() == Color::White ? generate_moves<type, Color::White>(position, movelist)
+                                            : generate_moves<type, Color::Black>(position, movelist);
     }
 }
 

@@ -18,6 +18,7 @@
 #include "evaldata.h"
 
 #include "attacks.h"
+#include "bitboard.h"
 #include "position.h"
 #include <cstring>
 
@@ -37,8 +38,8 @@ namespace Eval
 
     void Data::init(Position const &position)
     {
-        king_ring[White] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(White)));
-        king_ring[Black] = Attacks::king(get_lsb(position.pieces.get_piece_bb<King>(Black)));
+        king_ring[White] = Attacks::king(get_lsb(position.get_bb(PieceType::King, Color::White)));
+        king_ring[Black] = Attacks::king(get_lsb(position.get_bb(PieceType::King, Color::Black)));
     }
 
     void Data::update_attackers(uint64_t attacks, Color by)

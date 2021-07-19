@@ -21,7 +21,7 @@
 
 bool move_is_capture(Position const &position, Move move)
 {
-    return position.pieces.squares[move.to()] != Empty;
+    return position.get_piece(move.to()) != Piece::Empty;
 }
 
 std::ostream& operator<<(std::ostream& o, Move move)
@@ -31,6 +31,5 @@ std::ostream& operator<<(std::ostream& o, Move move)
     {
         o << move.promoted();
     }
-
     return o;
 }
