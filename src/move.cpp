@@ -143,6 +143,32 @@ void Position::apply_move(Move move)
     key.hash_side();
 }
 
+void Position::apply_nullmove()
+{
+    history[history_ply].move         = NullMove;
+    history[history_ply].castle_rooks = castle_rooks;
+    history[history_ply].halfmoves    = halfmoves++;
+    history[history_ply].key          = key;
+    history[history_ply].ep_sq        = ep_sq;
+
+    if (ep_sq != Square::bad_sq)
+        key.hash_ep(ep_sq);
+
+    key.hash_side();
+    side = !side;
+}   
+
+void Position::revert_nullmove()
+{
+    history_ply--;
+    castle_rooks  = history[history_ply].castle_rooks;
+    halfmoves     = history[history_ply].halfmoves;
+    key           = history[history_ply].key;
+    ep_sq         = history[history_ply].ep_sq;
+
+    side = !side;
+}
+
 bool move_is_capture(Position const &position, Move move)
 {
     return position.get_piece(move.to()) != Piece::Empty;

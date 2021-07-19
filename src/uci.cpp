@@ -120,8 +120,8 @@ namespace
 
         position.set_fen(fen);
 
-        for (std::string const &move : moves)
-            position.apply_move(move);
+        // for (std::string const &move : moves)
+        //     position.apply_move(move);
     }
 }
 

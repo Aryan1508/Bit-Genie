@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "position.h"
-#include "bitboard.h"
+#include "attacks.h"
 #include "stringparse.h"
 
 Position::Position()
@@ -27,4 +27,37 @@ Position::Position()
 std::ostream& operator<<(std::ostream& o, Position const& position)
 {
     return o << position.get_fen();
+}
+
+bool Position::king_in_check() const 
+{
+    uint64_t king = get_bb(PieceType::King, side);
+    return Attacks::square_attacked(*this, get_lsb(king), !side);
+}
+
+bool Position::drawn() const 
+{
+    for(int i = history_ply - 2;i >= 0 && i >= history_ply - halfmoves;i -= 2)
+    {
+        if (history[i].key == key)
+            return true;
+    }
+
+    if (halfmoves >= 100) return true;
+
+    auto const& bbs = bitboards;
+
+    if (bbs[Pawn] || bbs[Rook] || bbs[Queen])
+        return false;
+
+    if (bbs[Knight])
+    {
+        if (bbs[Bishop])
+            return false;
+
+        return popcount64(bbs[Knight]) <= 2;
+    }
+
+    return   !is_several(bbs[Bishop] & get_bb(White))
+          && !is_several(bbs[Bishop] & get_bb(Black));
 }
