@@ -101,6 +101,7 @@ struct Move
         return static_cast<PieceType>(((data >> 14) & 0x3) + 1);
     }
     
+    std::string str() const;
     friend std::ostream& operator<<(std::ostream& o, Move);
 };
 

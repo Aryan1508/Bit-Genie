@@ -25,7 +25,8 @@ namespace
     void update_castle_rooks(uint64_t& rooks, Move move)
     {
         constexpr auto& mask = BitMask::castle_updates;
-        rooks &= mask[move.to()] & mask[move.from()];
+        rooks &= mask[move.from()];
+        rooks &= mask[move.to()];
     }
 }
 
@@ -47,7 +48,8 @@ void Position::revert_move()
 
     move_piece(to, from);
 
-    if (captured != Piece::Empty)
+
+    if (captured != Piece::Empty && flag != Move::Flag::enpassant)
         add_piece(to, captured);
 
     if (flag == Move::Flag::promotion)
@@ -174,12 +176,18 @@ bool move_is_capture(Position const &position, Move move)
     return position.get_piece(move.to()) != Piece::Empty;
 }
 
+std::string Move::str() const 
+{
+    std::stringstream o;
+    o << from() << to();
+
+    if (flag() == Move::Flag::promotion)
+        o << promoted();
+        
+    return o.str();
+}
+
 std::ostream& operator<<(std::ostream& o, Move move)
 {
-    o << move.from() << move.to();
-    if (move.flag() == Move::Flag::promotion)
-    {
-        o << move.promoted();
-    }
-    return o;
+    return o << move.str();
 }

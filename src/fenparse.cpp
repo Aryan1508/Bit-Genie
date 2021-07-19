@@ -25,11 +25,11 @@ namespace
 {
     Piece get_piece(char label)
     {
-        PieceType pt = label == 'p' ? PieceType::Pawn   :
-                       label == 'n' ? PieceType::Knight :
-                       label == 'b' ? PieceType::Bishop :
-                       label == 'r' ? PieceType::Rook   :
-                       label == 'q' ? PieceType::Queen  : PieceType::King;
+        PieceType pt = std::tolower(label) == 'p' ? PieceType::Pawn   :
+                       std::tolower(label) == 'n' ? PieceType::Knight :
+                       std::tolower(label) == 'b' ? PieceType::Bishop :
+                       std::tolower(label) == 'r' ? PieceType::Rook   :
+                       std::tolower(label) == 'q' ? PieceType::Queen  : PieceType::King;
         return std::islower(label) ? make_piece(pt, Color::Black) : make_piece(pt, Color::White);
     }
 }
@@ -57,7 +57,10 @@ void Position::set_fen(std::string_view fen)
             if (std::isdigit(p))    
                 counter += p - '0';
             else 
+            {
                 add_piece(flip_square(counter), ::get_piece(p));
+                counter++;
+            }
         }
     }
 

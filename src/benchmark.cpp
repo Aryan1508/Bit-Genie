@@ -30,7 +30,7 @@ namespace
         #include "bench.txt"
     };
 
-    uint64_t perft(Position& position, int depth)
+    uint64_t perft(Position& position, int depth, bool root=true)
     {
         Movelist movelist;
         position.generate_legal(movelist);
@@ -42,8 +42,12 @@ namespace
         for(auto move : movelist)
         {
             position.apply_move(move);
-            nodes += perft(position, depth - 1);
+            uint64_t child = perft(position, depth - 1, false);
             position.revert_move();
+
+            if (root)
+                std::cout << move << ": " << child << '\n';
+            nodes += child;
         }
         return nodes;
     }

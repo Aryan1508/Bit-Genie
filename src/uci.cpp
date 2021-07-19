@@ -120,8 +120,15 @@ namespace
 
         position.set_fen(fen);
 
-        // for (std::string const &move : moves)
-        //     position.apply_move(move);
+        for (std::string const &move : moves)
+        {
+            Movelist movelist;
+            position.generate_legal(movelist);
+
+            for(auto m : movelist)
+                if (m.str() == move)
+                    position.apply_move(m);
+        }
     }
 }
 

@@ -20,6 +20,7 @@
 #include "zobrist.h"
 #include "search.h"
 #include "tuner.h"
+#include "benchmark.h"
 
 int main(int argc, char** argv)
 {

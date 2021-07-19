@@ -26,7 +26,10 @@ Position::Position()
 
 std::ostream& operator<<(std::ostream& o, Position const& position)
 {
-    return o << position.get_fen();
+    o << std::hex << "0x" << position.get_castle_rooks() << '\n';
+    o << "0x" << position.get_bb(Color::White) << '\n';
+    o << "0x" << position.get_bb(Color::Black) << '\n';
+    return o;
 }
 
 bool Position::king_in_check() const 
