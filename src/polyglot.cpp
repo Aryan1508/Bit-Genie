@@ -22,7 +22,7 @@
 
 std::vector<uint64_t> keys_64
 {
-#include "polyglotkeys.txt"
+#include "polyglotkeys"
 };
 
 static uint64_t get_piece_key(Piece p, Square sq)

@@ -42,6 +42,12 @@ public:
     // Generate all legal quiet moves
     void generate_quiet(Movelist&) const;
 
+    // Check if a move is legal (only checks if performing a move will leave king in check)
+    bool is_legal(Move) const;
+
+    // Check if a move is pseudolegal
+    bool is_pseudolegal(Move) const;
+
     // Perform a move over the board, UB if move is not legal
     void apply_move(Move);
     
@@ -106,6 +112,11 @@ public:
     uint64_t get_bb() const
     {
         return colors[White] | colors[Black];
+    }
+
+    uint64_t get_castle_rooks() const 
+    {
+        return castle_rooks;
     }
 
     Piece& get_piece(Square sq) 

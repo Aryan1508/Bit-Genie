@@ -15,16 +15,17 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "attacks.h"
 #include "position.h"
 #include "movelist.h"
-#include "attacks.h"
+#include "bitboard.h"
 
 namespace 
 {
     enum class GenType { all, quiet, noisy };
 
     template<GenType type>
-    uint64_t get_targets(Position& position)
+    uint64_t get_targets(Position const& position)
     {
         return type == GenType::all   ? ~position.friend_bb()
             :  type == GenType::noisy ?  position.enemy_bb()
@@ -36,13 +37,13 @@ namespace
         return side == White ? BitMask::rank8 : BitMask::rank1;
     }
 
-    void verified_add(Movelist& movelist, Position& position, Move move)
+    void verified_add(Movelist& movelist, Position const& position, Move move)
     {
-        if (position.move_is_legal(move))
-            movelist.add(move);
+        if (position.is_legal(move))
+            movelist.push_back(move);
     }
 
-    void serialize_bitboard(Movelist& movelist, Position& position, uint64_t bb, Square from)
+    void serialize_bitboard(Movelist& movelist, Position const& position, uint64_t bb, Square from)
     {   
         while(bb)
             verified_add(movelist, position, Move(from, pop_lsb(bb)));
@@ -68,9 +69,9 @@ namespace
         }
     }
     template<PieceType pt, Color side>
-    void generate_simple_moves(Position& position, Movelist& movelist, uint64_t targets)
+    void generate_simple_moves(Position const& position, Movelist& movelist, uint64_t targets)
     {
-        uint64_t pieces = position.pieces.bitboards[pt] & position.pieces.colors[side];
+        uint64_t pieces = position.get_bb(pt, side);
 
         while(pieces)
         {
@@ -81,7 +82,7 @@ namespace
     }
 
     template<Color side>
-    void generate_simple_moves(Position& position, Movelist& movelist, uint64_t targets)
+    void generate_simple_moves(Position const& position, Movelist& movelist, uint64_t targets)
     {
         generate_simple_moves<King  , side>(position, movelist, targets);
         generate_simple_moves<Knight, side>(position, movelist, targets);
@@ -91,7 +92,7 @@ namespace
     }
 
     template<Color side>
-    void generate_pawn_captures(Position& position, Movelist& movelist, uint64_t forwarded_pawns)
+    void generate_pawn_captures(Position const& position, Movelist& movelist, uint64_t forwarded_pawns)
     {
         constexpr uint64_t promo_bb = get_promotion_rank_bb(side);
 
@@ -106,7 +107,7 @@ namespace
     }
 
     template<Color side>
-    void generate_pawn_pushes(Position& position, Movelist& movelist, uint64_t forwarded_pawns)
+    void generate_pawn_pushes(Position const& position, Movelist& movelist, uint64_t forwarded_pawns)
     {
         constexpr uint64_t promo_bb   = get_promotion_rank_bb(side);
         constexpr uint64_t push_2r_bb = side == White ? BitMask::rank4 : BitMask::rank5;
@@ -123,7 +124,7 @@ namespace
     }
 
     template<Color side>
-    void generate_enpassant(Position& position, Movelist& movelist, uint64_t forwarded_pawns)
+    void generate_enpassant(Position const& position, Movelist& movelist, uint64_t forwarded_pawns)
     {
         if (position.ep_sq == bad_sq) return;
 
@@ -136,23 +137,23 @@ namespace
         serialize_bitboard<Move::Flag::enpassant>(movelist, position, ep_r, relative_forward(side) + Direction::east);
     }
 
-    void generate_castle(Position& position, Movelist& movelist, Square from, Square to, uint64_t occ_cond, uint64_t att_cond)
+    void generate_castle(Position const& position, Movelist& movelist, Square from, Square to, uint64_t occ_cond, uint64_t att_cond)
     {
-        if (!test_bit(to, position.castle_rights.data()))
+        if (!test_bit(position.get_castle_rooks(), to))
             return;
 
-        if (occ_cond & position.total_bb())
+        if (occ_cond & position.get_bb())
             return;
 
         while(att_cond)
-            if (Attacks::square_attacked(position, pop_lsb(att_cond), !position.side))
+            if (Attacks::square_attacked(position, pop_lsb(att_cond), !position.get_side()))
                 return;
 
         verified_add(movelist, position, Move(from, to, Move::Flag::castle));
     }
 
     template<Color side>
-    void generate_castle(Position& position, Movelist& movelist)
+    void generate_castle(Position const& position, Movelist& movelist)
     {
         if (side == White)
         {
@@ -167,11 +168,11 @@ namespace
     }
 
     template<GenType type, Color side>
-    void    generate_pawn_moves(Position& position, Movelist& movelist)
+    void    generate_pawn_moves(Position const& position, Movelist& movelist)
     {
         constexpr Direction forward   = relative_forward(side);
 
-        uint64_t pawns           = position.pieces.bitboards[Pawn] & position.pieces.colors[side];
+        uint64_t pawns           = position.get_bb(Pawn, side);
         uint64_t forwarded_pawns = shift<forward>(pawns);
 
         if (type == GenType::all)
@@ -190,7 +191,7 @@ namespace
     }
 
     template<GenType type, Color side>
-    void generate_moves(Position& position, Movelist& movelist)
+    void generate_moves(Position const& position, Movelist& movelist)
     {
         uint64_t targets = get_targets<type>(position);
 
@@ -202,24 +203,24 @@ namespace
     }
 
     template<GenType type>
-    void generate_moves(Position& position, Movelist& movelist)
+    void generate_moves(Position const& position, Movelist& movelist)
     {
         position.side == White ? generate_moves<type, White>(position, movelist)
                                : generate_moves<type, Black>(position, movelist);
     }
 }
 
-void Position::generate_moves(Movelist& movelist)
+void Position::generate_legal(Movelist& movelist) const
 {
     ::generate_moves<GenType::all>(*this, movelist);
 }
 
-void Position::generate_noisy_moves(Movelist& movelist)
+void Position::generate_noisy(Movelist& movelist) const
 {
     ::generate_moves<GenType::noisy>(*this, movelist);
 }
 
-void Position::generate_quiet_moves(Movelist& movelist)
+void Position::generate_quiet(Movelist& movelist) const
 {
     ::generate_moves<GenType::quiet>(*this, movelist);
 }
