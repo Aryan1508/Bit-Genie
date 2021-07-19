@@ -22,6 +22,7 @@
 #include "attacks.h"
 #include "evaldata.h"
 #include "position.h"
+#include "bitboard.h"
 #include "evalscores.h"
 #include <math.h>
 #include <cstring>
@@ -47,10 +48,10 @@ namespace
     template <PieceType pt, bool safe = false>
     int calculate_moblity(Position const &position, Eval::Data &data, Square sq, Color us, const int *mobility_scores)
     {
-        uint64_t occupancy = position.total_bb();
+        uint64_t occupancy = position.get_bb();
         
-        if (pt == Rook)
-            occupancy ^= position.pieces.get_piece_bb<Rook>(us);
+        if (pt == PieceType::Rook)
+            occupancy ^= position.get_bb(pt, us);
 
         uint64_t attacks = Attacks::generate(pt, sq, occupancy);
         data.update_attackers(attacks, us);
@@ -63,7 +64,7 @@ namespace
 
         if constexpr (safe)
         {
-            uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
+            uint64_t enemy_pawns = position.get_bb(Pawn, !us);
             uint64_t attacked    = Attacks::pawn(enemy_pawns, !us); 
 
             int count = popcount64(attacks & ~attacked);
@@ -106,11 +107,11 @@ namespace
         };
 
         int score = 0;
-        uint64_t enemy_pawns = position.pieces.get_piece_bb<Pawn>(!us);
-        uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
-        uint64_t enemy = position.pieces.get_occupancy(!us);
+        uint64_t enemy_pawns   = position.get_bb(PieceType::Pawn, !us);
+        uint64_t friend_pawns  = position.get_bb(PieceType::Pawn,  us);
+        uint64_t enemy         = position.get_bb(!us);
         uint64_t ahead_squares = BitMask::passed_pawn[us][sq] & BitMask::files[sq];
-        Square relative_sq = psqt_sq(sq, us);
+        Square relative_sq     = psqt_sq(sq, us);
 
         data.update_attackers(BitMask::pawn_attacks[us][sq], us);
 
@@ -150,7 +151,7 @@ namespace
                 score += PASSER_EDGE_DISTANCE * ed;
                 TRACE_COUNT(passer_edge_distance, ed);
 
-                if (position.side == us)
+                if (position.get_side() == us)
                 {
                     TRACE_1(passer_tempo);
                     score += PASSER_TEMPO;
@@ -208,8 +209,8 @@ namespace
         [](Position const &position, Square sq)
         {
             uint64_t file  = BitMask::files[sq];
-            uint64_t white = position.pieces.get_piece_bb<Pawn>(White);
-            uint64_t black = position.pieces.get_piece_bb<Pawn>(Black);
+            uint64_t white = position.get_bb(Piece::wPawn);
+            uint64_t black = position.get_bb(Piece::bPawn);
 
             return !(file & white) || !(file & black);
         };
@@ -218,12 +219,12 @@ namespace
         [](Position const &position, Square sq)
         {
             uint64_t file = BitMask::files[sq];
-            return !(file & position.pieces.bitboards[Pawn]);
+            return !(file & position.get_bb(PieceType::Pawn));
         };
 
         int score = 0;
-        Square relative_sq = psqt_sq(sq, us);
-        uint64_t friend_rooks = position.pieces.get_piece_bb<Rook>(us) ^ (1ull << sq);
+        Square relative_sq    = psqt_sq(sq, us);
+        uint64_t friend_rooks = position.get_bb(PieceType::Rook, us) ^ (1ull << sq);
 
         score += ROOK_PSQT[relative_sq];
         TRACE_3(psqt, Rook, relative_sq);
@@ -279,20 +280,18 @@ namespace
     int evaluate_king(Position const &position, Eval::Data &data, Square sq, Color us)
     {
         Square relative_sq = psqt_sq(sq, us);
-        uint64_t friend_pawns = position.pieces.get_piece_bb<Pawn>(us);
+        uint64_t friend_pawns = position.get_bb(PieceType::Pawn, us);
 
         int score = KING_PSQT[relative_sq];    
         TRACE_3(psqt, King, relative_sq);
 
-        Color enemy = !us;
-
         data.update_attackers(BitMask::king_attacks[sq], us);
 
-        if (data.king_attackers_count[enemy] >= 2)
+        if (data.king_attackers_count[!us] >= 2)
         {
-            int weight = data.king_attackers_weight[enemy];
+            int weight = data.king_attackers_weight[!us];
 
-            if (!position.pieces.get_piece_bb<Queen>(enemy))
+            if (!position.get_bb(Queen, !us))
                 weight /= 2;
 
             score += KING_SAFETY_TABLE[weight];
@@ -342,11 +341,11 @@ namespace
     {
         constexpr uint64_t dark_squares = 0xAA55AA55AA55AA55;
 
-        uint64_t rooks   = position.pieces.bitboards[Rook];
-        uint64_t knights = position.pieces.bitboards[Knight];
-        uint64_t queens  = position.pieces.bitboards[Queen];
-        uint64_t bishopw = position.pieces.get_piece_bb<Bishop>(White);
-        uint64_t bishopb = position.pieces.get_piece_bb<Bishop>(Black);
+        uint64_t rooks   = position.get_bb(Rook);
+        uint64_t knights = position.get_bb(Knight);
+        uint64_t queens  = position.get_bb(Queen);
+        uint64_t bishopw = position.get_bb(Bishop, White);
+        uint64_t bishopb = position.get_bb(Bishop, Black);
         uint64_t bishops = bishopw | bishopb;
 
         if (rooks || knights || queens) return false;
@@ -424,10 +423,10 @@ namespace Eval
 {
     int get_phase(Position const &position)
     {
-        uint64_t knights = position.pieces.bitboards[Knight];
-        uint64_t bishops = position.pieces.bitboards[Bishop];
-        uint64_t rooks   = position.pieces.bitboards[Rook];
-        uint64_t queens  = position.pieces.bitboards[Queen];
+        uint64_t knights = position.get_bb(PieceType::Knight);
+        uint64_t bishops = position.get_bb(PieceType::Bishop);
+        uint64_t rooks   = position.get_bb(PieceType::Rook  );
+        uint64_t queens  = position.get_bb(PieceType::Queen );
 
         int phase = 24 - 1 * popcount64(knights | bishops)
                        - 2 * popcount64(rooks)
@@ -443,7 +442,7 @@ namespace Eval
             return 64;
 
         Color stronger = eval > 0 ? White : Black;
-        uint64_t pawns = position.pieces.get_piece_bb<Pawn>(stronger);
+        uint64_t pawns = position.get_bb(Pawn, stronger);
         int count =  8 - popcount64(pawns);
 
         return 128 - count * count;
@@ -473,6 +472,6 @@ namespace Eval
         TRACE_VAL(eval, score);
         score = scale_score(position, score);
 
-        return position.side == White ? score : -score;
+        return position.get_side() == White ? score : -score;
     }
 }

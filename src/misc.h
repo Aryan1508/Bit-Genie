@@ -32,8 +32,8 @@ enum PieceType : uint8_t;
 enum Color : uint8_t;
 
 struct Move;
-class Movelist;
 class TTable;
+class Position;
 class ZobristKey;
 
 struct TEntry;
