@@ -33,6 +33,11 @@ namespace Attacks
         return shift<Direction::west>(forward) | shift<Direction::east>(forward);
     }
 
+    inline uint64_t pawn(Square sq, Color side)
+    {
+        return BitMask::pawn_attacks[side][sq];
+    }
+
     inline uint64_t knight(Square sq)
     {
         return BitMask::knight_attacks[sq];
@@ -67,22 +72,11 @@ namespace Attacks
         uint64_t rooks   = position.get_bb(Rook  , enemy) | queens;
         uint64_t bishops = position.get_bb(Bishop, enemy) | queens;
 
-
-        return (BitMask::pawn_attacks[!enemy][sq] & pawns) || (bishop(sq, occupancy) & bishops) || (rook(sq, occupancy) & rooks) || (knight(sq) & knights) || (king(sq) & kings);
-    }
-
-    inline uint64_t attackers_to_sq(Position const &position, Square sq)
-    {
-        uint64_t occ = position.get_bb();
-        uint64_t pawn_mask = (BitMask::pawn_attacks[White][sq] & position.get_bb(PieceType::Pawn) & position.get_bb(Color::Black));
-        pawn_mask |= (BitMask::pawn_attacks[Black][sq] & position.get_bb(PieceType::Pawn) & position.get_bb(Color::White));
-
-        uint64_t bishops = position.get_bb(PieceType::Bishop) | position.get_bb(Queen);
-        uint64_t rooks   = position.get_bb(PieceType::Rook  ) | position.get_bb(Queen);
-
-        return (pawn_mask) | (knight(sq) & position.get_bb(PieceType::Knight)) 
-                           | (king(sq)   & position.get_bb(PieceType::King)) 
-                           | (bishop(sq, occ) & bishops) | (rook(sq, occ) & rooks);
+        return (BitMask::pawn_attacks[!enemy][sq] & pawns) 
+            || (bishop(sq, occupancy) & bishops) 
+            || (rook  (sq, occupancy) & rooks  )
+            || (knight(sq           ) & knights) 
+            || (king  (sq           ) & kings  );
     }
 
     inline bool square_attacked(Position const &position, Square sq, Color enemy)
@@ -90,29 +84,36 @@ namespace Attacks
         return square_attacked(position, sq, enemy, position.get_bb());
     }
 
+    inline uint64_t attackers_to_sq(Position const &position, Square sq)
+    {
+        uint64_t occ     = position.get_bb();
+        uint64_t wpawns  = position.get_bb(Piece::wPawn);
+        uint64_t bpawns  = position.get_bb(Piece::bPawn);
+        uint64_t knights = position.get_bb(Knight);
+        uint64_t queens  = position.get_bb(Queen );
+        uint64_t kings   = position.get_bb(King  );
+        uint64_t rooks   = position.get_bb(Rook  ) | queens;
+        uint64_t bishops = position.get_bb(Bishop) | queens;
+
+        uint64_t p_attackers =  (pawn(sq, Color::White) & bpawns)
+                             |  (pawn(sq, Color::Black) & wpawns);
+        
+        return p_attackers | (knight(sq     ) & knights)
+                           | (king  (sq     ) & kings  )
+                           | (bishop(sq, occ) & bishops)
+                           | (rook  (sq, occ) & rooks  );
+    }
+
     inline uint64_t generate(PieceType piece, Square sq, uint64_t occ)
     {
         switch (piece)
         {
-        case Knight:
-            return knight(sq);
-
-        case Bishop:
-            return bishop(sq, occ);
-
-        case Rook:
-            return rook(sq, occ);
-
-        case Queen:
-            return queen(sq, occ);
-
-        case King:
-            return king(sq);
-        default:
-            throw "";
-            break;
+            case Knight: return knight(sq);
+            case Bishop: return bishop(sq, occ);
+            case Rook  : return rook(sq, occ);
+            case Queen : return queen(sq, occ);
+            default    : return king(sq);
         }
         return 0;
     }
-
 }
