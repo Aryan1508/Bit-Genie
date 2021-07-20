@@ -39,12 +39,12 @@ public:
 
     const_iterator begin() const
     {
-        return begin();
+        return data.begin();
     }    
 
     const_iterator end() const
     {
-        return end();
+        return data.begin() + height;
     }
 
     void push_back(T const& elem) 

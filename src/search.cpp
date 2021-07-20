@@ -19,7 +19,6 @@
 #include "position.h"
 #include "eval.h"
 #include "moveorder.h"
-#include "bitboard.h"
 #include "polyglot.h"
 #include "tt.h"
 #include <sstream>
@@ -65,27 +64,27 @@ namespace
         }
     };
 
+    void apply_nullmove(Search::Info& search)
+    {
+        search.position->apply_nullmove();
+        search.stats.ply++;
+    }
+
+    void revert_nullmove(Search::Info& search)
+    {
+        search.position->revert_nullmove();
+        search.stats.ply--;
+    }
+
     void apply_move(Search::Info& search, Move move)
     {
         search.position->apply_move(move);
         search.stats.ply++;
     }
 
-    void apply_null(Search::Info& search)
-    {
-        search.position->apply_nullmove();
-        search.stats.ply++;
-    }
-
     void revert_move(Search::Info& search)
     {
         search.position->revert_move();
-        search.stats.ply--;
-    }
-
-    void revert_null(Search::Info& search)
-    {
-        search.position->revert_nullmove();
         search.stats.ply--;
     }
 
@@ -103,8 +102,8 @@ namespace
             if (search.stats.ply >= MaxPly)
                 return Eval::evaluate(position);
 
-            if (position.drawn())
-                return 0;
+            // if (position.drawn())
+            //     return 0;
         }
 
         int stand_pat = Eval::evaluate(position);
@@ -122,7 +121,9 @@ namespace
                 break;
 
             apply_move(search, move);
+
             int score = -qsearch(search, -beta, -alpha);
+
             revert_move(search);
 
             if (search.limits.stopped)
@@ -243,8 +244,8 @@ namespace
             if (search.stats.ply >= MaxPly)
                 return Eval::evaluate(position);
 
-            if (position.drawn())
-                return 0;
+            // if (position.drawn())
+            //     return 0;
         }
 
         if (entry.depth >= depth && tthit)
@@ -274,11 +275,11 @@ namespace
         if (!pv_node && !in_check && depth == 1 && eval + 400 <= alpha)
             return qsearch(search, alpha, beta);
 
-        if (!pv_node && !in_check && depth >= 4 && do_null && popcount64(position.get_bb()) >= 4 && eval + 300 >= beta)
+        if (!pv_node && !in_check && depth >= 4 && do_null && (popcount64(position.get_bb()) >= 4) && eval + 300 >= beta)
         {
-            apply_null(search);
+            apply_nullmove(search);
             int score = -pvs(search, nmp_depth(depth), -beta, -beta + 1, false).score;
-            revert_null(search);
+            revert_nullmove(search);
 
             if (search.limits.stopped)
                 return 0;
