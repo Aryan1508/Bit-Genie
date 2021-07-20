@@ -158,6 +158,7 @@ void Position::apply_nullmove()
 
     key.hash_side();
     side = !side;
+    history_ply++;
 }   
 
 void Position::revert_nullmove()

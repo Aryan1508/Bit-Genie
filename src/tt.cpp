@@ -59,7 +59,7 @@ std::vector<Move> TTable::extract_pv(Position& position, int depth)
     {
         Movelist movelist;
         position.generate_legal(movelist);
-        return std::find(movelist.begin(), movelist.end(), move) == movelist.end();
+        return std::find(movelist.begin(), movelist.end(), move) != movelist.end();
     };
 
     std::vector<Move> pv;

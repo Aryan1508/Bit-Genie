@@ -25,11 +25,12 @@ namespace
 {
     Piece get_piece(char label)
     {
-        PieceType pt = std::tolower(label) == 'p' ? PieceType::Pawn   :
-                       std::tolower(label) == 'n' ? PieceType::Knight :
-                       std::tolower(label) == 'b' ? PieceType::Bishop :
-                       std::tolower(label) == 'r' ? PieceType::Rook   :
-                       std::tolower(label) == 'q' ? PieceType::Queen  : PieceType::King;
+        char ptl = std::tolower(label);
+        PieceType pt = ptl == 'p' ? PieceType::Pawn   :
+                       ptl == 'n' ? PieceType::Knight :
+                       ptl == 'b' ? PieceType::Bishop :
+                       ptl == 'r' ? PieceType::Rook   :
+                       ptl == 'q' ? PieceType::Queen  : PieceType::King;
         return std::islower(label) ? make_piece(pt, Color::Black) : make_piece(pt, Color::White);
     }
 }

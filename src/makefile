@@ -5,7 +5,7 @@ CXX := g++
 LFLAGS   := -lpthread
 TFLAGS   := -DTUNE -fopenmp
 WFLAGS   := -Wall -Wextra
-CXXFLAGS := -std=c++17 $(WFLAGS) -g -march=native
+CXXFLAGS := -std=c++17 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
 RFLAGS   := -std=c++17 -O3 -DNDEBUG -static 
 
 default:
