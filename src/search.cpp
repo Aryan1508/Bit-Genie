@@ -102,8 +102,8 @@ namespace
             if (search.stats.ply >= MaxPly)
                 return Eval::evaluate(position);
 
-            // if (position.drawn())
-            //     return 0;
+            if (position.drawn())
+                return 0;
         }
 
         int stand_pat = Eval::evaluate(position);
@@ -244,8 +244,8 @@ namespace
             if (search.stats.ply >= MaxPly)
                 return Eval::evaluate(position);
 
-            // if (position.drawn())
-            //     return 0;
+            if (position.drawn())
+                return 0;
         }
 
         if (entry.depth >= depth && tthit)
