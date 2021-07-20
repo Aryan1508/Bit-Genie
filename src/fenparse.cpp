@@ -15,10 +15,10 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "board.h"
 #include "position.h"
 #include "bitboard.h"
 #include "stringparse.h"
-
 #include <sstream>
 
 namespace
@@ -37,7 +37,53 @@ namespace
 
 std::string Position::get_fen() const 
 {
-    return ""; // TODO
+    std::stringstream s;
+    int empty = 0;
+
+    auto print_empty = 
+    [&]()
+    {
+        if (empty)
+        {
+            s << empty;
+        }
+        empty = 0;
+    };
+
+    for (Square sq = Square::A1;sq <= Square::H8;sq++)
+    {
+        if (sq != Square::A1 && sq % 8 == 0)
+        {
+            print_empty();
+            s << '/';
+        }
+
+        Square idx  = flip_square(sq);
+        Piece piece = get_piece(idx); 
+
+        if (piece != Piece::Empty)
+        {
+            print_empty();
+            s << piece;
+        }
+        else    
+            empty++;
+    }
+    print_empty();
+    s << ' ' << side << ' ';
+
+    if (!castle_rooks)
+        s << '-';
+    else 
+    {
+        if (test_bit(castle_rooks, Square::G1)) s << "K";
+        if (test_bit(castle_rooks, Square::C1)) s << "Q";
+        if (test_bit(castle_rooks, Square::G8)) s << "k";
+        if (test_bit(castle_rooks, Square::C8)) s << "q";
+    }
+    s << ' ' << ep_sq << ' ' << halfmoves;
+
+    return s.str();
 }
 
 void Position::set_fen(std::string_view fen)
