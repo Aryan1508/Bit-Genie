@@ -148,26 +148,29 @@ void Position::apply_move(Move move)
 void Position::apply_nullmove()
 {
     history[history_ply].move         = NullMove;
-    history[history_ply].castle_rooks = castle_rooks;
-    history[history_ply].halfmoves    = halfmoves++;
     history[history_ply].key          = key;
     history[history_ply].ep_sq        = ep_sq;
+    history[history_ply].castle_rooks = castle_rooks;
+    history[history_ply].halfmoves    = halfmoves;
 
-    if (ep_sq != Square::bad_sq)
+    history_ply++;
+    halfmoves++;
+
+    if (ep_sq != bad_sq)   
         key.hash_ep(ep_sq);
 
+    ep_sq = Square::bad_sq;
     key.hash_side();
     side = !side;
-    history_ply++;
 }   
 
 void Position::revert_nullmove()
 {
     history_ply--;
-    castle_rooks  = history[history_ply].castle_rooks;
-    halfmoves     = history[history_ply].halfmoves;
     key           = history[history_ply].key;
     ep_sq         = history[history_ply].ep_sq;
+    halfmoves     = history[history_ply].halfmoves;
+    castle_rooks  = history[history_ply].castle_rooks;
 
     side = !side;
 }
