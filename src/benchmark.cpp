@@ -16,27 +16,50 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "benchmark.h"
+#include "search.h"
 #include "position.h"
 #include "stopwatch.h"
-#include "search.h"
+
 #include <iomanip>
 #include <cmath>
 
-// Benchmark positions from Halogen
-const std::array<std::string, 50> benchmark_fens
+namespace 
 {
-    #include "bench.txt"
-};
+    const std::array<std::string, 50> benchmark_fens
+    {
+        #include "bench.txt"
+    };
+
+    uint64_t perft(Position& position, int depth, bool root=true)
+    {
+        Movelist movelist;
+        position.generate_legal(movelist);
+        uint64_t nodes = 0;
+
+        if (depth == 1)
+            return movelist.size();
+
+        for(auto move : movelist)
+        {
+            position.apply_move(move);
+            uint64_t child = perft(position, depth - 1, false);
+            position.revert_move();
+
+            if (root)
+                std::cout << move << ": " << child << '\n';
+            nodes += child;
+        }
+        return nodes;
+    }
+}
 
 namespace BenchMark
 {
-    // Benchmark a perft test and print out the nodes and time taken
     void perft(Position &position, int depth)
     {
-        uint64_t nodes = 0;
         StopWatch<> watch;
         watch.go();
-        position.perft(depth, nodes);
+        uint64_t nodes = ::perft(position, depth);
         watch.stop();
 
         long long elapsed = std::max(1ll, static_cast<long long>((watch.elapsed_time()).count()));
@@ -51,20 +74,14 @@ namespace BenchMark
         std::cout << std::endl;
     }
 
-    // Run through a list of positions and search a fixed depth at each
-    // position. Print out the total nodes search and the nodes per second ( nodes / time)
-    void bench(Position position) // copy on purpose
+    void bench(Position position) 
     {
         StopWatch<> watch;
         watch.go();
         uint64_t nodes = 0;
-        for (auto const &fen : benchmark_fens)
+        for (std::string_view fen : benchmark_fens)
         {
-            if (!position.set_fen(fen))
-            {
-                std::cout << fen;
-                throw std::runtime_error("Invalid fen in bench");
-            }
+            position.set_fen(fen);
             Search::Info info;
             info.position = &position;
             info.limits.max_depth = 13;

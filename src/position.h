@@ -16,116 +16,193 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "piece_manager.h"
-#include "castle_rights.h"
-#include "position_history.h"
-#include "zobrist.h"
+#include "movelist.h"
+#include "bitboard.h"
+#include "fixed_list.h"
+#include "position_undo.h"
+
+#include <string_view>
 
 class Position
 {
-    friend class PositionHistory;
-
-public:
-    Position();
-    bool set_fen(std::string_view);
-
-    uint64_t friend_bb() const;
-
-    uint64_t enemy_bb() const;
-
-    uint64_t total_bb() const;
-
-    void apply_move(Move);
-
-    void apply_move(Move, int &ply);
-
-    void revert_move();
-
-    void revert_move(int &ply);
-
-    void apply_null_move(int &ply);
-
-    void revert_null_move(int &ply);
-
-    bool move_was_legal() const;
-
-    bool move_is_legal(Move);
-
-    bool move_is_pseudolegal(Move);
-
-    bool move_exists(Move);
-    
-    bool apply_move(std::string const &);
-
-    void generate_moves(Movelist&);
-
-    void generate_noisy_moves(Movelist&);
-
-    void generate_quiet_moves(Movelist&);
-
-    bool should_do_null() const;
-
-    void perft(int, uint64_t &, bool = true);
-
-    bool king_in_check() const;
-
-    bool is_drawn() const;
-
-    friend std::ostream &operator<<(std::ostream &, Position const &);
-
-public:
-    PieceManager pieces;
-
-    CastleRights castle_rights;
+private:
+    FixedList<PositionUndo, 2046> history;
+    std::array<Piece   , 64> pieces; 
+    std::array<uint64_t,  6> bitboards;
+    std::array<uint64_t,  2> colors;
 
     ZobristKey key;
+    uint64_t   castle_rooks;
+    int        halfmoves, history_ply;
+    Square     ep_sq;
+    Color      side;
+public:
+    Position();
 
-    PositionHistory history;
+    // Set a fen string, does not attempt to validtae it
+    void set_fen(std::string_view);
 
-private:
-    void reset();
+    /// Convert board to fen string
+    std::string get_fen() const;
 
-    bool parse_fen_side(std::string_view);
+    // Generate all legal moves (both noisy and quiet)
+    void generate_legal(Movelist&) const;
+    
+    // Generate all legal noisy moves
+    void generate_noisy(Movelist&) const;
 
-    bool parse_fen_hmn(std::string_view);
+    // Generate all legal quiet moves
+    void generate_quiet(Movelist&) const;
 
-    void reset_halfmoves();
+    // Check if a move is legal (only checks if performing a move will leave king in check)
+    bool is_legal(Move) const;
 
-    void reset_ep();
+    // Check if a move is pseudolegal
+    bool is_pseudolegal(Move) const;
 
-    bool parse_fen_ep(std::string_view);
+    // Perform a move over the board, UB if move is not legal
+    void apply_move(Move);
+    
+    // Convert UCI move format and perform
+    void apply_move(std::string_view);
 
-    inline void switch_players()
+    // Perform a null move 
+    void apply_nullmove();
+
+    // Revert the last move made, might crash if called on root
+    void revert_move();
+
+    // Revert a null move made
+    void revert_nullmove();
+
+    // Check if position is drawn by repetition, 50-move rule or insufficient material
+    bool drawn() const;
+
+    // Check if side to move's king is under attack 
+    bool king_in_check() const;
+
+    // Add a piece on the board 
+    void add_piece(Square sq, Piece piece)
     {
-        side = !side;
+        get_piece(sq) = piece;
+        set_bit(get_bb(type_of(piece)), sq);
+        set_bit(get_bb(color_of(piece)), sq);
     }
 
-    Piece apply_normal_move(Move);
+    // Remove a piece from the board 
+    Piece remove_piece(Square sq)
+    {
+        Piece piece = get_piece(sq);
+        flip_bit(get_bb(type_of(piece)), sq);
+        flip_bit(get_bb(color_of(piece)), sq);
+        get_piece(sq) = Piece::Empty;
+        return piece;
+    }
 
-    Piece apply_enpassant(Move);
+    // Move piece from square a to square b
+    void move_piece(Square a, Square b)
+    {
+        Piece piece = get_piece(a);
+        PieceType type = type_of(piece);
+        Color    color = color_of(piece);
 
-    Piece apply_castle(Move);
+        flip_bit(get_bb(type) , a);
+        flip_bit(get_bb(color), a);
+        flip_bit(get_bb(type) , b);
+        flip_bit(get_bb(color), b);
 
-    Piece apply_promotion(Move);
+        get_piece(b) = piece;
+        get_piece(a) = Piece::Empty;
+    }   
 
-    void revert_normal_move(Move, Piece);
+    // Add a piece on the board with hash update
+    void add_piece_hash(Square sq, Piece piece)
+    {
+        add_piece(sq, piece);
+        key.hash_piece(sq, piece);
+    }
 
-    void revert_enpassant(Move, Piece);
+    // Remove a piece from the board  with hash update
+    Piece remove_piece_hash(Square sq)
+    {
+        Piece piece = remove_piece(sq);
+        key.hash_piece(sq, piece);
+        return piece;
+    }
 
-    void revert_castle(Move);
+    // Move piece from square a to square b with hash update
+    void move_piece_hash(Square a, Square b)
+    {
+        Piece piece = get_piece(a);
+        move_piece(a, b);
+        key.hash_piece(a, piece);
+        key.hash_piece(b, piece);
+    }   
 
-    void revert_promotion(Move, Piece);
+    uint64_t& get_bb(PieceType pt)
+    {
+        return bitboards[pt];
+    }
 
-    void update_ep(Square to);
+    uint64_t get_bb(PieceType pt) const
+    {
+        return bitboards[pt];
+    }
 
-    PositionHistory::Undo &save(Move = NullMove);
+    uint64_t& get_bb(Color color)
+    {
+        return colors[color];
+    }
 
-    void restore();
+    uint64_t get_bb(Color color) const  
+    {
+        return colors[color];
+    }
 
-    void restore(Move &, Piece &);
+    uint64_t get_bb(PieceType pt, Color color) const
+    {
+        return bitboards[pt] & colors[color];
+    }
 
-public:
-    Color side;
-    int half_moves;
-    Square ep_sq;
+    uint64_t get_bb(Piece piece) const
+    {
+        return get_bb(type_of(piece), color_of(piece));
+    }
+
+    uint64_t get_key() const 
+    {
+        return key.data();
+    }
+
+    uint64_t get_bb() const
+    {
+        return colors[White] | colors[Black];
+    }
+
+    uint64_t get_castle_rooks() const 
+    {
+        return castle_rooks;
+    }
+
+    Piece& get_piece(Square sq) 
+    {
+        return pieces[sq];
+    }
+
+    Piece get_piece(Square sq) const 
+    {
+        return pieces[sq];
+    }
+
+    Square get_ep() const 
+    {
+        return ep_sq;
+    }
+
+    Color get_side() const 
+    {
+        return side;
+    }
+
+    friend std::ostream& operator<<(std::ostream&, Position const&);
 };

@@ -15,11 +15,11 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "attacks.h"
 #include "uci.h"
+#include "tuner.h"
+#include "attacks.h"
 #include "zobrist.h"
 #include "search.h"
-#include "tuner.h"
 
 int main(int argc, char** argv)
 {

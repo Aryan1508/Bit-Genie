@@ -20,7 +20,7 @@
 #include "Square.h"
 
 template <Direction dir>
-constexpr uint64_t shift(uint64_t bits)
+constexpr uint64_t shift(uint64_t bits) noexcept
 {
     return dir == Direction::north   ? bits << 8
            : dir == Direction::south ? bits >> 8
@@ -28,7 +28,7 @@ constexpr uint64_t shift(uint64_t bits)
                                      : (bits >> 1) & BitMask::not_file_h;
 }
 
-constexpr uint64_t shift(uint64_t bits, Direction dir)
+constexpr uint64_t shift(uint64_t bits, Direction dir) noexcept
 {
     return dir == Direction::north   ? bits << 8
            : dir == Direction::south ? bits >> 8
@@ -36,58 +36,39 @@ constexpr uint64_t shift(uint64_t bits, Direction dir)
                                      : (bits >> 1) & BitMask::not_file_h;
 }
 
-#if defined(_MSC_VER)
-// Position of the least significant bit in a bitboard.
-inline Square get_lsb(uint64_t b)
-{
-    unsigned long idx;
-    _BitScanForward64(&idx, b);
-    return to_sq(idx);
-}
-
-// Count of total number of bits set in a bitboard
-inline int popcount64(uint64_t bb)
-{
-    return static_cast<int>(__popcnt64(bb));
-}
-
-#else
-// Position of the least significant bit in a bitboard
-inline Square get_lsb(uint64_t bb)
+inline Square get_lsb(uint64_t bb) noexcept
 {
     return static_cast<Square>(__builtin_ctzll(bb));
 }
 
-// Count of total number of bits set in a bitboard
-inline int popcount64(uint64_t bb)
+inline int popcount64(uint64_t bb) noexcept
 {
     return static_cast<int>(__builtin_popcountll(bb));
 }
-#endif
 
-// Pop the least significant bit in a bitboard
-// and return its index
-inline Square pop_lsb(uint64_t &bb)
+inline Square pop_lsb(uint64_t &bb) noexcept
 {
     Square index = get_lsb(bb);
     bb &= (bb - 1);
     return index;
 }
 
-// Check whether the bit at the given position is set
-inline bool test_bit(Square sq, uint64_t bb)
+constexpr bool test_bit(uint64_t bb, Square sq) noexcept
 {
     return (1ull << sq) & bb;
 }
 
-// Set the bit at the given position
-inline void set_bit(Square sq, uint64_t &bb)
+constexpr void set_bit(uint64_t &bb, Square sq) noexcept
 {
     bb |= (1ull << sq);
 }
 
-// Check whether a bitboard has >1 bits set
-inline bool is_several(uint64_t bb)
+constexpr void flip_bit(uint64_t& bb, Square sq) noexcept
+{
+    bb ^= (1ull << sq);
+}
+
+constexpr bool is_several(uint64_t bb) noexcept
 {
     return bb & (bb - 1);
 }

@@ -17,6 +17,7 @@
 */
 #include "tt.h"
 #include "position.h"
+#include <algorithm>
 
 static inline int mb_to_b(int mb)
 {
@@ -35,7 +36,7 @@ void TTable::resize(int mb)
 
 void TTable::add(Position const &position, Move move, int16_t score, uint8_t depth, TEFlag flag, int16_t seval)
 {
-    uint64_t hash = position.key.data();
+    uint64_t hash = position.get_key();
     uint64_t index = hash % entries.size(); 
 
     if (flag != TEFlag::exact && hash == entries[index].hash && depth < entries[index].depth) return;
@@ -46,21 +47,29 @@ void TTable::add(Position const &position, Move move, int16_t score, uint8_t dep
 
 TEntry &TTable::retrieve(Position const &position)
 {
-    uint64_t hash = position.key.data();
+    uint64_t hash = position.get_key();
     uint64_t index = hash % entries.size();
     return entries[index];
 }
 
 std::vector<Move> TTable::extract_pv(Position& position, int depth) 
 {
+    auto move_exists = 
+    [&](Move move)
+    {
+        Movelist movelist;
+        position.generate_legal(movelist);
+        return std::find(movelist.begin(), movelist.end(), move) != movelist.end();
+    };
+
     std::vector<Move> pv;
     int distance = 0;
     TEntry *entry = &retrieve(position);
 
-    while (entry->hash == position.key.data() && depth != 0)
+    while (entry->hash == position.get_key() && depth != 0)
     {
         Move pv_move = Move(entry->move);
-        if (position.move_exists(pv_move))
+        if (move_exists(pv_move))
         {
             distance++;
             position.apply_move(pv_move);

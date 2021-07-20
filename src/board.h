@@ -16,37 +16,37 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "Square.h"
 #include <ostream>
 
 enum class File : uint8_t
 {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-    H,
-    total
-};
-enum class Rank : uint8_t
-{
-    one,
-    two,
-    three,
-    four,
-    five,
-    six,
-    seven,
-    eight,
-    total
+    A, B, C,
+    D, E, F,
+    G, H, total
 };
 
-Rank rank_of(Square);
-Rank rank_of(Square, Color);
-File file_of(Square);
+enum class Rank : uint8_t
+{
+    one,   two,   three,
+    four,  five,  six,
+    seven, eight, total
+};
+
+constexpr Rank rank_of(Square sq) noexcept
+{
+    return static_cast<Rank>(sq >> 3);
+}
+
+constexpr File file_of(Square sq) noexcept
+{
+    return static_cast<File>(sq & 7);
+}
+
+constexpr Rank rank_of(Square sq, Color color) noexcept
+{
+    return color == Black ? rank_of(flip_square(sq)) : rank_of(sq);
+}
 
 std::ostream &operator<<(std::ostream &, File);
 std::ostream &operator<<(std::ostream &, Rank);

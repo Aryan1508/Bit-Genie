@@ -64,6 +64,30 @@ namespace
         }
     };
 
+    void apply_nullmove(Search::Info& search)
+    {
+        search.position->apply_nullmove();
+        search.stats.ply++;
+    }
+
+    void revert_nullmove(Search::Info& search)
+    {
+        search.position->revert_nullmove();
+        search.stats.ply--;
+    }
+
+    void apply_move(Search::Info& search, Move move)
+    {
+        search.position->apply_move(move);
+        search.stats.ply++;
+    }
+
+    void revert_move(Search::Info& search)
+    {
+        search.position->revert_move();
+        search.stats.ply--;
+    }
+
     int qsearch(Search::Info& search, int alpha, int beta)
     {
         if (search.limits.stopped)
@@ -78,7 +102,7 @@ namespace
             if (search.stats.ply >= MaxPly)
                 return Eval::evaluate(position);
 
-            if (position.is_drawn())
+            if (position.drawn())
                 return 0;
         }
 
@@ -96,11 +120,11 @@ namespace
             if (move.score + 300 < alpha)
                 break;
 
-            position.apply_move(move, search.stats.ply);
+            apply_move(search, move);
 
             int score = -qsearch(search, -beta, -alpha);
 
-            position.revert_move(search.stats.ply);
+            revert_move(search);
 
             if (search.limits.stopped)
                 return 0;
@@ -211,7 +235,7 @@ namespace
         bool         pv_node   = is_pv_node(alpha, beta);
         bool         in_check  = position.king_in_check();
         bool         at_root   = search.stats.ply == 0;
-        bool         tthit     = entry.hash == position.key.data();
+        bool         tthit     = entry.hash == position.get_key();
         int          move_num  = 0;
         int          original  = alpha;
 
@@ -220,7 +244,7 @@ namespace
             if (search.stats.ply >= MaxPly)
                 return Eval::evaluate(position);
 
-            if (position.is_drawn())
+            if (position.drawn())
                 return 0;
         }
 
@@ -251,11 +275,11 @@ namespace
         if (!pv_node && !in_check && depth == 1 && eval + 400 <= alpha)
             return qsearch(search, alpha, beta);
 
-        if (!pv_node && !in_check && depth >= 4 && do_null && position.should_do_null() && eval + 300 >= beta)
+        if (!pv_node && !in_check && depth >= 4 && do_null && (popcount64(position.get_bb()) >= 4) && eval + 300 >= beta)
         {
-            position.apply_null_move(search.stats.ply);
+            apply_nullmove(search);
             int score = -pvs(search, nmp_depth(depth), -beta, -beta + 1, false).score;
-            position.revert_null_move(search.stats.ply);
+            revert_nullmove(search);
 
             if (search.limits.stopped)
                 return 0;
@@ -276,7 +300,7 @@ namespace
                 continue;
 
             move_num++;
-            position.apply_move(move, search.stats.ply);
+            apply_move(search, move);
 
             int score = 0;
             
@@ -302,7 +326,7 @@ namespace
                 }
             }
 
-            position.revert_move(search.stats.ply);
+            revert_move(search);
 
             if (search.limits.stopped)
                 return 0;

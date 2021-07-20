@@ -15,46 +15,15 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once
-#include <array>
-#include "misc.h"
 #include "move.h"
 #include "zobrist.h"
 
-class PositionHistory
+struct PositionUndo
 {
-public:
-    struct Undo
-    {
-        int half_moves = 0;
-        Square ep_sq = Square::bad_sq;
-        CastleRights castle;
-        ZobristKey key;
-        Piece captured;
-        Move move;
-    };
-
-    PositionHistory()
-    {
-        total = 0;
-    }
-
-    Undo &current()
-    {
-        return history[total];
-    }
-
-    Undo const &previous() const
-    {
-        return history[total - 1];
-    }
-
-    void reset()
-    {
-        total = 0;
-    }
-
-    int total = 0;
-
-    std::array<Undo, 2048> history;
+    int        halfmoves;
+    Square     ep_sq;
+    ZobristKey key;
+    Piece      captured;
+    Move       move;
+    uint64_t   castle_rooks;
 };

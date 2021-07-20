@@ -22,29 +22,17 @@
 #define make_score(mg, eg) ((int)((unsigned int)(eg) << 16) + (mg))
 #define S(mg, eg) make_score((mg), (eg))
 
-constexpr int total_pieces = 6;
-constexpr int total_colors = 2;
-constexpr int total_squares = 64;
-constexpr int total_files = 8;
-constexpr int total_castle_types = 2;
-constexpr int total_ranks = 8;
-
+enum Square          : uint8_t;
+enum Piece           : uint8_t;
+enum PieceType       : uint8_t;
+enum Color           : uint8_t;
+enum class File      : uint8_t;
+enum class Rank      : uint8_t;
 enum class Direction : int8_t;
-enum class File : uint8_t;
-enum class Rank : uint8_t;
-
-enum Square : uint8_t;
-enum Piece : uint8_t;
-enum PieceType : uint8_t;
-enum Color : uint8_t;
 
 struct Move;
-class CastleRights;
-class Movelist;
-class PieceManager;
-class Position;
-class PositionHistory;
 class TTable;
+class Position;
 class ZobristKey;
 
 struct TEntry;

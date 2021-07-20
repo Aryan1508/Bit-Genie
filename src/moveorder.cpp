@@ -25,10 +25,11 @@ namespace
 {
     uint64_t least_valuable_attacker(Position &position, uint64_t attackers, Color side, Piece &capturing)
     {
-        for (int i = 0; i < total_pieces; i++)
+        for (int i = 0; i < 6; i++)
         {
-            capturing = make_piece(PieceType(i), side);
-            uint64_t pieces = position.pieces.bitboards[i] & position.pieces.colors[side] & attackers;
+            PieceType pt = static_cast<PieceType>(i);
+            capturing = make_piece(pt, side);
+            uint64_t pieces = position.get_bb(pt, side) & attackers;
 
             if (pieces)     
                 return pieces & (~pieces + 1);
@@ -54,16 +55,16 @@ namespace
         Square from = move.from();
         Square to = move.to();
 
-        Piece capturing = position.pieces.squares[from];
-        Piece captured = position.pieces.squares[to];
+        Piece capturing = position.get_piece(from);
+        Piece captured = position.get_piece(to);
         Color attacker = color_of(capturing);
 
         uint64_t from_set = (1ull << from);
-        uint64_t occ = position.total_bb(), bishops = 0, rooks = 0;
+        uint64_t occ = position.get_bb(), bishops = 0, rooks = 0;
 
-        bishops = rooks = position.pieces.bitboards[Queen];
-        bishops |= position.pieces.bitboards[Bishop];
-        rooks   |= position.pieces.bitboards[Rook];
+        bishops = rooks = position.get_bb(PieceType::Queen);
+        bishops |= position.get_bb(PieceType::Bishop);
+        rooks   |= position.get_bb(PieceType::Rook);
 
         uint64_t attack_def = Attacks::attackers_to_sq(position, to);
         scores[index] = see_piece_vals[captured];
@@ -140,7 +141,7 @@ bool MovePicker::qnext(Move &move)
 
     if (stage == Stage::HashMove) 
     {
-        position.generate_noisy_moves(movelist);
+        position.generate_noisy(movelist);
         
         score_movelist<false>(movelist, *search);
         bubble_top_move(movelist.begin(), movelist.end());
@@ -158,7 +159,6 @@ bool MovePicker::qnext(Move &move)
             bubble_top_move(current, movelist.end());
             return true;
         }
-        return false;
     }
     return false;
 }
@@ -169,7 +169,7 @@ bool MovePicker::next(Move &move)
 
     auto can_move = [&](Move m) 
     {
-        return position.move_is_pseudolegal(m) && position.move_is_legal(m);
+        return position.is_pseudolegal(m) && position.is_legal(m);
     };
 
     if (stage == Stage::HashMove)
@@ -179,7 +179,7 @@ bool MovePicker::next(Move &move)
         
         Move hmove = Move(entry.move);
 
-        if (entry.hash == position.key.data() && can_move(hmove))
+        if (entry.hash == position.get_key() && can_move(hmove))
         {
             move = hmove;
             return true;
@@ -188,7 +188,7 @@ bool MovePicker::next(Move &move)
 
     if (stage == Stage::GenNoisy)
     {
-        position.generate_noisy_moves(movelist);
+        position.generate_noisy(movelist);
 
         score_movelist(movelist, *search);
         bubble_top_move(movelist.begin(), movelist.end());
@@ -246,7 +246,7 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::GenQuiet && !skip_quiets)
     {
         movelist.clear();
-        position.generate_quiet_moves(movelist);
+        position.generate_quiet(movelist);
         
         score_movelist<true>(movelist, *search);
         bubble_top_move(movelist.begin(), movelist.end());

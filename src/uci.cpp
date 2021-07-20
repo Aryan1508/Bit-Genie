@@ -82,7 +82,7 @@ namespace
 
     void uci_go(UciParser const &parser, Position &position, SearchInit &worker)
     {
-        UciGo options = parser.parse_go(position.side);
+        UciGo options = parser.parse_go(position.get_side());
 
         Search::Info& search = *worker.search;
 
@@ -93,8 +93,8 @@ namespace
 
         if (options.movetime == -1)
         {
-            auto &t = position.side == White ? options.wtime : options.btime;
-            auto &inc = position.side == White ? options.winc  : options.binc;
+            auto &t   = position.get_side() == White ? options.wtime : options.btime;
+            auto &inc = position.get_side() == White ? options.winc  : options.binc;
 
             if (t == -1)
                 search.limits.movetime = std::numeric_limits<int64_t>::max();
@@ -118,26 +118,17 @@ namespace
     {
         auto [fen, moves] = parser.parse_position_command();
 
-        if (!position.set_fen(fen))
-        {
-            std::cout << fen << std::endl;
-            std::cout << "Invalid FEN string" << std::endl;
-            return;
-        }
+        position.set_fen(fen);
 
-        Position temp = position;
-
-        temp.history.total = 0;
         for (std::string const &move : moves)
         {
-            if (!temp.apply_move(move))
-            {
-                std::cout << "Invalid move in movelist: " << move << std::endl;
-                continue;
-            }
-        }
+            Movelist movelist;
+            position.generate_legal(movelist);
 
-        position = temp;
+            for(auto m : movelist)
+                if (m.str() == move)
+                    position.apply_move(m);
+        }
     }
 }
 
