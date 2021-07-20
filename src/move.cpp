@@ -46,27 +46,33 @@ void Position::revert_move()
     auto  to       = move.to();
     auto  flag     = move.flag();
 
-    move_piece(to, from);
-
-
-    if (captured != Piece::Empty && flag != Move::Flag::enpassant)
-        add_piece(to, captured);
-
-    if (flag == Move::Flag::promotion)
+    if (flag == Move::Flag::normal)
     {
-        remove_piece(from);
-        add_piece(from, make_piece(PieceType::Pawn, get_side()));
+        move_piece(to, from);
+        if (captured != Piece::Empty)
+            add_piece(to, captured);
     }
 
-    else if (flag == Move::Flag::enpassant)
-        add_piece(static_cast<Square>(to ^ 8), captured);
+    else if (flag == Move::Flag::promotion)
+    {
+        add_piece(from, make_piece(PieceType::Pawn, side));
+        remove_piece(to);
 
+        if (captured != Piece::Empty)
+            add_piece(to, captured);
+    }
     else if (flag == Move::Flag::castle)
     {
+        move_piece(to, from);
         if       (to == Square::C1) move_piece(Square::D1, Square::A1);
         else if  (to == Square::G1) move_piece(Square::F1, Square::H1);
         else if  (to == Square::C8) move_piece(Square::D8, Square::A8);
         else if  (to == Square::G8) move_piece(Square::F8, Square::H8);
+    }
+    else 
+    {
+        move_piece(to, from);
+        add_piece(static_cast<Square>(to ^ 8), captured);
     }
 }
 
@@ -98,47 +104,54 @@ void Position::apply_move(Move move)
     update_castle_rooks(castle_rooks, move);
     key.hash_castle(old_rooks, castle_rooks);
 
-    if (captured != Piece::Empty)
+    if (flag == Move::Flag::normal)
     {
-        hist_captured = remove_piece_hash(to);
-        halfmoves = 0;
-    }
-
-    move_piece_hash(from, to);
-
-    if (moving == Piece::wPawn || moving == Piece::bPawn)
-    {
-        halfmoves = 0;
-
-        if (flag == Move::Flag::promotion)
-        {   
-            remove_piece_hash(to);
-            add_piece_hash(to, make_piece(move.promoted(), get_side()));
-        }
-        
-        else if (flag == Move::Flag::enpassant)
-            hist_captured = remove_piece_hash(static_cast<Square>(to ^ 8));
-
-        // Pawn start
-        else if ((to ^ from) == 16)
+        if (captured != Piece::Empty)
         {
-            uint64_t enemy_pawns = get_bb(PieceType::Pawn, !get_side());
-            uint64_t ep_slots    = BitMask::pawn_attacks[get_side()][to ^ 8];
+            hist_captured = remove_piece_hash(to);
+            halfmoves = 0;
+        }
 
-            if (enemy_pawns & ep_slots)
+        move_piece_hash(from, to);
+
+        if (moving == wPawn || moving == bPawn)
+        {
+            halfmoves = 0;
+            if ((to ^ from) == 16)
             {
-                ep_sq = static_cast<Square>(to ^ 8);
-                key.hash_ep(ep_sq);
+                uint64_t enemy_pawns = get_bb(PieceType::Pawn, !get_side());
+                uint64_t ep_slots    = BitMask::pawn_attacks[get_side()][to ^ 8];
+
+                if (enemy_pawns & ep_slots)
+                {
+                    ep_sq = static_cast<Square>(to ^ 8);
+                    key.hash_ep(ep_sq);
+                }
             }
         }
     }
+    else if (flag == Move::Flag::promotion)
+    {
+        halfmoves = 0;
+        if (captured != Piece::Empty)
+            hist_captured = remove_piece_hash(to);
 
+        remove_piece_hash(from);
+        add_piece_hash(to, make_piece(move.promoted(), get_side()));
+    }
     else if (flag == Move::Flag::castle)
     {
         if       (to == Square::C1) move_piece_hash(Square::A1, Square::D1);
         else if  (to == Square::G1) move_piece_hash(Square::H1, Square::F1);
         else if  (to == Square::C8) move_piece_hash(Square::A8, Square::D8);
         else if  (to == Square::G8) move_piece_hash(Square::H8, Square::F8);
+        move_piece_hash(from, to);
+    }
+    else 
+    {
+        halfmoves = 0;
+        move_piece_hash(from, to);
+        hist_captured = remove_piece_hash(static_cast<Square>(to ^ 8));
     }
 
     side = !side;
@@ -149,7 +162,6 @@ void Position::apply_nullmove()
 {
     history[history_ply].key          = key;
     history[history_ply].ep_sq        = ep_sq;
-    history[history_ply].halfmoves    = halfmoves;
 
     history_ply++;
     halfmoves++;
@@ -164,9 +176,9 @@ void Position::apply_nullmove()
 void Position::revert_nullmove()
 {
     history_ply--;
+    halfmoves--;
     key           = history[history_ply].key;
     ep_sq         = history[history_ply].ep_sq;
-    halfmoves     = history[history_ply].halfmoves;
 
     side = !side;
 }
