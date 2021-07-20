@@ -63,10 +63,10 @@ void Position::revert_move()
 
     else if (flag == Move::Flag::castle)
     {
-        if       (to == Square::C1) move_piece_hash(Square::D1, Square::A1);
-        else if  (to == Square::G1) move_piece_hash(Square::F1, Square::H1);
-        else if  (to == Square::C8) move_piece_hash(Square::D8, Square::A8);
-        else if  (to == Square::G8) move_piece_hash(Square::F8, Square::H8);
+        if       (to == Square::C1) move_piece(Square::D1, Square::A1);
+        else if  (to == Square::G1) move_piece(Square::F1, Square::H1);
+        else if  (to == Square::C8) move_piece(Square::D8, Square::A8);
+        else if  (to == Square::G8) move_piece(Square::F8, Square::H8);
     }
 }
 
@@ -159,7 +159,6 @@ void Position::apply_nullmove()
     if (ep_sq != bad_sq)   
         key.hash_ep(ep_sq);
 
-    ep_sq = Square::bad_sq;
     key.hash_side();
     side = !side;
 }   
