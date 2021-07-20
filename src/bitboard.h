@@ -20,7 +20,7 @@
 #include "Square.h"
 
 template <Direction dir>
-constexpr uint64_t shift(uint64_t bits)
+constexpr uint64_t shift(uint64_t bits) noexcept
 {
     return dir == Direction::north   ? bits << 8
            : dir == Direction::south ? bits >> 8
@@ -28,7 +28,7 @@ constexpr uint64_t shift(uint64_t bits)
                                      : (bits >> 1) & BitMask::not_file_h;
 }
 
-constexpr uint64_t shift(uint64_t bits, Direction dir)
+constexpr uint64_t shift(uint64_t bits, Direction dir) noexcept
 {
     return dir == Direction::north   ? bits << 8
            : dir == Direction::south ? bits >> 8
@@ -36,39 +36,39 @@ constexpr uint64_t shift(uint64_t bits, Direction dir)
                                      : (bits >> 1) & BitMask::not_file_h;
 }
 
-inline Square get_lsb(uint64_t bb)
+inline Square get_lsb(uint64_t bb) noexcept
 {
     return static_cast<Square>(__builtin_ctzll(bb));
 }
 
-inline int popcount64(uint64_t bb)
+inline int popcount64(uint64_t bb) noexcept
 {
     return static_cast<int>(__builtin_popcountll(bb));
 }
 
-inline Square pop_lsb(uint64_t &bb)
+inline Square pop_lsb(uint64_t &bb) noexcept
 {
     Square index = get_lsb(bb);
     bb &= (bb - 1);
     return index;
 }
 
-inline bool test_bit(uint64_t bb, Square sq)
+constexpr bool test_bit(uint64_t bb, Square sq) noexcept
 {
     return (1ull << sq) & bb;
 }
 
-inline void set_bit(uint64_t &bb, Square sq)
+constexpr void set_bit(uint64_t &bb, Square sq) noexcept
 {
     bb |= (1ull << sq);
 }
 
-inline void flip_bit(uint64_t& bb, Square sq)
+constexpr void flip_bit(uint64_t& bb, Square sq) noexcept
 {
     bb ^= (1ull << sq);
 }
 
-inline bool is_several(uint64_t bb)
+constexpr bool is_several(uint64_t bb) noexcept
 {
     return bb & (bb - 1);
 }

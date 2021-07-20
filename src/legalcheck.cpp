@@ -19,12 +19,9 @@
 #include "attacks.h"
 #include "position.h"
 
-namespace 
+static bool castle_path_is_clear(Position const& position, Square rook)
 {
-    bool castle_path_is_clear(Position const& position, Square rook)
-    {
-        return !(position.get_bb() & BitMask::castle_piece_path[rook]);
-    }
+    return !(position.get_bb() & BitMask::castle_piece_path[rook]);
 }
 
 bool Position::is_legal(Move move) const
@@ -38,13 +35,13 @@ bool Position::is_legal(Move move) const
 
     if (flag == Move::Flag::normal || flag == Move::Flag::promotion)
     {
-        if (get_piece(from) == Piece::wKing || get_piece(from) == Piece::bKing) // Normal king moves
+        if (get_piece(from) == Piece::wKing || get_piece(from) == Piece::bKing) 
         {
             uint64_t occupancy = get_bb() ^ (1ull << from);
             return !Attacks::square_attacked(*this, to, !side, occupancy);
         }
 
-        else // Normal non-king moves
+        else
         {
             uint64_t occupancy = get_bb() ^ (1ull << from) ^ (1ull << to);
             uint64_t enemy     = get_bb(!get_side());
@@ -65,9 +62,8 @@ bool Position::is_legal(Move move) const
             
             Square king = get_lsb(get_bb(PieceType::King, get_side()));
 
-
             bishops |= queens;
-            rooks |= queens;
+            rooks   |= queens;
 
             return !((BitMask::pawn_attacks[side][king] & pawns) || (Attacks::bishop(king, occupancy) & bishops) || (Attacks::rook(king, occupancy) & rooks) || (Attacks::knight(king) & knights));
         }
@@ -112,16 +108,12 @@ bool Position::is_pseudolegal(Move move) const
     Piece moving   = get_piece(from);
     Piece captured = get_piece(to);
 
-    // Moving piece can't be empty
     if (moving == Empty)
         return false;
 
-    // Color of the piece has to be the current
-    // side to play
     if (color_of(moving) != side)
         return false;
 
-    // Cannot capture our own piece
     if (captured != Empty && color_of(captured) == side)
         return false;
 
@@ -147,7 +139,6 @@ bool Position::is_pseudolegal(Move move) const
         return true;
     }
 
-    // Validating pawn moves
     if (moving == wPawn || moving == bPawn)
     {
         Rank start_rank = side == White ? Rank::two : Rank::seven;
@@ -168,31 +159,24 @@ bool Position::is_pseudolegal(Move move) const
                 return false;
         }
 
-        // Normal and promotions
         if (flag == Move::Flag::normal || flag == Move::Flag::promotion)
         {
-            // Pushes
             if (get_piece(to) == Empty)
             {
                 Direction double_push = forward + forward;
                 Square double_push_sq = from + double_push;
 
-                // Single push
                 if (to == forward_sq)
                     return true;
 
-                // Double pushes
                 return (to == double_push_sq && get_piece(forward_sq) == Empty && rank_of(from) == start_rank);
             }
-            // Pawn captures
-            // Already confirmed that captured piece isn't ours
             else
             {
                 return test_bit(BitMask::pawn_attacks[side][from], to);
             }
         }
 
-        // Enpassant moves
         else
         {
             if (to != ep_sq)
@@ -213,17 +197,13 @@ bool Position::is_pseudolegal(Move move) const
         }
     }
 
-    // Validating knights, kings and sliding pieces
     else
     {
-        // Other pieces don't have special moves
-        // except for king castles, but we already checked that
         if (flag != Move::Flag::normal)
             return false;
 
         uint64_t attacks = Attacks::generate(type_of(moving), from, get_bb());
         return test_bit(attacks, to);
     }
-
     return false;
 }

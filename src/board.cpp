@@ -16,27 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "board.h"
-#include "piece.h"
-#include "Square.h"
-
-// Return the rank that a square is situated on
-Rank rank_of(Square sq)
-{
-    return static_cast<Rank>(sq >> 3);
-}
-
-// Return the file that a square is situated on
-File file_of(Square sq)
-{
-    return static_cast<File>(sq & 7);
-}
-
-// Return the rank that a square is situated on relative to its color
-// The 8th rank on the board would be the first rank in black's point of view
-Rank rank_of(Square sq, Color color)
-{
-    return color == Black ? rank_of(flip_square(sq)) : rank_of(sq);
-}
 
 std::ostream &operator<<(std::ostream &o, File file)
 {

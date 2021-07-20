@@ -24,7 +24,6 @@
 
 namespace Eval
 {
-    
     Data::Data(Position const& position)
     {
         reset();

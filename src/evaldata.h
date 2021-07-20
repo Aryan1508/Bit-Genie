@@ -21,9 +21,9 @@ namespace Eval
 {
     struct Data
     {
-        int king_attackers_count[2] = {0};
-        int king_attackers_weight[2] = {0};
-        uint64_t king_ring[2] = {0};
+        int      king_attackers_count[2];
+        int      king_attackers_weight[2];
+        uint64_t king_ring[2];
         uint64_t squares_attacked[2];
 
         Data(Position const&);

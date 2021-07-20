@@ -26,19 +26,16 @@
 class Position
 {
 private:
+    FixedList<PositionUndo, 2046> history;
+    std::array<Piece   , 64> pieces; 
     std::array<uint64_t,  6> bitboards;
     std::array<uint64_t,  2> colors;
-    std::array<Piece   , 64> pieces; 
 
     ZobristKey key;
+    uint64_t   castle_rooks;
+    int        halfmoves, history_ply;
     Square     ep_sq;
     Color      side;
-    uint64_t   castle_rooks;
-    
-    int halfmoves;
-    int history_ply;
-    FixedList<PositionUndo, 2046> history;
-
 public:
     Position();
 

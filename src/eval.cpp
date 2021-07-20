@@ -113,7 +113,7 @@ namespace
         uint64_t ahead_squares = BitMask::passed_pawn[us][sq] & BitMask::files[sq];
         Square relative_sq     = psqt_sq(sq, us);
 
-        data.update_attackers(BitMask::pawn_attacks[us][sq], us);
+        data.update_attackers(Attacks::pawn(sq, us), us);
 
         score += PAWN_PSQT[relative_sq];
         TRACE_3(psqt, Pawn, relative_sq);
@@ -158,7 +158,7 @@ namespace
                 }
             }
 
-            if (BitMask::pawn_attacks[!us][sq] & friend_pawns)
+            if (Attacks::pawn(sq, !us) & friend_pawns)
             {
                 score += SUPPORTED_PASSER;
                 TRACE_1(supported_passer);
