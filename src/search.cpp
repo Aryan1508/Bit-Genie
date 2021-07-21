@@ -28,15 +28,9 @@
 
 int lmr_reductions_array[65][64]{0};
 int lmp_margin[65][2]{0};
-int quiet_lmp_margin[65][2]{0};
 
 namespace
 {
-    constexpr int rfp_margin[6]
-    {
-        0, 120, 200, 510, 680, 850
-    };
-
     constexpr int see_pruning_margins[5] 
     {
         0, -100, -100, -300, -325
@@ -215,6 +209,15 @@ namespace
         return std::clamp(new_depth - R, 1, new_depth - 1);
     }
 
+    int calculate_rfp_margin(int eval, int depth, bool improving)
+    {
+        int margin = 100 * depth;
+
+        margin /= (improving + 1);
+
+        return eval - margin;
+    }
+
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
@@ -269,7 +272,7 @@ namespace
 
         bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];
 
-        if (!at_root && !in_check && depth < 6 && (eval - rfp_margin[depth] / (improving + 1)) >= beta )
+        if (!at_root && !in_check && depth < 6 && calculate_rfp_margin(eval, depth, improving) >= beta )
             return eval;
 
         if (!pv_node && !in_check && depth == 1 && eval + 400 <= alpha)
@@ -293,7 +296,7 @@ namespace
 
         for (Move move; picker.next(move);)
         {
-            if (move_num > quiet_lmp_margin[depth][improving])
+            if (move_num > lmp_margin[depth][improving])
                 break;
 
             if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
@@ -415,11 +418,8 @@ namespace Search
                 lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
             }
 
-            lmp_margin[i][1] = 3 + 2 * i * i;
-            lmp_margin[i][0] = 3 + i * i / 1.5;
-
-            quiet_lmp_margin[i][0]  = 2 + i * i / 1.5;
-            quiet_lmp_margin[i][1]  = 2 + i * i;
+            lmp_margin[i][0]  = 2 + i * i / 1.5;
+            lmp_margin[i][1]  = 2 + i * i;
         }
     }
 
