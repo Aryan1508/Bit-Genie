@@ -32,11 +32,6 @@ int quiet_lmp_margin[65][2]{0};
 
 namespace
 {
-    constexpr int rfp_margin[6]
-    {
-        0, 120, 200, 510, 680, 850
-    };
-
     constexpr int see_pruning_margins[5] 
     {
         0, -100, -100, -300, -325
@@ -215,6 +210,15 @@ namespace
         return std::clamp(new_depth - R, 1, new_depth - 1);
     }
 
+    int calculate_rfp_margin(int eval, int depth, bool improving)
+    {
+        int margin = 100 * depth;
+
+        margin /= (improving + 1);
+
+        return eval - margin;
+    }
+
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
@@ -269,7 +273,7 @@ namespace
 
         bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];
 
-        if (!at_root && !in_check && depth < 6 && (eval - rfp_margin[depth] / (improving + 1)) >= beta )
+        if (!at_root && !in_check && depth < 6 && calculate_rfp_margin(eval, depth, improving) >= beta )
             return eval;
 
         if (!pv_node && !in_check && depth == 1 && eval + 400 <= alpha)
