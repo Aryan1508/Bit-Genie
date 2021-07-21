@@ -28,7 +28,6 @@
 
 int lmr_reductions_array[65][64]{0};
 int lmp_margin[65][2]{0};
-int quiet_lmp_margin[65][2]{0};
 
 namespace
 {
@@ -297,7 +296,7 @@ namespace
 
         for (Move move; picker.next(move);)
         {
-            if (move_num > quiet_lmp_margin[depth][improving])
+            if (move_num > lmp_margin[depth][improving])
                 break;
 
             if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
@@ -419,11 +418,8 @@ namespace Search
                 lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
             }
 
-            lmp_margin[i][1] = 3 + 2 * i * i;
-            lmp_margin[i][0] = 3 + i * i / 1.5;
-
-            quiet_lmp_margin[i][0]  = 2 + i * i / 1.5;
-            quiet_lmp_margin[i][1]  = 2 + i * i;
+            lmp_margin[i][0]  = 2 + i * i / 1.5;
+            lmp_margin[i][1]  = 2 + i * i;
         }
     }
 
