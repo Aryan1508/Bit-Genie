@@ -111,13 +111,8 @@ namespace
 
         for (Move move; picker.qnext(move);)
         {
-            if (move.score + 300 < alpha)
-                break;
-
             apply_move(search, move);
-
             int score = -qsearch(search, -beta, -alpha);
-
             revert_move(search);
 
             if (search.limits.stopped)
