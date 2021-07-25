@@ -113,7 +113,7 @@ namespace
         {
             Piece captured_piece = position.get_piece(move.to());
 
-            if (stand_pat + mg_score(PIECE_VALUES[captured_piece]) <= alpha)
+            if (stand_pat + eg_score(PIECE_VALUES[captured_piece]) <= alpha)
                 continue;
 
             apply_move(search, move);
