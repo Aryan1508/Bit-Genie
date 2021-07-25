@@ -120,7 +120,7 @@ namespace
                 if (position.previous_move() != NullMove)
                     score += get_history(search.counter_history, position, move);
 
-                score = std::clamp(score, -16384, 16384);
+                score = std::clamp(score, -32767, 32767);
 
                 move.score = score;
             }
