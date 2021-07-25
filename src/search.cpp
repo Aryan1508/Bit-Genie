@@ -215,7 +215,7 @@ namespace
 
     int calculate_sp_margin(int depth)
     {
-        return depth * -60;
+        return depth * -100;
     }    
 
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
