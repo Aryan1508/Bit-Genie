@@ -213,6 +213,11 @@ namespace
         return eval - margin;
     }
 
+    int calculate_sp_margin(int depth)
+    {
+        return depth * -60;
+    }    
+
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
         if (search.limits.stopped)
@@ -294,7 +299,7 @@ namespace
             if (move_num > lmp_margin[depth][improving])
                 break;
 
-            if (depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
+            if (depth < 5 && move_is_capture(position, move) && move.score <= calculate_sp_margin(depth))
                 continue;
 
             move_num++;
