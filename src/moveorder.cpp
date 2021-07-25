@@ -117,6 +117,11 @@ namespace
                 if (move.flag() == Move::Flag::promotion)
                     score += 10000;
 
+                if (position.previous_move() != NullMove)
+                    score += get_history(search.counter_history, position, move);
+
+                score = std::clamp(score, -16384, 16384);
+
                 move.score = score;
             }
         }

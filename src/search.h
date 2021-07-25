@@ -32,6 +32,7 @@ namespace Search
         Move       killers[64][2] = {NullMove};
         HistoryTable    history = {0};
         HistoryTable   capture_history = {0};   
+        CounterHistoryTable counter_history = {0};
 
         int eval[64] = {0};
 
