@@ -202,3 +202,9 @@ constexpr int CONNECTIVITY[8]
 {
     S( -30,    8), S( -25,    5), S( -18,   -1), S( -10,   -5), S(  -3,   -9), S(   3,   -7), S(   8,    1), S(  12,   16), 
 };
+
+constexpr int PIECE_VALUES[12] 
+{
+    PAWN_VALUE, KNIGHT_VALUE, BISHOP_VALUE, ROOK_VALUE, QUEEN_VALUE, 0,
+    PAWN_VALUE, KNIGHT_VALUE, BISHOP_VALUE, ROOK_VALUE, QUEEN_VALUE, 0
+};

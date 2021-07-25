@@ -111,6 +111,11 @@ namespace
 
         for (Move move; picker.qnext(move);)
         {
+            Piece captured_piece = position.get_piece(move.to());
+
+            if (stand_pat + mg_score(PIECE_VALUES[captured_piece]) <= alpha)
+                continue;
+
             apply_move(search, move);
             int score = -qsearch(search, -beta, -alpha);
             revert_move(search);
