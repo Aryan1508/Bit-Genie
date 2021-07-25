@@ -170,6 +170,9 @@ namespace
         else 
         {
             update_history(search.history, p, move, other, depth);
+
+            if (p.previous_move() != NullMove)
+                update_history(search.counter_history, p, move, other, depth);
             add_killer(search, move);
         }
     }

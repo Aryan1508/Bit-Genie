@@ -162,6 +162,7 @@ void Position::apply_nullmove()
 {
     history[history_ply].key          = key;
     history[history_ply].ep_sq        = ep_sq;
+    history[history_ply].move         = NullMove;
 
     history_ply++;
     halfmoves++;

@@ -18,11 +18,46 @@
 #pragma once
 #include "misc.h"
 #include "movelist.h"
+#include "position.h"
 
 typedef int16_t HistoryTable[2][64][64]; 
+typedef int16_t CounterHistoryTable[12][64][12][64]; 
 
-int16_t& get_history(HistoryTable, Position const&, Move);
+inline int16_t& get_history(HistoryTable table, Position const& position, Move move)
+{
+    return table[position.get_side()][move.from()][move.to()];
+}
 
-void history_bonus(int16_t& cur, int bonus);
-void history_bonus(HistoryTable, Position const&, Move, int);
-void update_history(HistoryTable, Position const&, Move, Movelist const& other, int depth);
+inline int16_t& get_history(CounterHistoryTable table, Position const& position, Move move)
+{
+    Move previous_move   = position.previous_move();
+    Piece previous_piece = position.get_piece(previous_move.to());
+    Piece current_piece  = position.get_piece(move.from()); 
+    return table[previous_piece][previous_move.to()][current_piece][move.to()];
+}
+
+inline void history_bonus(int16_t& cur, int bonus) 
+{
+    cur += 32 * bonus - cur * abs(bonus) / 512;
+}
+
+template<typename HistoryType> 
+inline void history_bonus(HistoryType table, Position const& position, Move move, int depth)
+{
+    history_bonus(get_history(table, position, move), depth * depth);
+}
+
+template<typename HistoryType>
+inline void update_history(HistoryType table, Position const& position, Move good, Movelist const& other, int depth)
+{
+    int bonus = depth * depth;
+    
+    history_bonus(table, position, good, depth);
+
+    for(auto move : other)
+    {
+        if (move == good) continue;
+
+        history_bonus(get_history(table, position, move), -bonus);
+    }
+}

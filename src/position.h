@@ -81,6 +81,12 @@ public:
     // Check if side to move's king is under attack 
     bool king_in_check() const;
 
+    // Previous move played
+    Move previous_move() const 
+    {
+        return history_ply > 0 ? history[history_ply - 1].move : NullMove;
+    }
+
     // Add a piece on the board 
     void add_piece(Square sq, Piece piece)
     {
