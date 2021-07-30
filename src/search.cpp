@@ -297,7 +297,7 @@ namespace
             if (move_num > lmp_margin[depth][improving])
                 break;
 
-            if (picker.stage != MovePicker::Stage::GenNoisy && depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
+            if (move_num && depth < 5 && move_is_capture(position, move) && move.score < see_pruning_margins[depth])
                 continue;
 
             move_num++;
