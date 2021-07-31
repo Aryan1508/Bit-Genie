@@ -218,7 +218,7 @@ bool MovePicker::next(Move &move)
         stage = Stage::Killer2;
         Move killer = search->killers[search->stats.ply][0];
 
-        if (can_move(killer))
+        if (can_move(killer) && !move_is_capture(position, killer))
         {
             move = killer;
             return true;
@@ -230,7 +230,7 @@ bool MovePicker::next(Move &move)
         stage = Stage::GiveBadNoisy;
         Move killer = search->killers[search->stats.ply][1];
 
-        if (can_move(killer))
+        if (can_move(killer) && !move_is_capture(position, killer))
         {
             move = killer;
             return true;
@@ -267,7 +267,6 @@ bool MovePicker::next(Move &move)
             bubble_top_move(current, movelist.end());
             return true;
         }
-        return false;
     }
     return false;
 }
