@@ -258,8 +258,8 @@ namespace
                (entry.flag == TEFlag::lower && score >= beta) || 
                (entry.flag == TEFlag::upper && score <= alpha))
                {
-                    if (!move_is_capture(position, move) && score >= beta)
-                        history_bonus(search.history, position, move, depth);
+                    if (score >= beta)
+                        update_history_tables_on_cutoff(search, picker.movelist, move, depth);
                         
                     return { score, move };
                }
