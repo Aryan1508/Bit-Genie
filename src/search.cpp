@@ -270,7 +270,7 @@ namespace
 
         bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];
 
-        if (!pv_node && !in_check && depth < 6 && calculate_rfp_margin(eval, depth, improving) >= beta )
+        if (!pv_node && !in_check && calculate_rfp_margin(eval, depth, improving) >= beta )
             return eval;
 
         if (!pv_node && !in_check && depth == 1 && eval + 400 <= alpha)
