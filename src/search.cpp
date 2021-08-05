@@ -150,9 +150,10 @@ namespace
                score  < -MinMateScore ? score + ply : score;
     }
 
-    int nmp_depth(int depth)
+    int nmp_depth(int depth, int eval, int beta)
     {
-        return depth - std::max(4, 3 + depth / 3);
+        int reduction = std::max(4, 3 + depth / 3) + std::max(0, (eval - beta) / 256);
+        return depth - reduction;
     }
 
     void update_tt_after_search(Search::Info& search, SearchResult result, int depth, int original, int beta, int eval)
@@ -279,7 +280,7 @@ namespace
         if (!pv_node && !in_check && depth >= 4 && do_null && (popcount64(position.get_bb()) >= 4) && eval + 300 >= beta)
         {
             apply_nullmove(search);
-            int score = -pvs(search, nmp_depth(depth), -beta, -beta + 1, false).score;
+            int score = -pvs(search, nmp_depth(depth, eval, beta), -beta, -beta + 1, false).score;
             revert_nullmove(search);
 
             if (search.limits.stopped)
