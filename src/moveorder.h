@@ -42,6 +42,10 @@ public:
     Movelist movelist;
     Stage stage = Stage::HashMove;
     bool skip_quiets = false;
+    Move hash_move = NullMove;
+    Move killer1 = NullMove;
+    Move killer2 = NullMove;
+
 private:
     Search::Info *search;
     Movelist::iterator current;
