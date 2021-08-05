@@ -152,7 +152,7 @@ namespace
 
     int nmp_depth(int depth, int eval, int beta)
     {
-        int reduction = std::max(4, 3 + depth / 3) + std::max(0, (eval - beta) / 256);
+        int reduction = std::max(4, 3 + depth / 3) + std::min(2, std::max(0, (eval - beta) / 256));
         return depth - reduction;
     }
 
