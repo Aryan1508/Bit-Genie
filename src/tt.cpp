@@ -39,7 +39,7 @@ void TTable::add(Position const &position, Move move, int16_t score, uint8_t dep
     uint64_t hash = position.get_key();
     uint64_t index = hash % entries.size(); 
 
-    if (flag != TEFlag::exact && hash == entries[index].hash && depth < entries[index].depth) return;
+    if (flag != TEFlag::exact && hash == entries[index].hash && depth <= entries[index].depth) return;
 
     if (flag == TEFlag::exact || depth * 3 > entries[index].depth)
         entries[index] = TEntry(hash, score, move, depth, flag, seval);
