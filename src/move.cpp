@@ -33,6 +33,7 @@ namespace
 void Position::revert_move()
 {
     history_ply--;
+    net->revert_hidden_updates();
 
     auto move     = history[history_ply].move;
     auto captured = history[history_ply].captured;
@@ -78,6 +79,7 @@ void Position::revert_move()
 
 void Position::apply_move(Move move)
 {
+    using namespace Trainer;
     history[history_ply].move         = move;
     history[history_ply].castle_rooks = castle_rooks;
     history[history_ply].halfmoves    = halfmoves++;
@@ -94,6 +96,7 @@ void Position::apply_move(Move move)
         ep_sq = Square::bad_sq;
     }
 
+    std::vector<InputUpdate> updates;
     auto  from     = move.from();
     auto  to       = move.to();
     auto  flag     = move.flag();
@@ -110,7 +113,11 @@ void Position::apply_move(Move move)
         {
             hist_captured = remove_piece_hash(to);
             halfmoves = 0;
+            updates.push_back(InputUpdate(to, hist_captured, InputUpdate::Removal));
         }
+
+        updates.push_back(InputUpdate(from, moving, InputUpdate::Removal));
+        updates.push_back(InputUpdate(to, moving, InputUpdate::Addition));
 
         move_piece_hash(from, to);
 
@@ -130,32 +137,75 @@ void Position::apply_move(Move move)
             }
         }
     }
+
     else if (flag == Move::Flag::promotion)
     {
         halfmoves = 0;
-        if (captured != Piece::Empty)
-            hist_captured = remove_piece_hash(to);
 
+        if (captured != Piece::Empty)
+        {
+            hist_captured = remove_piece_hash(to);
+            updates.push_back(InputUpdate(to, hist_captured, InputUpdate::Removal));
+        }
+
+        Piece promoted = make_piece(move.promoted(), get_side());
         remove_piece_hash(from);
-        add_piece_hash(to, make_piece(move.promoted(), get_side()));
+        add_piece_hash(to, promoted);
+
+        updates.push_back(InputUpdate(from, moving, InputUpdate::Removal));
+        updates.push_back(InputUpdate(  to, promoted, InputUpdate::Addition));
     }
+
     else if (flag == Move::Flag::castle)
     {
-        if       (to == Square::C1) move_piece_hash(Square::A1, Square::D1);
-        else if  (to == Square::G1) move_piece_hash(Square::H1, Square::F1);
-        else if  (to == Square::C8) move_piece_hash(Square::A8, Square::D8);
-        else if  (to == Square::G8) move_piece_hash(Square::H8, Square::F8);
+        Square rook_from = bad_sq, rook_to =bad_sq;
+        if (to == Square::C1)
+        {
+            rook_from = Square::A1;
+            rook_to   = Square::D1;
+        }
+        else if (to == Square::G1)
+        {
+            rook_from = Square::H1;
+            rook_to   = Square::F1;
+        }
+        else if  (to == Square::C8)
+        {
+            rook_from = Square::A8;
+            rook_to   = Square::D8;
+        }
+        else if  (to == Square::G8) 
+        {
+            rook_from = Square::H8;
+            rook_to   = Square::F8;
+        }
+
+        Piece king = moving, rook = get_piece(rook_from);
+
         move_piece_hash(from, to);
+        move_piece_hash(rook_from, rook_to);
+
+        updates.push_back(InputUpdate(from, king, InputUpdate::Removal));
+        updates.push_back(InputUpdate(  to, king, InputUpdate::Addition));
+        updates.push_back(InputUpdate(rook_from, rook, InputUpdate::Removal));
+        updates.push_back(InputUpdate(rook_to  , rook, InputUpdate::Addition));
     }
     else 
     {
         halfmoves = 0;
         move_piece_hash(from, to);
-        hist_captured = remove_piece_hash(static_cast<Square>(to ^ 8));
+        Square cap_sq = static_cast<Square>(to ^ 8);
+
+        hist_captured = remove_piece_hash(cap_sq);
+
+        updates.push_back(InputUpdate(from, moving, InputUpdate::Removal));
+        updates.push_back(InputUpdate(  to, moving, InputUpdate::Addition));
+        updates.push_back(InputUpdate(cap_sq, hist_captured, InputUpdate::Removal));
     }
 
     side = !side;
     key.hash_side();
+    net->update_hidden(updates);
 }
 
 void Position::apply_nullmove()

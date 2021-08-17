@@ -127,4 +127,6 @@ void Position::set_fen(std::string_view fen)
     ep_sq = parts[3] == "-" ? Square::bad_sq : to_sq<std::string_view>(parts[3]);
     halfmoves = std::stoi(parts[4]);
     key.generate(*this);
+
+    net->recalculate_hidden(to_net_input());
 }

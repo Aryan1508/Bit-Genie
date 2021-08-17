@@ -16,15 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "evaltrace.h"
-
-#ifdef TUNE
-inline EvalTrace ET;
-#endif
+#include "misc.h"
 
 namespace Eval
 {
-    int get_phase(Position const &);
-    int get_scale_factor(Position const&, int eval);
     int evaluate(Position const &);
 }

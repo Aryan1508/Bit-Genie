@@ -22,7 +22,6 @@
 #include "polyglot.h"
 #include "tt.h"
 #include <sstream>
-#include "evalscores.h"
 #include <cmath>
 #include <algorithm>
 
@@ -373,7 +372,7 @@ namespace
         }
         else
         {
-            o << "cp " << int(score * 100 / mg_score(PAWN_VALUE));
+            o << "cp " << score;
         }
         return o.str();
     }

@@ -156,6 +156,11 @@ namespace UCI
                 break;
             }
 
+            else if (command.command == "eval")
+            {
+                std::cout << "Eval: " << Eval::evaluate(position) << '\n';
+            }
+
             else if (command == UciCommands::isready)
                 uci_ready();
 

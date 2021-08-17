@@ -16,7 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "uci.h"
-#include "tuner.h"
 #include "attacks.h"
 #include "zobrist.h"
 #include "search.h"
@@ -26,9 +25,5 @@ int main(int argc, char** argv)
     Attacks::init();
     ZobristKey::init();
     Search::init();
-#ifdef TUNE 
-    tune();
-#else 
     UCI::init(argc, argv);
-#endif
 }

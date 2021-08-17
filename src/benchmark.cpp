@@ -74,7 +74,7 @@ namespace BenchMark
         std::cout << std::endl;
     }
 
-    void bench(Position position) 
+    void bench(Position& position) 
     {
         StopWatch<> watch;
         watch.go();
@@ -84,7 +84,7 @@ namespace BenchMark
             position.set_fen(fen);
             Search::Info info;
             info.position = &position;
-            info.limits.max_depth = 13;
+            info.limits.max_depth = 11;
 
             auto count = Search::bestmove(info, false);
             std::cout << fen << ": " << count << '\n';

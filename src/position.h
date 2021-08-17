@@ -16,11 +16,13 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "net.h"
 #include "movelist.h"
 #include "bitboard.h"
 #include "fixed_list.h"
 #include "position_undo.h"
 
+#include <memory>
 #include <string_view>
 
 class Position
@@ -36,7 +38,10 @@ private:
     int        halfmoves, history_ply;
     Square     ep_sq;
     Color      side;
+
 public:
+    std::unique_ptr<Trainer::Network> net;
+
     Position();
 
     // Set a fen string, does not attempt to validtae it
@@ -93,6 +98,7 @@ public:
         get_piece(sq) = piece;
         set_bit(get_bb(type_of(piece)), sq);
         set_bit(get_bb(color_of(piece)), sq);
+
     }
 
     // Remove a piece from the board 
@@ -102,6 +108,7 @@ public:
         flip_bit(get_bb(type_of(piece)), sq);
         flip_bit(get_bb(color_of(piece)), sq);
         get_piece(sq) = Piece::Empty;
+
         return piece;
     }
 
@@ -209,6 +216,8 @@ public:
     {
         return side;
     }
+
+    Trainer::NetworkInput to_net_input() const;
 
     friend std::ostream& operator<<(std::ostream&, Position const&);
 };

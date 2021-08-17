@@ -2,6 +2,8 @@ EXE := Bit-Genie
 SRC := *.cpp
 CXX := g++
 
+EVALFILE = defaultnet.nn
+
 LFLAGS   := -lpthread
 TFLAGS   := -DTUNE -fopenmp
 WFLAGS   := -Wall -Wextra
@@ -9,7 +11,7 @@ CXXFLAGS := -std=c++17 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
 RFLAGS   := -std=c++17 -O3 -DNDEBUG -static 
 
 default:
-	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXE)
+	$(CXX) -DEVALFILE=\"$(EVALFILE)\" $(CXXFLAGS) $(SRC) $(LFLAGS) -o $(EXE) 
 
 tune: 
 	$(CXX) $(CXXFLAGS) $(SRC) $(LFLAGS) $(TFLAGS) -o $(EXE)
