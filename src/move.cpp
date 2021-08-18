@@ -96,7 +96,7 @@ void Position::apply_move(Move move)
         ep_sq = Square::bad_sq;
     }
 
-    std::vector<InputUpdate> updates;
+    Network::UpdateArray updates;
     auto  from     = move.from();
     auto  to       = move.to();
     auto  flag     = move.flag();

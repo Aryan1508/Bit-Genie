@@ -1,10 +1,26 @@
+/*
+  Bit-Genie is an open-source, UCI-compliant chess engine written by
+  Aryan Parekh - https://github.com/Aryan1508/Bit-Genie
+
+  Bit-Genie is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Bit-Genie is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #pragma once
 #include <vector>
 
 #include "Square.h"
-#include "matrix.h"
-#include "optimize.h"
 #include "activation.h"	
+#include "fixed_list.h"
 
 namespace Trainer
 {
@@ -37,14 +53,16 @@ namespace Trainer
     {
     public:
         static constexpr int INPUT_SIZE  = 768;
-        static constexpr int HIDDEN_SIZE = 128;
+        static constexpr int HIDDEN_SIZE = 256;
         static constexpr int OUTPUT_SIZE = 1;
+
+        using UpdateArray = FixedList<InputUpdate, 4>;
 
         Network();
 
         void feed(NetworkInput const&);
 
-        void update_hidden(std::vector<InputUpdate> const&);
+        void update_hidden(UpdateArray const&);
 
         void revert_hidden_updates()
         {
@@ -62,16 +80,17 @@ namespace Trainer
 
         float get_output() const
         {
-            return output_neuron.get(0);
+            return output_neuron;
         }
 
-        std::vector<Matrix<float, HIDDEN_SIZE, 1>> hidden_neurons;
-        Matrix<float, OUTPUT_SIZE, 1> output_neuron;
+        std::vector<std::array<float, HIDDEN_SIZE>> hidden_neurons;
 
-        Matrix<float, OUTPUT_SIZE, 1> output_bias;
-        Matrix<float, HIDDEN_SIZE, 1> hidden_biases;
+        std::array<std::array<float, HIDDEN_SIZE>, INPUT_SIZE> hidden_weights;
+        
+        std::array<float, HIDDEN_SIZE> hidden_biases;
+        std::array<float, HIDDEN_SIZE> output_weights;
 
-        Matrix<float, HIDDEN_SIZE, INPUT_SIZE, Arrangement::ColMajor>   hidden_weights;
-        Matrix<float, OUTPUT_SIZE, HIDDEN_SIZE>  output_weights;
+        float output_neuron;
+        float output_bias;
     };
 }

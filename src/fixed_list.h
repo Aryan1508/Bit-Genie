@@ -67,6 +67,11 @@ public:
         return height;
     }
 
+    T& back() 
+    {
+        return data[height - 1];
+    }
+
     T const& operator[](std::size_t pos) const { return data[pos]; }
     T      & operator[](std::size_t pos)       { return data[pos]; }
 private:

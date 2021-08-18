@@ -1,3 +1,20 @@
+/*
+  Bit-Genie is an open-source, UCI-compliant chess engine written by
+  Aryan Parekh - https://github.com/Aryan1508/Bit-Genie
+
+  Bit-Genie is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Bit-Genie is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #include "net.h"
 #include "../incbin/incbin.h"
 #include <thread>
@@ -6,78 +23,63 @@
 
 INCBIN(Network, EVALFILE);
 
-namespace 
-{
-    template<int input_neuron_count, typename T> 
-    void randomize_matrix(T& matrix)
-    {
-        float g = 2 / sqrtf(static_cast<float>(input_neuron_count));
-
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::normal_distribution<float> distrib(0.0f, g);
-
-        for(int i = 0;i < matrix.size();i++)
-            matrix.get(i) = distrib(gen);
-    }
-}
-
 namespace Trainer
 {
     Network::Network()
     {
         hidden_neurons.push_back({});
-        hidden_neurons.back().set(0.0f);
-        output_neuron .set(0.0f);
+        hidden_neurons.back().fill(0.0f);
+        output_neuron = 0.0f;
 
         auto data = reinterpret_cast<const float*>(gNetworkData) + 1;
 
         for(int i = 0;i < hidden_weights.size();i++) 
-            hidden_weights.get(i) = *data++;
+            for(int j = 0;j < hidden_weights[i].size();j++)
+                hidden_weights[i][j] = *data++;
 
         for(int i = 0;i < output_weights.size();i++) 
-            output_weights.get(i) = *data++;
+            output_weights[i] = *data++;
 
         for(int i = 0;i < hidden_biases.size();i++) 
-            hidden_biases.get(i) = *data++;
+            hidden_biases[i] = *data++;
 
-        output_bias.get(0) = *data++;
+        output_bias = *data++;
     }
 
-    void Network::update_hidden(std::vector<InputUpdate> const& updates)
+    void Network::update_hidden(Network::UpdateArray const& updates)
     {
         hidden_neurons.push_back(hidden_neurons.back());
 
         for(auto const& update : updates)
         {
             for(int i = 0;i < hidden_neurons.back().size();i++)
-                hidden_neurons.back().get(i) += update.coeff * hidden_weights.get(i, update.index);
+                hidden_neurons.back()[i] += update.coeff * hidden_weights[update.index][i];
         }
     }
 
     float Network::quick_feed()
     {
-        output_neuron.set(0.0f);
+        output_neuron = 0.0f;
 
-        for (int k = 0; k < output_weights.total_cols(); k++)
-            output_neuron.get(0) +=  relu(hidden_neurons.back().get(k)) * output_weights.get(k);
+        for (int k = 0; k < output_weights.size(); k++)
+            output_neuron +=  relu(hidden_neurons.back()[k]) * output_weights[k];
 
-        output_neuron.get(0) += output_bias.get(0);
+        output_neuron += output_bias;
         return get_output();
     }
 
     void Network::feed(NetworkInput const& sample)
     {
-        hidden_neurons.back().set(0.0f);
+        hidden_neurons.back().fill(0);
 
         for (auto index : sample.activated_input_indices)
         {
-            for (int i = 0; i < hidden_weights.total_rows(); i++)
-                hidden_neurons.back().get(i) += hidden_weights.get(i, index);
+            for (int i = 0; i < HIDDEN_SIZE; i++)
+                hidden_neurons.back()[i] += hidden_weights[index][i];
         }
 
         for (int i = 0; i < hidden_neurons.back().size(); i++)
-            hidden_neurons.back().get(i) += hidden_biases.get(i);
+            hidden_neurons.back()[i] += hidden_biases[i];
 
         quick_feed();
     }
