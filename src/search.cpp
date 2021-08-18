@@ -15,14 +15,14 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "search.h"
-#include "position.h"
-#include "eval.h"
-#include "moveorder.h"
-#include "polyglot.h"
 #include "tt.h"
-#include <sstream>
+#include "search.h"
+#include "polyglot.h"
+#include "position.h"
+#include "moveorder.h"
+
 #include <cmath>
+#include <sstream>
 #include <algorithm>
 
 int lmr_reductions_array[65][64]{0};
@@ -93,13 +93,13 @@ namespace
         if (!at_root)
         {
             if (search.stats.ply >= MaxPly)
-                return Eval::evaluate(position);
+                return position.static_evaluation();
 
             if (position.drawn())
                 return 0;
         }
 
-        int stand_pat = Eval::evaluate(position);
+        int stand_pat = position.static_evaluation();
 
         if (stand_pat >= beta)
             return beta;
@@ -243,7 +243,7 @@ namespace
         if (!at_root)
         {
             if (search.stats.ply >= MaxPly)
-                return Eval::evaluate(position);
+                return position.static_evaluation();
 
             if (position.drawn())
                 return 0;
@@ -265,7 +265,7 @@ namespace
                }
         }
 
-        int eval = tthit ? entry.seval : Eval::evaluate(position);
+        int eval = tthit ? entry.seval : position.static_evaluation();
         search.eval[search.stats.ply] = eval;
 
         bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];

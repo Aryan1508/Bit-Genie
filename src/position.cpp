@@ -79,3 +79,9 @@ bool Position::drawn() const
     return   !is_several(bbs[Bishop] & get_bb(White))
           && !is_several(bbs[Bishop] & get_bb(Black));
 }
+
+int Position::static_evaluation()
+{
+    int eval = static_cast<int>(net->quick_feed());
+    return side == Color::White ? eval : -eval;
+}

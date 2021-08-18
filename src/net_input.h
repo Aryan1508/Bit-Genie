@@ -15,14 +15,38 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "eval.h"
-#include "position.h"
+#pragma once 
+#include "Square.h"
+#include "fixed_list.h"
 
-namespace Eval
+#include <vector>
+
+namespace Trainer
 {
-    int evaluate(Position const &position)
+    inline uint16_t calculate_input_index(Square sq, Piece piece)
     {
-        int eval = static_cast<int>(position.net->quick_feed());
-        return position.get_side() == White ? eval : -eval;
+        return piece * 64 + sq;
     }
+
+    struct NetworkInput
+    {
+        std::vector<int> activated_input_indices;
+        float target = 0;
+    };
+
+    struct InputUpdate
+    {
+        enum : int8_t { Addition = 1, Removal = -1 };
+
+        uint16_t index;
+        int8_t   coeff; 
+
+        InputUpdate() = default;
+
+        InputUpdate(Square sq, Piece piece, int8_t coeff)
+            : index(calculate_input_index(sq, piece)), coeff(coeff)
+        {}
+    };
+
+    using NetworkUpdateList = FixedList<InputUpdate, 4>;
 }

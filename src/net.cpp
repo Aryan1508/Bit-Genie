@@ -15,9 +15,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "net.h"
 #include "../incbin/incbin.h"
-#include <thread>
+#include "net.h"
 #include <vector>
 #include <cstring>
 
@@ -33,26 +32,26 @@ namespace Trainer
 
         auto data = reinterpret_cast<const float*>(gNetworkData) + 1;
 
-        for(int i = 0;i < hidden_weights.size();i++) 
-            for(int j = 0;j < hidden_weights[i].size();j++)
+        for(std::size_t i = 0;i < hidden_weights.size();i++) 
+            for(std::size_t j = 0;j < hidden_weights[i].size();j++)
                 hidden_weights[i][j] = *data++;
 
-        for(int i = 0;i < output_weights.size();i++) 
+        for(std::size_t i = 0;i < output_weights.size();i++) 
             output_weights[i] = *data++;
 
-        for(int i = 0;i < hidden_biases.size();i++) 
+        for(std::size_t i = 0;i < hidden_biases.size();i++) 
             hidden_biases[i] = *data++;
 
         output_bias = *data++;
     }
 
-    void Network::update_hidden(Network::UpdateArray const& updates)
+    void Network::update_hidden(NetworkUpdateList const& updates)
     {
         hidden_neurons.push_back(hidden_neurons.back());
 
         for(auto const& update : updates)
         {
-            for(int i = 0;i < hidden_neurons.back().size();i++)
+            for(std::size_t i = 0;i < hidden_neurons.back().size();i++)
                 hidden_neurons.back()[i] += update.coeff * hidden_weights[update.index][i];
         }
     }
@@ -61,8 +60,8 @@ namespace Trainer
     {
         output_neuron = 0.0f;
 
-        for (int k = 0; k < output_weights.size(); k++)
-            output_neuron +=  relu(hidden_neurons.back()[k]) * output_weights[k];
+        for (std::size_t k = 0; k < output_weights.size(); k++)
+            output_neuron +=  std::max<float>(hidden_neurons.back()[k], 0.0f) * output_weights[k];
 
         output_neuron += output_bias;
         return get_output();
@@ -74,11 +73,11 @@ namespace Trainer
 
         for (auto index : sample.activated_input_indices)
         {
-            for (int i = 0; i < HIDDEN_SIZE; i++)
+            for (std::size_t i = 0; i < HIDDEN_SIZE; i++)
                 hidden_neurons.back()[i] += hidden_weights[index][i];
         }
 
-        for (int i = 0; i < hidden_neurons.back().size(); i++)
+        for (std::size_t i = 0; i < hidden_neurons.back().size(); i++)
             hidden_neurons.back()[i] += hidden_biases[i];
 
         quick_feed();

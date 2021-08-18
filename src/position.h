@@ -32,6 +32,7 @@ private:
     std::array<Piece   , 64> pieces; 
     std::array<uint64_t,  6> bitboards;
     std::array<uint64_t,  2> colors;
+    std::unique_ptr<Trainer::Network> net;
 
     ZobristKey key;
     uint64_t   castle_rooks;
@@ -40,7 +41,6 @@ private:
     Color      side;
 
 public:
-    std::unique_ptr<Trainer::Network> net;
 
     Position();
 
@@ -64,6 +64,9 @@ public:
 
     // Check if a move is pseudolegal
     bool is_pseudolegal(Move) const;
+
+    // Return a side relative static evaluation
+    int static_evaluation();
 
     // Perform a move over the board, UB if move is not legal
     void apply_move(Move);
@@ -98,7 +101,6 @@ public:
         get_piece(sq) = piece;
         set_bit(get_bb(type_of(piece)), sq);
         set_bit(get_bb(color_of(piece)), sq);
-
     }
 
     // Remove a piece from the board 
@@ -218,6 +220,7 @@ public:
     }
 
     Trainer::NetworkInput to_net_input() const;
+
 
     friend std::ostream& operator<<(std::ostream&, Position const&);
 };

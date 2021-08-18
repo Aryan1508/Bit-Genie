@@ -96,7 +96,7 @@ void Position::apply_move(Move move)
         ep_sq = Square::bad_sq;
     }
 
-    Network::UpdateArray updates;
+    NetworkUpdateList updates;
     auto  from     = move.from();
     auto  to       = move.to();
     auto  flag     = move.flag();
