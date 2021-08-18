@@ -15,19 +15,20 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "tt.h"
 #include "uci.h"
-#include "position.h"
 #include "search.h"
 #include "uciparse.h"
-#include "tt.h"
-#include "eval.h"
-#include "stringparse.h"
-#include "benchmark.h"
-#include "searchinit.h"
+#include "position.h"
 #include "polyglot.h"
-#include <cstring>
+#include "benchmark.h"
+#include "stringparse.h"
+#include "searchinit.h"
 
-const char *version = "8.37";
+#include <cstring>
+#include <algorithm>
+
+const char *version = "8.38";
 
 namespace
 {

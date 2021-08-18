@@ -16,11 +16,13 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "net.h"
 #include "movelist.h"
 #include "bitboard.h"
 #include "fixed_list.h"
 #include "position_undo.h"
 
+#include <memory>
 #include <string_view>
 
 class Position
@@ -30,13 +32,16 @@ private:
     std::array<Piece   , 64> pieces; 
     std::array<uint64_t,  6> bitboards;
     std::array<uint64_t,  2> colors;
+    std::unique_ptr<Trainer::Network> net;
 
     ZobristKey key;
     uint64_t   castle_rooks;
     int        halfmoves, history_ply;
     Square     ep_sq;
     Color      side;
+
 public:
+
     Position();
 
     // Set a fen string, does not attempt to validtae it
@@ -59,6 +64,9 @@ public:
 
     // Check if a move is pseudolegal
     bool is_pseudolegal(Move) const;
+
+    // Return a side relative static evaluation
+    int static_evaluation();
 
     // Perform a move over the board, UB if move is not legal
     void apply_move(Move);
@@ -102,6 +110,7 @@ public:
         flip_bit(get_bb(type_of(piece)), sq);
         flip_bit(get_bb(color_of(piece)), sq);
         get_piece(sq) = Piece::Empty;
+
         return piece;
     }
 
@@ -209,6 +218,9 @@ public:
     {
         return side;
     }
+
+    Trainer::NetworkInput to_net_input() const;
+
 
     friend std::ostream& operator<<(std::ostream&, Position const&);
 };

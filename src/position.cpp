@@ -21,7 +21,25 @@
 
 Position::Position()
 {
+    net = std::make_unique<Trainer::Network>();
     set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+}
+
+Trainer::NetworkInput Position::to_net_input() const 
+{
+    Trainer::NetworkInput input;
+
+    for (int j = 0; j < 64; j++)
+    {
+        Square sq = Square(j);
+            
+        if (get_piece(Square(j)) != Piece::Empty)
+        {
+            Piece p = get_piece(Square(j));
+            input.activated_input_indices.push_back(Trainer::calculate_input_index(sq, p));
+        }
+    }
+    return input;
 }
 
 std::ostream& operator<<(std::ostream& o, Position const& position)
@@ -60,4 +78,10 @@ bool Position::drawn() const
 
     return   !is_several(bbs[Bishop] & get_bb(White))
           && !is_several(bbs[Bishop] & get_bb(Black));
+}
+
+int Position::static_evaluation()
+{
+    int eval = static_cast<int>(net->quick_feed());
+    return side == Color::White ? eval : -eval;
 }
