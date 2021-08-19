@@ -32,7 +32,8 @@ namespace Generator
 
     bool Game::filter_position()
     {
-        return Search::qsearch(*search, MinEval, MaxEval) == search->position->static_evaluation();
+        return (Search::qsearch(*search, MinEval, MaxEval) == search->position->static_evaluation())
+                && !search->position->king_in_check();
     }
 
     bool Game::make_book_move() 
