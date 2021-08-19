@@ -16,17 +16,29 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "tt.h"
 #include "move.h"
 #include "history.h"
 #include "searchstats.h"
 #include "searchlimits.h"
 #include <atomic>
+#include <cstring>
+
+enum
+{
+    MinEval = -32001,
+    MaxEval = -MinEval,
+    MateEval = 32000,
+    MaxPly = 64,
+    MinMateScore = MateEval - MaxPly,
+};
 
 namespace Search 
 {
     struct Info
     {
-        Position*  position;
+        TTable     tt;
+        std::unique_ptr<Position> position;
         Stats      stats;
         Limits     limits;
         Move       killers[64][2] = {NullMove};
@@ -36,11 +48,19 @@ namespace Search
 
         int eval[64] = {0};
 
-        void update();
+        void reset()
+        {
+            std::memset(killers, 0, sizeof(killers));
+            std::memset(history, 0, sizeof(history));
+            std::memset(capture_history, 0, sizeof(capture_history));
+            std::memset(counter_history, 0, sizeof(counter_history));
+            tt.reset();
+        }
     };
 
     void init();
-    uint64_t bestmove(Info&, bool log);
+    int qsearch(Info& search, int alpha, int beta);
+    std::pair<Move, int> bestmove(Info&, bool log);
 }
 
 inline std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);

@@ -15,11 +15,33 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once
-#include "misc.h"
+#pragma once 
+#include "stringparse.h"
 
-namespace BenchMark
+class CommandLineParser
 {
-    void perft(Position &, int depth);
-    void bench(Position&);
-}
+public: 
+    CommandLineParser(int argc, char** argv)
+    {
+        options = std::vector<std::string>(argv, argv + argc);
+    }
+
+    std::string get_option(std::string_view key) const
+    {
+        for(std::size_t i = 0;i < options.size();i++)
+        {
+            if (options[i] == key)
+                return options[i + 1];
+        }
+
+        return "";
+    }
+
+    void set_option(std::string_view key, int& option, int default_value) const
+    {
+        std::string value = get_option(key);
+        option = value.size() ? std::stoi(value) : default_value;
+    }
+private:
+    std::vector<std::string> options;
+};

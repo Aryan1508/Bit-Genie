@@ -26,13 +26,7 @@ namespace Search
     public:
         Limits() = default;
         
-        void set_movetime(int64_t);
-        void update();
-
         StopWatch<> stopwatch;
-        int64_t movetime  = -1;
         int     max_depth = 64;
-        bool    stopped   = false;
-        bool    time_set  = false;
     };
 }

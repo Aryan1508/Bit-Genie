@@ -35,15 +35,6 @@ namespace
         0, -100, -100, -300, -325
     };
 
-    enum
-    {
-        MinEval = -32001,
-        MaxEval = -MinEval,
-        MateEval = 32000,
-        MaxPly = 64,
-        MinMateScore = MateEval - MaxPly,
-    };
-
     struct SearchResult
     {
         int score = MinEval;
@@ -81,51 +72,6 @@ namespace
         search.stats.ply--;
     }
 
-    int qsearch(Search::Info& search, int alpha, int beta)
-    {
-        if (search.limits.stopped)
-            return 0;
-
-        search.update();
-        Position& position = *search.position;
-        bool      at_root   = search.stats.ply == 0;
-
-        if (!at_root)
-        {
-            if (search.stats.ply >= MaxPly)
-                return position.static_evaluation();
-
-            if (position.drawn())
-                return 0;
-        }
-
-        int stand_pat = position.static_evaluation();
-
-        if (stand_pat >= beta)
-            return beta;
-
-        alpha = std::max(alpha, stand_pat);
-
-        MovePicker picker(search);
-
-        for (Move move; picker.qnext(move);)
-        {
-            apply_move(search, move);
-            int score = -qsearch(search, -beta, -alpha);
-            revert_move(search);
-
-            if (search.limits.stopped)
-                return 0;
-
-            alpha = std::max(alpha, score);
-
-            if (alpha >= beta)
-                return beta;
-        }
-
-        return alpha;
-    }
-
     bool is_pv_node(int alpha, int beta)
     {
         return std::abs(alpha - beta) > 1;
@@ -158,7 +104,7 @@ namespace
     void update_tt_after_search(Search::Info& search, SearchResult result, int depth, int original, int beta, int eval)
     {
         TEFlag flag = result.score <= original ? TEFlag::upper : result.score >= beta ? TEFlag::lower : TEFlag::exact;
-        TT.add(*search.position, result.best_move, mate_score_to_tt(result.score, search.stats.ply), depth, flag, eval);
+        search.tt.add(*search.position, result.best_move, mate_score_to_tt(result.score, search.stats.ply), depth, flag, eval);
     }
 
     void update_history_tables_on_cutoff(Search::Info& search, Movelist const& other, Move move, int depth)
@@ -218,21 +164,16 @@ namespace
 
     SearchResult pvs(Search::Info& search, int depth, int alpha, int beta, bool do_null = true)
     {
-        if (search.limits.stopped)
-            return 0;
-
         if (search.stats.ply)
             depth += search.position->king_in_check();
 
         if (depth <= 0)
             return qsearch(search, alpha, beta);
 
-        search.update();
-
         SearchResult result;
         MovePicker   picker    = MovePicker(search);
         Position&    position  = *search.position;
-        TEntry&      entry     = TT.retrieve(position);
+        TEntry&      entry     = search.tt.retrieve(position);
         bool         pv_node   = is_pv_node(alpha, beta);
         bool         in_check  = position.king_in_check();
         bool         at_root   = search.stats.ply == 0;
@@ -282,9 +223,6 @@ namespace
             int score = -pvs(search, nmp_depth(depth, eval, beta), -beta, -beta + 1, false).score;
             revert_nullmove(search);
 
-            if (search.limits.stopped)
-                return 0;
-
             if (score >= beta)
                 return beta;
         }
@@ -329,9 +267,6 @@ namespace
 
             revert_move(search);
 
-            if (search.limits.stopped)
-                return 0;
-
             update_search_result(result, score, move);
 
             alpha = std::max(alpha, score);
@@ -348,65 +283,13 @@ namespace
             else return 0;
         }
 
-        if (search.limits.stopped)
-            return 0;
-
         update_tt_after_search(search, result, depth, original, beta, eval);
         return result;
-    }
-
-    int mate_distance(int score)
-    {
-        if (score > 0)
-            return (MateEval - score) / 2 + 1;
-        else
-            return -((MateEval + score) / 2 + 1);
-    }
-
-    std::string print_score(int score)
-    {
-        std::stringstream o;
-        if (score > MinMateScore || score < -MinMateScore)
-        {
-            o << "mate " << mate_distance(score);
-        }
-        else
-        {
-            o << "cp " << score;
-        }
-        return o.str();
-    }
-
-    void print_info_string(SearchResult result, Search::Info &search, int depth)
-    {
-        using namespace std::chrono;
-        std::cout << "info";
-        std::cout << " depth " << depth;
-        std::cout << " seldepth " << search.stats.seldepth;
-        std::cout << " nodes " << search.stats.iter_nodes;
-        std::cout << " score " << print_score(result.score);
-        std::cout << " time " << search.limits.stopwatch.elapsed_time().count();
-        std::cout << " pv ";
-
-        for (auto m : TT.extract_pv(*search.position, depth))
-        {
-            std::cout << m << ' ';
-        }
-
-        std::cout << std::endl;
     }
 }
 
 namespace Search 
 {
-    void Info::update()
-    {
-        stats.update();
-        
-        if ((stats.iter_nodes & 2047) == 0)
-            limits.update();
-    }
-
     void init()
     {
         for (int i = 0; i < 65; i++)
@@ -421,18 +304,47 @@ namespace Search
         }
     }
 
-    uint64_t bestmove(Info& search, bool log)
+    int qsearch(Search::Info& search, int alpha, int beta)
     {
+
         Position& position = *search.position;
-        if (PolyGlot::book.enabled)
+        bool      at_root   = search.stats.ply == 0;
+
+        if (!at_root)
         {
-            Move bookmove = PolyGlot::book.probe(position);
-            if (bookmove.data)
-            {
-                std::cout << "bestmove " << bookmove << std::endl;
+            if (search.stats.ply >= MaxPly)
+                return position.static_evaluation();
+
+            if (position.drawn())
                 return 0;
-            }
         }
+
+        int stand_pat = position.static_evaluation();
+
+        if (stand_pat >= beta)
+            return beta;
+
+        alpha = std::max(alpha, stand_pat);
+
+        MovePicker picker(search);
+
+        for (Move move; picker.qnext(move);)
+        {
+            apply_move(search, move);
+            int score = -qsearch(search, -beta, -alpha);
+            revert_move(search);
+
+            alpha = std::max(alpha, score);
+
+            if (alpha >= beta)
+                return beta;
+        }
+
+        return alpha;
+    }
+
+    std::pair<Move, int> bestmove(Info& search, bool)
+    {
         constexpr int window = 12;
 
         SEARCH_ABORT = false;
@@ -442,7 +354,7 @@ namespace Search
 
         for (int depth = 1; depth <= search.limits.max_depth; depth++)
         {
-            search.stats.reset_iteration();
+            search.stats.ply=0;
 
             int alpha = MinEval;
             int beta  = MaxEval;
@@ -458,9 +370,8 @@ namespace Search
             while(true)
             {
                 result = pvs(search, depth, alpha, beta);
-                if (search.limits.stopped) goto conc;
 
-                score     = result.score;
+                score  = result.score;
 
                 if (score <= alpha)
                 {
@@ -478,16 +389,8 @@ namespace Search
                 delta *= 1.5;
             }
             best_move = result.best_move;
-
-            if (log)
-                print_info_string({ score, best_move }, search, depth);
         }
-        conc:
-
-        if (log)    
-            std::cout << "bestmove " << best_move << std::endl;
-
-        return search.stats.total_nodes;
+        return { best_move, score };
     }
 
 }

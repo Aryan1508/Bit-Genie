@@ -15,15 +15,23 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "uci.h"
+#include "search.h"
 #include "attacks.h"
 #include "zobrist.h"
-#include "search.h"
+#include "generator/generator.h"
 
 int main(int argc, char** argv)
 {
     Attacks::init();
     ZobristKey::init();
     Search::init();
-    UCI::init(argc, argv);
+    
+    CommandLineParser cmd(argc, argv);
+    Generator::GamePool::init(cmd);
+    int target_fens = 0;
+
+    cmd.set_option("-fens", target_fens, 1000);
+
+    Generator::GamePool games;
+    games.run(target_fens);
 }

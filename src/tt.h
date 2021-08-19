@@ -64,10 +64,6 @@ public:
     TEntry &retrieve(Position const &);
 
     std::vector<Move> extract_pv(Position&, int);
-
-    
 private:
     std::vector<TEntry> entries;
 };
-
-inline TTable TT(8);

@@ -180,7 +180,7 @@ bool MovePicker::next(Move &move)
     if (stage == Stage::HashMove)
     {
         stage = Stage::GenNoisy;
-        auto& entry = TT.retrieve(position);
+        auto& entry = search->tt.retrieve(position);
         
         Move hmove = Move(entry.move);
 

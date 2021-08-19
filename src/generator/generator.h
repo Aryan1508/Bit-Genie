@@ -15,22 +15,33 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "searchstats.h"
-#include <algorithm>
+#pragma once
+#include "game.h"
+#include "../cmdline.h"
 
-namespace Search 
+#include <thread>
+#include <atomic>
+
+namespace Generator
 {
-    void Stats::update()
+    class GamePool
     {
-        iter_nodes++;
-        total_nodes++;
-        seldepth = std::max(seldepth, ply);
-    }
+    public:
+        static int n_threads;
 
-    void Stats::reset_iteration()
-    {
-        iter_nodes = 0;
-        ply = 0;
-        seldepth = 0;
-    }
+        static void init(CommandLineParser const& cmd)
+        {
+            cmd.set_option("-threads", n_threads, 1);
+        }
+
+        GamePool() = default;
+
+        void run(std::uint64_t target_fens);
+
+        void run_batch(std::string_view output_file, std::uint64_t target_fens, std::uint64_t seed);
+    private:
+        std::vector<std::thread> workers;
+        std::atomic_uint64_t n_games = {0};
+        std::atomic_uint64_t n_fens  = {0};
+    };
 }
