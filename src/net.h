@@ -19,7 +19,6 @@
 #include <vector>
 
 #include "net_input.h"
-#include "activation.h"	
 #include "fixed_list.h"
 
 namespace Trainer
