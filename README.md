@@ -1,7 +1,5 @@
 # Bit-Genie 
 
-[![Latest Github release](https://img.shields.io/badge/Latest--Release-v8-red)](https://github.com/Aryan1508/Bit-Genie/releases/latest)
-
 [Bit-Genie](https://github.com/Aryan1508/Bit-Genie "Bit-Genie") is an open-source [chess engine](https://en.wikipedia.org/wiki/Chess_engine "chess engine") written in C++ by [Aryan Parekh](https://github.com/Aryan1508 "Aryan Parekh"). It has support for the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol.
 
 # About
@@ -67,9 +65,9 @@ If you have any ideas/questions, feel free to reach out to me, I'm ready to help
 
 The development wouldn't have been possible if not for the huge resources available online like the [Chess programming Wiki](https://www.chessprogramming.org/Main_Page "Chess Programming Wiki"). The works of the following people have influenced the progress of Bit-Genie greatly
  
+ - Special thanks to [Kim Kåhre and Finn Eggers](https://github.com/Luecx/Koivisto) for guiding me during the neural network's development 
  - [Jay Honnold](https://github.com/jhonnold/berserk)
  - [Terje Kirstihagen](https://github.com/TerjeKir/weiss) 
  - [Andrew Grant](https://github.com/AndyGrant/Ethereal)
  - [Kieren Pearson](https://github.com/KierenP/Halogen)
- - [Kim Kåhre and Finn Eggers](https://github.com/Luecx/Koivisto)
  - [Alexander Litov](https://github.com/justNo4b/Drofa)
