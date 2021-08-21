@@ -28,7 +28,7 @@
 #include <cstring>
 #include <algorithm>
 
-const char *version = "8.38";
+const char *version = "8.39";
 
 namespace
 {
