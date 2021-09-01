@@ -22,6 +22,8 @@ The estimated strength over the different versions
 | Bit-Genie 4     |  2230  |
 | Bit-Genie 5     |  2400  |
 | Bit-Genie 7     |  2727  |
+| Bit-Genie 8     |  2860  | 
+| Bit-Genie 9     |  3067  | 
 
 
 [Bit-Genie on the CCRL](https://ccrl.chessdom.com/ccrl/404/cgi/compare_engines.cgi?family=Bit-Genie&print=Rating+list&print=Results+table&print=LOS+table&print=Ponder+hit+table&print=Eval+difference+table&print=Comopp+gamenum+table&print=Overlap+table&print=Score+with+common+opponents)
@@ -35,6 +37,7 @@ The estimated strength over the different versions
 | Bit-Genie 6     |  2620  |
 | Bit-Genie 7     |  2760  |
 | Bit-Genie 8     |  2870  |
+| Bit-Genie 9     |  3050  | 
 
 [Rebel's 40/2 rating list](http://rebel13.nl/grl-best-40-2.html)
 
