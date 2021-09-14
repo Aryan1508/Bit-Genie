@@ -30,19 +30,19 @@ namespace Trainer
         hidden_neurons.back().fill(0.0f);
         output_neuron = 0.0f;
 
-        auto data = reinterpret_cast<const float*>(gNetworkData) + 1;
+        auto data = reinterpret_cast<const uint32_t*>(gNetworkData);
+        data += 6; 
 
-        for(std::size_t i = 0;i < hidden_weights.size();i++) 
-            for(std::size_t j = 0;j < hidden_weights[i].size();j++)
-                hidden_weights[i][j] = *data++;
+        std::memcpy(&hidden_weights[0], data, HIDDEN_SIZE * INPUT_SIZE * sizeof(float));
+        data += HIDDEN_SIZE * INPUT_SIZE;
 
-        for(std::size_t i = 0;i < output_weights.size();i++) 
-            output_weights[i] = *data++;
+        std::memcpy(&hidden_biases[0], data, HIDDEN_SIZE * sizeof(float));
+        data += HIDDEN_SIZE;
 
-        for(std::size_t i = 0;i < hidden_biases.size();i++) 
-            hidden_biases[i] = *data++;
+        std::memcpy(&output_weights[0], data, HIDDEN_SIZE * sizeof(float));
+        data += HIDDEN_SIZE;
 
-        output_bias = *data++;
+        std::memcpy(&output_bias, data, sizeof(float));
     }
 
     void Network::update_hidden(NetworkUpdateList const& updates)
