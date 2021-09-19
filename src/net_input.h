@@ -21,32 +21,24 @@
 
 #include <vector>
 
-namespace Trainer
+inline uint16_t calculate_input_index(Square sq, Piece piece)
 {
-    inline uint16_t calculate_input_index(Square sq, Piece piece)
-    {
-        return piece * 64 + sq;
-    }
-
-    struct NetworkInput
-    {
-        std::vector<int> activated_input_indices;
-        float target = 0;
-    };
-
-    struct InputUpdate
-    {
-        enum : int8_t { Addition = 1, Removal = -1 };
-
-        uint16_t index;
-        int8_t   coeff; 
-
-        InputUpdate() = default;
-
-        InputUpdate(Square sq, Piece piece, int8_t coeff)
-            : index(calculate_input_index(sq, piece)), coeff(coeff)
-        {}
-    };
-
-    using NetworkUpdateList = FixedList<InputUpdate, 4>;
+    return piece * 64 + sq;
 }
+
+struct InputUpdate
+{
+    enum : int8_t { Addition = 1, Removal = -1 };
+
+    uint16_t index;
+    int8_t   coeff; 
+
+    InputUpdate() = default;
+
+    InputUpdate(Square sq, Piece piece, int8_t coeff)
+        : index(calculate_input_index(sq, piece)), coeff(coeff)
+    {}
+};
+
+using NetworkUpdateList = FixedList<InputUpdate, 4>;
+using NetworkInput      = std::vector<uint16_t>;

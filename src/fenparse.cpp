@@ -128,5 +128,5 @@ void Position::set_fen(std::string_view fen)
     halfmoves = std::stoi(parts[4]);
     key.generate(*this);
 
-    net->recalculate_hidden(to_net_input());
+    network.recalculate_hidden_layer(to_net_input());
 }

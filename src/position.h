@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "net.h"
+#include "network.h"
 #include "movelist.h"
 #include "bitboard.h"
 #include "fixed_list.h"
@@ -32,7 +32,7 @@ private:
     std::array<Piece   , 64> pieces; 
     std::array<uint64_t,  6> bitboards;
     std::array<uint64_t,  2> colors;
-    std::unique_ptr<Trainer::Network> net;
+    Network network;
 
     ZobristKey key;
     uint64_t   castle_rooks;
@@ -219,8 +219,7 @@ public:
         return side;
     }
 
-    Trainer::NetworkInput to_net_input() const;
-
+    NetworkInput to_net_input() const;
 
     friend std::ostream& operator<<(std::ostream&, Position const&);
 };
