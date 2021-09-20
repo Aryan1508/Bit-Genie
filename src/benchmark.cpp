@@ -15,21 +15,17 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "benchmark.h"
 #include "search.h"
+#include "benchmark.h"
 #include "position.h"
 #include "stopwatch.h"
 
-#include <iomanip>
 #include <cmath>
+#include <iomanip>
+#include <fstream>
 
 namespace 
 {
-    const std::array<std::string, 50> benchmark_fens
-    {
-        #include "bench.txt"
-    };
-
     uint64_t perft(Position& position, int depth, bool root=true)
     {
         Movelist movelist;
@@ -79,7 +75,13 @@ namespace BenchMark
         StopWatch<> watch;
         watch.go();
         uint64_t nodes = 0;
-        for (std::string_view fen : benchmark_fens)
+        
+        std::ifstream bench_file("bench.txt");
+
+        if (!bench_file)
+            throw std::runtime_error("Couldn't find bench.txt to run benchmark");
+
+        for (std::string fen; std::getline(bench_file, fen);)
         {
             position.set_fen(fen);
             Search::Info info;
@@ -90,6 +92,7 @@ namespace BenchMark
             std::cout << fen << ": " << count << '\n';
             nodes += count;
         }
+
         watch.stop();
         long long elapsed = watch.elapsed_time().count();
 
