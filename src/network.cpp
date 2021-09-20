@@ -21,14 +21,14 @@
 #include <vector>
 #include <cstring>
 
-
 INCBIN(Network, EVALFILE);
 
 void Network::init()
 {
     auto data = reinterpret_cast<const uint32_t*>(gNetworkData);
-    data += 6; 
-
+    hash = *(data + 1);
+    
+    data += 6;
     std::memcpy(&hidden_weights[0], data, HIDDEN_SIZE * INPUT_SIZE * sizeof(float));
     data += HIDDEN_SIZE * INPUT_SIZE;
 
@@ -82,3 +82,4 @@ std::array<std::array<float, Network::HIDDEN_SIZE>, Network::INPUT_SIZE> Network
 std::array<float, Network::HIDDEN_SIZE> Network::hidden_biases;
 std::array<float, Network::HIDDEN_SIZE> Network::output_weights;
 float Network::output_bias;
+std::uint32_t Network::hash;

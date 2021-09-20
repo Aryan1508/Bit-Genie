@@ -28,30 +28,25 @@
 #include <cstring>
 #include <algorithm>
 
-const char *version = "9";
+const std::string version = "9.01";
 
 namespace
 {
-    template <typename... Args>
-    void printl(Args const &...args)
-    {
-        (std::cout << ... << args) << std::endl;
-    }
-
     void uci_ok()
     {
-        printl("id name Bit-Genie ", version);
-        printl("id author Aryan Parekh");
-        printl("option name Hash type spin default 8 min 2 max 3000");
-        printl("option name Clear Hash type button");
-        printl("option name OwnBook type check default false");
-        printl("option name BookPath type string");
-        printl("uciok");
+        std::cout << "id name Bit-Genie " << version << '\n';
+        std::cout << "id author Aryan Parekh" << '\n';
+        std::cout << "id network " << std::hex << Network::get_hash() << std::dec << '\n';
+        std::cout << "option name Hash type spin default 8 min 2 max 3000" << '\n';
+        std::cout << "option name Clear Hash type button" << '\n';
+        std::cout << "option name OwnBook type check default false" << '\n';
+        std::cout << "option name BookPath type string" << '\n';
+        std::cout << "uciok" << std::endl;
     }
 
     void uci_ready()
     {
-        printl("readyok");
+        std::cout << "readyok" << std::endl;
     }
 
     void uci_setoption(UciParser const &parser)
@@ -137,8 +132,6 @@ namespace UCI
 {
     void init(int argc, char **argv)
     {
-        printl("Bit-Genie by Aryan Parekh");
-
         UciParser  command;
         Position   position;
         SearchInit worker;
@@ -167,7 +160,7 @@ namespace UCI
                 uci_setposition(command, position);
 
             else if (command == UciCommands::print)
-                printl(position);
+                std::cout << position << std::endl;
 
             else if (command == UciCommands::perft)
                 BenchMark::perft(position, command.parse_perft());

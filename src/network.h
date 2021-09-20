@@ -53,6 +53,11 @@ public:
     }
 
     static void init();
+
+    static std::uint32_t get_hash() 
+    {
+        return hash;
+    }
 private:
     std::vector<std::array<float, HIDDEN_SIZE>> hidden_neurons;
 
@@ -60,4 +65,5 @@ private:
     static std::array<float, HIDDEN_SIZE> hidden_biases;
     static std::array<float, HIDDEN_SIZE> output_weights;
     static float output_bias;
+    static std::uint32_t hash;
 };
