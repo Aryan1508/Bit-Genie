@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "moveorder.h"
-#include "attacks.h"
+
 #include "search.h"
 #include "tt.h"
 #include <algorithm>
@@ -40,7 +40,7 @@ bool lost_material(int16_t scores[16], int index) {
 }
 
 int16_t see(Position &position, Move move) {
-    static constexpr int see_piece_vals[]{ 100, 300, 325, 500, 900,  1000, 100,
+    static constexpr int see_piece_vals[]{ 100, 300, 325, 500, 900, 1000, 100,
                                            300, 325, 500, 900, 1000, 0 };
 
     int16_t scores[32] = { 0 };
@@ -60,7 +60,7 @@ int16_t see(Position &position, Move move) {
     bishops |= position.get_bb(PT_BISHOP);
     rooks |= position.get_bb(PT_ROOK);
 
-    std::uint64_t attack_def = Attacks::attackers_to_sq(position, to);
+    std::uint64_t attack_def = position.attackers_to_sq(to);
     scores[index]            = see_piece_vals[captured];
 
     do {
@@ -74,8 +74,8 @@ int16_t see(Position &position, Move move) {
         attack_def ^= from_set;
         occ ^= from_set;
 
-        attack_def |= occ & ((Attacks::bishop(to, occ) & bishops) |
-                             (Attacks::rook(to, occ) & rooks));
+        attack_def |= occ & ((compute_bishop_attack_bb(to, occ) & bishops) |
+                             (compute_rook_attack_bb(to, occ) & rooks));
         from_set =
             least_valuable_attacker(position, attack_def, attacker, capturing);
     } while (from_set);
@@ -124,7 +124,8 @@ void bubble_top_move(Movelist::iterator begin, Movelist::iterator end) {
 }
 } // namespace
 
-MovePicker::MovePicker(Search::Info &s) : search(&s) {
+MovePicker::MovePicker(Search::Info &s)
+    : search(&s) {
     stage = Stage::HashMove;
 }
 

@@ -16,12 +16,14 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "bitboard.h"
-#include "fixed_list.h"
-#include "movelist.h"
+#include "types.h"
 #include "network.h"
+#include "bitboard.h"
+#include "movelist.h"
+#include "fixed_list.h"
 #include "position_undo.h"
 
+#include <array>
 #include <memory>
 #include <string_view>
 
@@ -88,6 +90,14 @@ public:
 
     // Check if side to move's king is under attack
     bool king_in_check() const;
+
+    // Check if given square is attacked by the given side
+    bool square_is_attacked(const Square, const Color) const;
+
+    // Check if given square is attacked by the given side
+    bool square_is_attacked(const Square, const Color, const std::uint64_t occupancy) const;
+
+    std::uint64_t attackers_to_sq(const Square sq) const;
 
     // Previous move played
     Move previous_move() const {

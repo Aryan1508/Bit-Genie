@@ -73,6 +73,11 @@ constexpr auto is_ok(const Square sq) {
     return sq < SQ_TOTAL;
 }
 
+constexpr auto is_ok(const Direction dir) {
+    return dir == DIR_NORTH || dir == DIR_SOUTH ||
+           dir == DIR_EAST || dir == DIR_WEST;
+}
+
 constexpr auto is_ok(const Color clr) {
     return clr < CLR_TOTAL;
 }

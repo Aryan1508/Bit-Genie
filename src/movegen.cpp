@@ -15,13 +15,15 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "attacks.h"
+
 #include "bitboard.h"
 #include "movelist.h"
 #include "position.h"
 
 namespace {
-enum class GenType { all, quiet, noisy };
+enum class GenType { all,
+                     quiet,
+                     noisy };
 
 template <GenType type>
 std::uint64_t get_targets(Position const &position) {
@@ -30,8 +32,9 @@ std::uint64_t get_targets(Position const &position) {
                                     : ~position.get_bb();
 }
 
-constexpr std::uint64_t get_promotion_rank_bb(Color side) {
-    return side == CLR_WHITE ? BitMask::rank8 : BitMask::rank1;
+constexpr std::uint64_t get_promotion_rank_bb(const Color clr) {
+    assert(is_ok(clr));
+    return clr == CLR_WHITE ? RANK_8_BB : RANK_1_BB;
 }
 
 void verified_add(Movelist &movelist, Position const &position, Move move) {
@@ -51,7 +54,7 @@ void serialize_bitboard(
     Movelist &movelist, Position const &position, std::uint64_t bb,
     int delta) {
     while (bb) {
-        Square to = pop_lsb(bb);
+        Square to       = pop_lsb(bb);
         const auto from = static_cast<Square>(to - delta);
 
         if (flag == Move::Flag::promotion) {
@@ -72,7 +75,7 @@ void generate_simple_moves(
     while (pieces) {
         Square from = pop_lsb(pieces);
         std::uint64_t moves =
-            Attacks::generate(pt, from, position.get_bb()) & targets;
+            compute_attack_bb(pt, from, position.get_bb()) & targets;
         serialize_bitboard(movelist, position, moves, from);
     }
 }
@@ -119,7 +122,7 @@ void generate_pawn_pushes(
     std::uint64_t forwarded_pawns) {
     constexpr std::uint64_t promo_bb = get_promotion_rank_bb(side);
     constexpr std::uint64_t push_2r_bb =
-        side == CLR_WHITE ? BitMask::rank4 : BitMask::rank5;
+        side == CLR_WHITE ? RANK_4_BB : RANK_5_BB;
 
     std::uint64_t empty = ~position.get_bb();
 
@@ -165,8 +168,8 @@ void generate_castle(
         return;
 
     while (att_cond)
-        if (Attacks::square_attacked(
-                position, pop_lsb(att_cond), !position.get_side()))
+        if (position.square_is_attacked(
+                pop_lsb(att_cond), !position.get_side()))
             return;
 
     verified_add(movelist, position, Move(from, to, Move::Flag::castle));

@@ -16,11 +16,45 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "attacks.h"
 #include "position.h"
 
+constexpr uint64_t neighbor_files[64]{
+    0X00202020202020202, 0X00505050505050505, 0X00a0a0a0a0a0a0a0a, 0X01414141414141414, 0X02828282828282828,
+    0X05050505050505050, 0X0a0a0a0a0a0a0a0a0, 0X04040404040404040, 0X00202020202020202, 0X00505050505050505,
+    0X00a0a0a0a0a0a0a0a, 0X01414141414141414, 0X02828282828282828, 0X05050505050505050, 0X0a0a0a0a0a0a0a0a0,
+    0X04040404040404040, 0X00202020202020202, 0X00505050505050505, 0X00a0a0a0a0a0a0a0a, 0X01414141414141414,
+    0X02828282828282828, 0X05050505050505050, 0X0a0a0a0a0a0a0a0a0, 0X04040404040404040, 0X00202020202020202,
+    0X00505050505050505, 0X00a0a0a0a0a0a0a0a, 0X01414141414141414, 0X02828282828282828, 0X05050505050505050,
+    0X0a0a0a0a0a0a0a0a0, 0X04040404040404040, 0X00202020202020202, 0X00505050505050505, 0X00a0a0a0a0a0a0a0a,
+    0X01414141414141414, 0X02828282828282828, 0X05050505050505050, 0X0a0a0a0a0a0a0a0a0, 0X04040404040404040,
+    0X00202020202020202, 0X00505050505050505, 0X00a0a0a0a0a0a0a0a, 0X01414141414141414, 0X02828282828282828,
+    0X05050505050505050, 0X0a0a0a0a0a0a0a0a0, 0X04040404040404040, 0X00202020202020202, 0X00505050505050505,
+    0X00a0a0a0a0a0a0a0a, 0X01414141414141414, 0X02828282828282828, 0X05050505050505050, 0X0a0a0a0a0a0a0a0a0,
+    0X04040404040404040, 0X00202020202020202, 0X00505050505050505, 0X00a0a0a0a0a0a0a0a, 0X01414141414141414,
+    0X02828282828282828, 0X05050505050505050, 0X0a0a0a0a0a0a0a0a0, 0X04040404040404040
+};
+
+constexpr uint64_t castle_attack_path[64]{
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000008, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000020, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00000800000000000000, 0x0000000000000000000,
+    0x000000000000000000, 0x00000000000000000000, 0x00002000000000000000, 0x0000000000000000000
+};
+
 static bool castle_path_is_clear(Position const &position, Square rook) {
-    return !(position.get_bb() & BitMask::castle_piece_path[rook]);
+    return !(position.get_bb() & get_castling_path(rook));
 }
 
 bool Position::is_legal(Move move) const {
@@ -34,7 +68,7 @@ bool Position::is_legal(Move move) const {
     if (flag == Move::Flag::normal || flag == Move::Flag::promotion) {
         if (get_piece(from) == PCE_WKING || get_piece(from) == PCE_BKING) {
             std::uint64_t occupancy = get_bb() ^ (1ull << from);
-            return !Attacks::square_attacked(*this, to, !side, occupancy);
+            return !square_is_attacked(to, !side, occupancy);
         }
 
         else {
@@ -60,15 +94,15 @@ bool Position::is_legal(Move move) const {
             rooks |= queens;
 
             return !(
-                (BitMask::pawn_attacks[side][king] & pawns) ||
-                (Attacks::bishop(king, occupancy) & bishops) ||
-                (Attacks::rook(king, occupancy) & rooks) ||
-                (Attacks::knight(king) & knights));
+                (compute_pawn_attack_bb(king, side) & pawns) ||
+                (compute_bishop_attack_bb(king, occupancy) & bishops) ||
+                (compute_rook_attack_bb(king, occupancy) & rooks) ||
+                (compute_knight_attack_bb(king) & knights));
         }
     }
 
     else if (move.flag() == Move::Flag::castle) {
-        return !Attacks::square_attacked(*this, to, !side);
+        return !square_is_attacked(to, !side);
     }
 
     else {
@@ -89,10 +123,10 @@ bool Position::is_legal(Move move) const {
         rooks |= queens;
 
         return !(
-            (BitMask::pawn_attacks[side][king] & pawns) ||
-            (Attacks::bishop(king, occupancy) & bishops) ||
-            (Attacks::rook(king, occupancy) & rooks) ||
-            (Attacks::knight(king) & knights));
+            (compute_pawn_attack_bb(king, side) & pawns) ||
+            (compute_bishop_attack_bb(king, occupancy) & bishops) ||
+            (compute_rook_attack_bb(king, occupancy) & rooks) ||
+            (compute_knight_attack_bb(king) & knights));
     }
 
     return true;
@@ -124,13 +158,13 @@ bool Position::is_pseudolegal(Move move) const {
         if (!castle_path_is_clear(*this, to))
             return false;
 
-        if (Attacks::square_attacked(*this, from, !get_side()))
+        if (square_is_attacked(from, !get_side()))
             return false;
 
-        std::uint64_t path = BitMask::castle_attack_path[to];
+        std::uint64_t path = castle_attack_path[to];
         while (path) {
             Square sq = pop_lsb(path);
-            if (Attacks::square_attacked(*this, sq, !side))
+            if (square_is_attacked(sq, !side))
                 return false;
         }
 
@@ -142,7 +176,7 @@ bool Position::is_pseudolegal(Move move) const {
         Direction forward = side == CLR_WHITE ? DIR_NORTH : DIR_SOUTH;
         auto forward_sq   = from + forward;
         std::uint64_t prom_rank =
-            side == CLR_WHITE ? BitMask::rank7 : BitMask::rank2;
+            side == CLR_WHITE ? RANK_7_BB : RANK_2_BB;
         std::uint64_t from_sq_bb = 1ull << from;
 
         if (flag == Move::Flag::promotion) {
@@ -168,13 +202,13 @@ bool Position::is_pseudolegal(Move move) const {
                     get_piece(static_cast<Square>(forward_sq)) == PCE_NULL &&
                     compute_rank(from) == start_rank);
             } else {
-                return test_bit(BitMask::pawn_attacks[side][from], to);
+                return test_bit(compute_pawn_attack_bb(from, side), to);
             }
         } else {
             if (to != ep_sq)
                 return false;
 
-            if (!((BitMask::neighbor_files[ep_sq]) & (1ull << from)))
+            if (!((neighbor_files[ep_sq]) & (1ull << from)))
                 return false;
 
             captured = get_piece(static_cast<Square>(to ^ 8));
@@ -194,7 +228,7 @@ bool Position::is_pseudolegal(Move move) const {
             return false;
 
         std::uint64_t attacks =
-            Attacks::generate(compute_piece_type(moving), from, get_bb());
+            compute_attack_bb(compute_piece_type(moving), from, get_bb());
         return test_bit(attacks, to);
     }
     return false;

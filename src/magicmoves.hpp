@@ -24,11 +24,9 @@
 
 #define MINIMIZE_MAGIC
 
-typedef unsigned long long U64;
+#define C64(constant) constant##ULL
 
-#define C64(constantU64) constantU64##ULL
-
-constexpr U64 magicmoves_r_magics[64] = {
+constexpr std::uint64_t magicmoves_r_magics[64] = {
     0x0080001020400080, 0x0040001000200040, 0x0080081000200080,
     0x0080040800100080, 0x0080020400080080, 0x0080010200040080,
     0x0080008001000200, 0x0080002040800100, 0x0000800020400080,
@@ -78,7 +76,7 @@ constexpr std::uint64_t magicmoves_b_magics[64] = {
     0x0002020202020200
 };
 
-constexpr U64 magicmoves_r_mask[64] = {
+constexpr std::uint64_t magicmoves_r_mask[64] = {
     0x000101010101017E, 0x000202020202027C, 0x000404040404047A,
     0x0008080808080876, 0x001010101010106E, 0x002020202020205E,
     0x004040404040403E, 0x008080808080807E, 0x0001010101017E00,
@@ -144,20 +142,20 @@ constexpr unsigned int magicmoves_r_shift[64]{
 
 #define MINIMAL_B_BITS_SHIFT(square) 55
 #define MINIMAL_R_BITS_SHIFT(square) 52
-#define Bmagic(square, occupancy)                                              \
-    *(magicmoves_b_indices[square] +                                           \
-      ((((occupancy)&magicmoves_b_mask[square]) *                              \
-        magicmoves_b_magics[square]) >>                                        \
+#define Bmagic(square, occupancy)                 \
+    *(magicmoves_b_indices[square] +              \
+      ((((occupancy)&magicmoves_b_mask[square]) * \
+        magicmoves_b_magics[square]) >>           \
        magicmoves_b_shift[square]))
-#define Rmagic(square, occupancy)                                              \
-    *(magicmoves_r_indices[square] +                                           \
-      ((((occupancy)&magicmoves_r_mask[square]) *                              \
-        magicmoves_r_magics[square]) >>                                        \
+#define Rmagic(square, occupancy)                 \
+    *(magicmoves_r_indices[square] +              \
+      ((((occupancy)&magicmoves_r_mask[square]) * \
+        magicmoves_r_magics[square]) >>           \
        magicmoves_r_shift[square]))
-#define Qmagic(square, occupancy)                                              \
+#define Qmagic(square, occupancy) \
     (Bmagic(square, occupancy) | Rmagic(square, occupancy))
 
-extern const U64 *magicmoves_b_indices[64];
-extern const U64 *magicmoves_r_indices[64];
+extern const std::uint64_t *magicmoves_b_indices[64];
+extern const std::uint64_t *magicmoves_r_indices[64];
 
 void init_magic_moves(void);

@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "position.h"
-#include "attacks.h"
+
 #include "stringparse.h"
 
 Position::Position() {
@@ -29,7 +29,7 @@ NetworkInput Position::to_net_input() const {
     for (int j = 0; j < 64; j++) {
         Square sq = Square(j);
 
-        if (get_piece(Square(j)) != PCE_NULL) {
+        if (get_piece(Square(j)) != Piece::PCE_NULL) {
             Piece p = get_piece(Square(j));
             input.push_back(calculate_input_index(sq, p));
         }
@@ -42,8 +42,8 @@ std::ostream &operator<<(std::ostream &o, Position const &position) {
 }
 
 bool Position::king_in_check() const {
-    std::uint64_t king = get_bb(PT_KING, side);
-    return Attacks::square_attacked(*this, get_lsb(king), !side);
+    uint64_t king = get_bb(PT_KING, side);
+    return square_is_attacked(get_lsb(king), !side);
 }
 
 bool Position::drawn() const {
@@ -75,4 +75,38 @@ bool Position::drawn() const {
 int Position::static_evaluation() {
     const int eval = static_cast<int>(network.calculate_last_layer());
     return side == CLR_WHITE ? eval : -eval;
+}
+
+bool Position::square_is_attacked(const Square sq, const Color enemy) const {
+    return square_is_attacked(sq, enemy, get_bb());
+}
+
+bool Position::square_is_attacked(const Square sq, const Color enemy, const std::uint64_t occupancy) const {
+    std::uint64_t pawns   = get_bb(PT_PAWN, enemy);
+    std::uint64_t knights = get_bb(PT_KNIGHT, enemy);
+    std::uint64_t queens  = get_bb(PT_QUEEN, enemy);
+    std::uint64_t kings   = get_bb(PT_KING, enemy);
+    std::uint64_t rooks   = get_bb(PT_ROOK, enemy) | queens;
+    std::uint64_t bishops = get_bb(PT_BISHOP, enemy) | queens;
+
+    return (compute_pawn_attack_bb(sq, !enemy) & pawns) ||
+           (compute_bishop_attack_bb(sq, occupancy) & bishops) || (compute_rook_attack_bb(sq, occupancy) & rooks) ||
+           (compute_knight_attack_bb(sq) & knights) || (compute_king_attack_bb(sq) & kings);
+}
+
+std::uint64_t Position::attackers_to_sq(const Square sq) const {
+    std::uint64_t occ     = get_bb();
+    std::uint64_t wpawns  = get_bb(PCE_WPAWN);
+    std::uint64_t bpawns  = get_bb(PCE_BPAWN);
+    std::uint64_t knights = get_bb(PT_KNIGHT);
+    std::uint64_t queens  = get_bb(PT_QUEEN);
+    std::uint64_t kings   = get_bb(PT_KING);
+    std::uint64_t rooks   = get_bb(PT_ROOK) | queens;
+    std::uint64_t bishops = get_bb(PT_BISHOP) | queens;
+
+    std::uint64_t p_attackers =
+        (compute_pawn_attack_bb(sq, CLR_WHITE) & bpawns) | (compute_pawn_attack_bb(sq, CLR_BLACK) & wpawns);
+
+    return p_attackers | (compute_knight_attack_bb(sq) & knights) | (compute_king_attack_bb(sq) & kings) |
+           (compute_bishop_attack_bb(sq, occ) & bishops) | (compute_rook_attack_bb(sq, occ) & rooks);
 }
