@@ -16,32 +16,30 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "network.h"
-#include "movelist.h"
 #include "bitboard.h"
 #include "fixed_list.h"
+#include "movelist.h"
+#include "network.h"
 #include "position_undo.h"
 
 #include <memory>
 #include <string_view>
 
-class Position
-{
+class Position {
 private:
     FixedList<PositionUndo, 2046> history;
-    std::array<Piece   , 64> pieces; 
-    std::array<uint64_t,  6> bitboards;
-    std::array<uint64_t,  2> colors;
+    std::array<Piece, 64> pieces;
+    std::array<std::uint64_t, 6> bitboards;
+    std::array<std::uint64_t, 2> colors;
     Network network;
 
     ZobristKey key;
-    uint64_t   castle_rooks;
-    int        halfmoves, history_ply;
-    Square     ep_sq;
-    Color      side;
+    std::uint64_t castle_rooks;
+    int halfmoves, history_ply;
+    Square ep_sq;
+    Color side;
 
 public:
-
     Position();
 
     // Set a fen string, does not attempt to validtae it
@@ -51,15 +49,16 @@ public:
     std::string get_fen() const;
 
     // Generate all legal moves (both noisy and quiet)
-    void generate_legal(Movelist&) const;
-    
+    void generate_legal(Movelist &) const;
+
     // Generate all legal noisy moves
-    void generate_noisy(Movelist&) const;
+    void generate_noisy(Movelist &) const;
 
     // Generate all legal quiet moves
-    void generate_quiet(Movelist&) const;
+    void generate_quiet(Movelist &) const;
 
-    // Check if a move is legal (only checks if performing a move will leave king in check)
+    // Check if a move is legal (only checks if performing a move will leave
+    // king in check)
     bool is_legal(Move) const;
 
     // Check if a move is pseudolegal
@@ -70,11 +69,11 @@ public:
 
     // Perform a move over the board, UB if move is not legal
     void apply_move(Move);
-    
+
     // Convert UCI move format and perform
     void apply_move(std::string_view);
 
-    // Perform a null move 
+    // Perform a null move
     void apply_nullmove();
 
     // Revert the last move made, might crash if called on root
@@ -83,143 +82,124 @@ public:
     // Revert a null move made
     void revert_nullmove();
 
-    // Check if position is drawn by repetition, 50-move rule or insufficient material
+    // Check if position is drawn by repetition, 50-move rule or insufficient
+    // material
     bool drawn() const;
 
-    // Check if side to move's king is under attack 
+    // Check if side to move's king is under attack
     bool king_in_check() const;
 
     // Previous move played
-    Move previous_move() const 
-    {
+    Move previous_move() const {
         return history_ply > 0 ? history[history_ply - 1].move : NullMove;
     }
 
-    // Add a piece on the board 
-    void add_piece(Square sq, Piece piece)
-    {
+    // Add a piece on the board
+    void add_piece(Square sq, Piece piece) {
         get_piece(sq) = piece;
-        set_bit(get_bb(type_of(piece)), sq);
-        set_bit(get_bb(color_of(piece)), sq);
+        set_bit(get_bb(compute_piece_type(piece)), sq);
+        set_bit(get_bb(compute_color(piece)), sq);
     }
 
-    // Remove a piece from the board 
-    Piece remove_piece(Square sq)
-    {
+    // Remove a piece from the board
+    Piece remove_piece(Square sq) {
         Piece piece = get_piece(sq);
-        flip_bit(get_bb(type_of(piece)), sq);
-        flip_bit(get_bb(color_of(piece)), sq);
-        get_piece(sq) = Piece::Empty;
+        flip_bit(get_bb(compute_piece_type(piece)), sq);
+        flip_bit(get_bb(compute_color(piece)), sq);
+        get_piece(sq) = PCE_NULL;
 
         return piece;
     }
 
     // Move piece from square a to square b
-    void move_piece(Square a, Square b)
-    {
-        Piece piece = get_piece(a);
-        PieceType type = type_of(piece);
-        Color    color = color_of(piece);
+    void move_piece(Square a, Square b) {
+        Piece piece    = get_piece(a);
+        PieceType type = compute_piece_type(piece);
+        Color color    = compute_color(piece);
 
-        flip_bit(get_bb(type) , a);
+        flip_bit(get_bb(type), a);
         flip_bit(get_bb(color), a);
-        flip_bit(get_bb(type) , b);
+        flip_bit(get_bb(type), b);
         flip_bit(get_bb(color), b);
 
         get_piece(b) = piece;
-        get_piece(a) = Piece::Empty;
-    }   
+        get_piece(a) = PCE_NULL;
+    }
 
     // Add a piece on the board with hash update
-    void add_piece_hash(Square sq, Piece piece)
-    {
+    void add_piece_hash(Square sq, Piece piece) {
         add_piece(sq, piece);
         key.hash_piece(sq, piece);
     }
 
     // Remove a piece from the board  with hash update
-    Piece remove_piece_hash(Square sq)
-    {
+    Piece remove_piece_hash(Square sq) {
         Piece piece = remove_piece(sq);
         key.hash_piece(sq, piece);
         return piece;
     }
 
     // Move piece from square a to square b with hash update
-    void move_piece_hash(Square a, Square b)
-    {
+    void move_piece_hash(Square a, Square b) {
         Piece piece = get_piece(a);
         move_piece(a, b);
         key.hash_piece(a, piece);
         key.hash_piece(b, piece);
-    }   
+    }
 
-    uint64_t& get_bb(PieceType pt)
-    {
+    std::uint64_t &get_bb(PieceType pt) {
         return bitboards[pt];
     }
 
-    uint64_t get_bb(PieceType pt) const
-    {
+    std::uint64_t get_bb(PieceType pt) const {
         return bitboards[pt];
     }
 
-    uint64_t& get_bb(Color color)
-    {
+    std::uint64_t &get_bb(Color color) {
         return colors[color];
     }
 
-    uint64_t get_bb(Color color) const  
-    {
+    std::uint64_t get_bb(Color color) const {
         return colors[color];
     }
 
-    uint64_t get_bb(PieceType pt, Color color) const
-    {
+    std::uint64_t get_bb(PieceType pt, Color color) const {
         return bitboards[pt] & colors[color];
     }
 
-    uint64_t get_bb(Piece piece) const
-    {
-        return get_bb(type_of(piece), color_of(piece));
+    std::uint64_t get_bb(Piece piece) const {
+        return get_bb(compute_piece_type(piece), compute_color(piece));
     }
 
-    uint64_t get_key() const 
-    {
+    std::uint64_t get_key() const {
         return key.data();
     }
 
-    uint64_t get_bb() const
-    {
-        return colors[White] | colors[Black];
+    std::uint64_t get_bb() const {
+        return colors[CLR_WHITE] | colors[CLR_BLACK];
     }
 
-    uint64_t get_castle_rooks() const 
-    {
+    std::uint64_t get_castle_rooks() const {
         return castle_rooks;
     }
 
-    Piece& get_piece(Square sq) 
-    {
+    Piece &get_piece(Square sq) {
         return pieces[sq];
     }
 
-    Piece get_piece(Square sq) const 
-    {
+    Piece get_piece(Square sq) const {
         return pieces[sq];
     }
 
-    Square get_ep() const 
-    {
+    Square get_ep() const {
         return ep_sq;
     }
 
-    Color get_side() const 
-    {
+    Color get_side() const {
         return side;
     }
 
     NetworkInput to_net_input() const;
 
-    friend std::ostream& operator<<(std::ostream&, Position const&);
+    friend std::ostream &operator<<(std::ostream &, Position const &);
 };

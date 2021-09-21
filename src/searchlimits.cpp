@@ -17,16 +17,15 @@
 */
 #include "searchlimits.h"
 #include "search.h"
-namespace Search 
-{
-    void Limits::update() 
-    {
-        stopped = SEARCH_ABORT || (time_set && stopwatch.elapsed_time().count() >= movetime);
-    }
 
-    void Limits::set_movetime(int64_t value)
-    {
-        time_set = true;
-        movetime = value;
-    }
+namespace Search {
+void Limits::update() {
+    stopped = SEARCH_ABORT ||
+              (time_set && stopwatch.elapsed_time().count() >= movetime);
 }
+
+void Limits::set_movetime(int64_t value) {
+    time_set = true;
+    movetime = value;
+}
+} // namespace Search

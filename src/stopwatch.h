@@ -20,26 +20,22 @@
 #include <chrono>
 
 template <typename duration = std::chrono::milliseconds>
-class StopWatch
-{
-    using clock = std::chrono::steady_clock;
+class StopWatch {
+    using clock      = std::chrono::steady_clock;
     using time_point = std::chrono::time_point<clock, duration>;
 
-    static constexpr time_point current_time() noexcept
-    {
+    static constexpr time_point current_time() noexcept {
         return std::chrono::time_point_cast<duration>(clock::now());
     }
 
 public:
     StopWatch() = default;
 
-    void reset() noexcept
-    {
+    void reset() noexcept {
         clock_state = State::idle;
     }
 
-    time_point go() noexcept
-    {
+    time_point go() noexcept {
         if (clock_state != State::stopped)
             start_point = current_time();
 
@@ -47,41 +43,36 @@ public:
         return start_point;
     }
 
-    void stop() noexcept
-    {
-        if (clock_state == State::running)
-        {
-            stop_point = current_time();
+    void stop() noexcept {
+        if (clock_state == State::running) {
+            stop_point  = current_time();
             clock_state = State::stopped;
         }
     }
 
-    duration elapsed_time() const noexcept
-    {
-        switch (clock_state)
-        {
+    duration elapsed_time() const noexcept {
+        switch (clock_state) {
         case State::idle:
-            return std::chrono::duration_cast<duration>(clock::duration::zero());
+            return std::chrono::duration_cast<duration>(
+                clock::duration::zero());
 
         case State::running:
-            return std::chrono::duration_cast<duration>(current_time() - start_point);
+            return std::chrono::duration_cast<duration>(
+                current_time() - start_point);
 
         case State::stopped:
-            return std::chrono::duration_cast<duration>(stop_point - start_point);
+            return std::chrono::duration_cast<duration>(
+                stop_point - start_point);
 
         default:
-            return std::chrono::duration_cast<duration>(clock::duration::zero());
+            return std::chrono::duration_cast<duration>(
+                clock::duration::zero());
             break;
         }
     }
 
 protected:
-    enum class State : unsigned char
-    {
-        idle,
-        running,
-        stopped
-    };
+    enum class State : unsigned char { idle, running, stopped };
 
     time_point start_point;
     time_point stop_point;

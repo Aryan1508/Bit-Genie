@@ -1,6 +1,6 @@
 /*
-  Bit-Genie is an open-source, UCI-compliant chess engine written by 
-  Aryan Parekh - https://github.com/Aryan1508/Bit-Genie    
+  Bit-Genie is an open-source, UCI-compliant chess engine written by
+  Aryan Parekh - https://github.com/Aryan1508/Bit-Genie
 
   Bit-Genie is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,103 +17,87 @@
 */
 #pragma once
 #include "bitboard.h"
-#include "position.h"
 #include "magicmoves.hpp"
+#include "position.h"
 
-namespace Attacks
-{
-    inline void init()
-    {
-        initmagicmoves();
-    }
-
-    inline uint64_t pawn(uint64_t pawns, Color side)
-    {
-        uint64_t forward = shift(pawns, relative_forward(side));
-        return shift<Direction::west>(forward) | shift<Direction::east>(forward);
-    }
-
-    inline uint64_t pawn(Square sq, Color side)
-    {
-        return BitMask::pawn_attacks[side][sq];
-    }
-
-    inline uint64_t knight(Square sq)
-    {
-        return BitMask::knight_attacks[sq];
-    }
-
-    inline uint64_t king(Square sq)
-    {
-        return BitMask::king_attacks[sq];
-    }
-
-    inline uint64_t bishop(Square sq, uint64_t occ)
-    {
-        return Bmagic(sq, occ);
-    }
-
-    inline uint64_t rook(Square sq, uint64_t occ)
-    {
-        return Rmagic(sq, occ);
-    }
-
-    inline uint64_t queen(Square sq, uint64_t occ)
-    {
-        return Qmagic(sq, occ);
-    }
-
-    inline bool square_attacked(Position const &position, Square sq, Color enemy, uint64_t occupancy)
-    { 
-        uint64_t pawns   = position.get_bb(Pawn  , enemy);
-        uint64_t knights = position.get_bb(Knight, enemy);
-        uint64_t queens  = position.get_bb(Queen , enemy);
-        uint64_t kings   = position.get_bb(King  , enemy);
-        uint64_t rooks   = position.get_bb(Rook  , enemy) | queens;
-        uint64_t bishops = position.get_bb(Bishop, enemy) | queens;
-
-        return (BitMask::pawn_attacks[!enemy][sq] & pawns) 
-            || (bishop(sq, occupancy) & bishops) 
-            || (rook  (sq, occupancy) & rooks  )
-            || (knight(sq           ) & knights) 
-            || (king  (sq           ) & kings  );
-    }
-
-    inline bool square_attacked(Position const &position, Square sq, Color enemy)
-    {
-        return square_attacked(position, sq, enemy, position.get_bb());
-    }
-
-    inline uint64_t attackers_to_sq(Position const &position, Square sq)
-    {
-        uint64_t occ     = position.get_bb();
-        uint64_t wpawns  = position.get_bb(Piece::wPawn);
-        uint64_t bpawns  = position.get_bb(Piece::bPawn);
-        uint64_t knights = position.get_bb(Knight);
-        uint64_t queens  = position.get_bb(Queen );
-        uint64_t kings   = position.get_bb(King  );
-        uint64_t rooks   = position.get_bb(Rook  ) | queens;
-        uint64_t bishops = position.get_bb(Bishop) | queens;
-
-        uint64_t p_attackers =  (pawn(sq, Color::White) & bpawns)
-                             |  (pawn(sq, Color::Black) & wpawns);
-        
-        return p_attackers | (knight(sq     ) & knights)
-                           | (king  (sq     ) & kings  )
-                           | (bishop(sq, occ) & bishops)
-                           | (rook  (sq, occ) & rooks  );
-    }
-
-    inline uint64_t generate(PieceType piece, Square sq, uint64_t occ)
-    {
-        switch (piece)
-        {
-            case Knight: return knight(sq);
-            case Bishop: return bishop(sq, occ);
-            case Rook  : return rook(sq, occ);
-            case Queen : return queen(sq, occ);
-            default    : return king(sq);
-        }
-        return 0;
-    }
+namespace Attacks {
+inline std::uint64_t pawn(std::uint64_t pawns, Color side) {
+    std::uint64_t forward = shift(pawns, compute_relative_forward(side));
+    return shift(forward, DIR_WEST) | shift(forward, DIR_EAST);
 }
+
+inline std::uint64_t pawn(Square sq, Color side) {
+    return BitMask::pawn_attacks[side][sq];
+}
+
+inline std::uint64_t knight(Square sq) {
+    return BitMask::knight_attacks[sq];
+}
+
+inline std::uint64_t king(Square sq) {
+    return BitMask::king_attacks[sq];
+}
+
+inline std::uint64_t bishop(Square sq, std::uint64_t occ) {
+    return Bmagic(sq, occ);
+}
+
+inline std::uint64_t rook(Square sq, std::uint64_t occ) {
+    return Rmagic(sq, occ);
+}
+
+inline std::uint64_t queen(Square sq, std::uint64_t occ) {
+    return Qmagic(sq, occ);
+}
+
+inline bool square_attacked(
+    Position const &position, Square sq, Color enemy, std::uint64_t occupancy) {
+    std::uint64_t pawns   = position.get_bb(PT_PAWN, enemy);
+    std::uint64_t knights = position.get_bb(PT_KNIGHT, enemy);
+    std::uint64_t queens  = position.get_bb(PT_QUEEN, enemy);
+    std::uint64_t kings   = position.get_bb(PT_KING, enemy);
+    std::uint64_t rooks   = position.get_bb(PT_ROOK, enemy) | queens;
+    std::uint64_t bishops = position.get_bb(PT_BISHOP, enemy) | queens;
+
+    return (BitMask::pawn_attacks[!enemy][sq] & pawns) ||
+           (bishop(sq, occupancy) & bishops) || (rook(sq, occupancy) & rooks) ||
+           (knight(sq) & knights) || (king(sq) & kings);
+}
+
+inline bool square_attacked(Position const &position, Square sq, Color enemy) {
+    return square_attacked(position, sq, enemy, position.get_bb());
+}
+
+inline std::uint64_t attackers_to_sq(Position const &position, Square sq) {
+    std::uint64_t occ     = position.get_bb();
+    std::uint64_t wpawns  = position.get_bb(PCE_WPAWN);
+    std::uint64_t bpawns  = position.get_bb(PCE_BPAWN);
+    std::uint64_t knights = position.get_bb(PT_KNIGHT);
+    std::uint64_t queens  = position.get_bb(PT_QUEEN);
+    std::uint64_t kings   = position.get_bb(PT_KING);
+    std::uint64_t rooks   = position.get_bb(PT_ROOK) | queens;
+    std::uint64_t bishops = position.get_bb(PT_BISHOP) | queens;
+
+    std::uint64_t p_attackers =
+        (pawn(sq, CLR_WHITE) & bpawns) | (pawn(sq, CLR_BLACK) & wpawns);
+
+    return p_attackers | (knight(sq) & knights) | (king(sq) & kings) |
+           (bishop(sq, occ) & bishops) | (rook(sq, occ) & rooks);
+}
+
+inline std::uint64_t generate(PieceType piece, Square sq, std::uint64_t occ) {
+    switch (piece) {
+    case PT_KNIGHT:
+        return knight(sq);
+    case PT_BISHOP:
+        return bishop(sq, occ);
+    case PT_ROOK:
+        return rook(sq, occ);
+    case PT_QUEEN:
+        return queen(sq, occ);
+    default:
+        return king(sq);
+    }
+    return 0;
+}
+} // namespace Attacks

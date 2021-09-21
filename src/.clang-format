@@ -1,0 +1,17 @@
+---
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveMacros: 'true'
+AlignConsecutiveAssignments: 'true'
+AllowShortFunctionsOnASingleLine: None
+SortIncludes: 'true'
+SpacesInSquareBrackets: 'false'
+TabWidth: '0'
+UseTab: Never
+IndentWidth: 4
+AccessModifierOffset: -4
+NamespaceIndentation: Inner
+Cpp11BracedListStyle: false
+AlwaysBreakTemplateDeclarations: Yes
+ColumnLimit: 0
+SortIncludes: false
+...

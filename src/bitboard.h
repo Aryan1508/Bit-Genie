@@ -17,58 +17,41 @@
 */
 #pragma once
 #include "bitmask.h"
-#include "Square.h"
+#include "types.h"
 
-template <Direction dir>
-constexpr uint64_t shift(uint64_t bits) noexcept
-{
-    return dir == Direction::north   ? bits << 8
-           : dir == Direction::south ? bits >> 8
-           : dir == Direction::east  ? (bits << 1) & BitMask::not_file_a
-                                     : (bits >> 1) & BitMask::not_file_h;
+constexpr std::uint64_t shift(std::uint64_t bits, Direction dir) noexcept {
+    return dir == DIR_NORTH   ? bits << 8
+           : dir == DIR_SOUTH ? bits >> 8
+           : dir == DIR_EAST  ? (bits << 1) & BitMask::not_file_a
+                              : (bits >> 1) & BitMask::not_file_h;
 }
 
-constexpr uint64_t shift(uint64_t bits, Direction dir) noexcept
-{
-    return dir == Direction::north   ? bits << 8
-           : dir == Direction::south ? bits >> 8
-           : dir == Direction::east  ? (bits << 1) & BitMask::not_file_a
-                                     : (bits >> 1) & BitMask::not_file_h;
-}
-
-inline Square get_lsb(uint64_t bb) noexcept
-{
+inline Square get_lsb(std::uint64_t bb) noexcept {
     return static_cast<Square>(__builtin_ctzll(bb));
 }
 
-inline int popcount64(uint64_t bb) noexcept
-{
+inline int popcount64(std::uint64_t bb) noexcept {
     return static_cast<int>(__builtin_popcountll(bb));
 }
 
-inline Square pop_lsb(uint64_t &bb) noexcept
-{
+inline Square pop_lsb(std::uint64_t &bb) noexcept {
     Square index = get_lsb(bb);
     bb &= (bb - 1);
     return index;
 }
 
-constexpr bool test_bit(uint64_t bb, Square sq) noexcept
-{
+constexpr bool test_bit(std::uint64_t bb, Square sq) noexcept {
     return (1ull << sq) & bb;
 }
 
-constexpr void set_bit(uint64_t &bb, Square sq) noexcept
-{
+constexpr void set_bit(std::uint64_t &bb, Square sq) noexcept {
     bb |= (1ull << sq);
 }
 
-constexpr void flip_bit(uint64_t& bb, Square sq) noexcept
-{
+constexpr void flip_bit(std::uint64_t &bb, Square sq) noexcept {
     bb ^= (1ull << sq);
 }
 
-constexpr bool is_several(uint64_t bb) noexcept
-{
+constexpr bool is_several(std::uint64_t bb) noexcept {
     return bb & (bb - 1);
 }

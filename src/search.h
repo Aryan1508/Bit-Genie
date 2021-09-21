@@ -16,31 +16,29 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "move.h"
 #include "history.h"
-#include "searchstats.h"
+#include "move.h"
 #include "searchlimits.h"
+#include "searchstats.h"
 #include <atomic>
 
-namespace Search 
-{
-    struct Info
-    {
-        Position*  position;
-        Stats      stats;
-        Limits     limits;
-        Move       killers[64][2] = {NullMove};
-        HistoryTable    history = {0};
-        HistoryTable   capture_history = {0};   
-        CounterHistoryTable counter_history = {0};
+namespace Search {
+struct Info {
+    Position *position;
+    Stats stats;
+    Limits limits;
+    Move killers[64][2]                 = { NullMove };
+    HistoryTable history                = { 0 };
+    HistoryTable capture_history        = { 0 };
+    CounterHistoryTable counter_history = { 0 };
 
-        int eval[64] = {0};
+    int eval[64] = { 0 };
 
-        void update();
-    };
+    void update();
+};
 
-    void init();
-    uint64_t bestmove(Info&, bool log);
-}
+void init();
+std::uint64_t bestmove(Info &, bool log);
+} // namespace Search
 
 inline std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);

@@ -16,12 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "types.h"
 #include <sstream>
 #include <vector>
-#include "misc.h"
 
-enum class UciCommands
-{
+enum class UciCommands {
     uci,
     quit,
     isready,
@@ -37,20 +36,18 @@ enum class UciCommands
     bench
 };
 
-struct UciGo
-{
-    int depth = 64;
+struct UciGo {
+    int depth     = 64;
     int movestogo = 20;
 
-    int64_t btime = -1;
-    int64_t wtime = -1;
+    int64_t btime    = -1;
+    int64_t wtime    = -1;
     int64_t movetime = -1;
-    int64_t binc = -1;
-    int64_t winc = -1;
+    int64_t binc     = -1;
+    int64_t winc     = -1;
 };
 
-class UciParser
-{
+class UciParser {
 public:
     UciParser() = default;
 
@@ -62,8 +59,7 @@ public:
 
     int parse_perft() const;
     UciGo parse_go(Color) const;
-    std::pair<std::string, std::string>
-    parse_setoption() const;
+    std::pair<std::string, std::string> parse_setoption() const;
 
 public:
     std::string command;

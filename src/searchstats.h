@@ -16,19 +16,17 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include <stdint.h>
+#include <cstdint>
 
-namespace Search 
-{
-    struct Stats
-    {
-        void update();
-        void reset_iteration();
+namespace Search {
+struct Stats {
+    void update();
+    void reset_iteration();
 
-        uint64_t total_nodes = 0;
-        uint64_t iter_nodes = 0;
-        int ply = 0;
-        int depth = 0;
-        int seldepth = 0;
-    };
-}
+    std::uint64_t total_nodes = 0;
+    std::uint64_t iter_nodes  = 0;
+    int ply                   = 0;
+    int depth                 = 0;
+    int seldepth              = 0;
+};
+} // namespace Search

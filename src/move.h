@@ -16,97 +16,78 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "Square.h"
+#include "types.h"
 #include <string>
 
+struct Move {
+    enum class Flag : std::uint8_t { normal, enpassant, castle, promotion };
 
-struct Move 
-{
-    enum class Flag : uint8_t
-    {
-        normal,
-        enpassant,
-        castle,
-        promotion
-    };
-
-    uint16_t data;
+    std::uint16_t data;
     int16_t score;
 
     Move() = default;
 
-    explicit constexpr Move(uint16_t val)
-        : data(val), score(0)
-    {}
+    explicit constexpr Move(std::uint16_t val) : data(val), score(0) {
+    }
 
-    constexpr Move(Square from, Square to)
-        : data(from | (to << 6)), score(0)
-    {}
+    constexpr Move(Square from, Square to) : data(from | (to << 6)), score(0) {
+    }
 
     constexpr Move(Square from, Square to, Flag flag)
-        : data(from | (to << 6) | ((uint8_t)flag << 12)), score(0)
-    {}
+        : data(from | (to << 6) | ((std::uint8_t)flag << 12)), score(0) {
+    }
 
     constexpr Move(Square from, Square to, PieceType promoted)
-        : data(0x3000 | from | (to << 6) | ((promoted - 1) << 14)), score(0)
-    {}
+        : data(0x3000 | from | (to << 6) | ((promoted - 1) << 14)), score(0) {
+    }
 
-    bool operator<(Move rhs) const noexcept 
-    {
+    bool operator<(Move rhs) const noexcept {
         return score < rhs.score;
     }
 
-    bool operator<=(Move rhs) const noexcept 
-    {
+    bool operator<=(Move rhs) const noexcept {
         return score <= rhs.score;
     }
 
-    bool operator>(Move rhs) const noexcept 
-    {
+    bool operator>(Move rhs) const noexcept {
         return score > rhs.score;
     }
 
-    bool operator>=(Move rhs) const noexcept 
-    {
+    bool operator>=(Move rhs) const noexcept {
         return score >= rhs.score;
     }
 
-    bool operator==(Move rhs) const noexcept 
-    {
+    bool operator==(Move rhs) const noexcept {
         return data == rhs.data;
     }
 
-    bool operator!=(Move rhs) const noexcept 
-    {
+    bool operator!=(Move rhs) const noexcept {
         return data != rhs.data;
     }
 
-    Square from() const noexcept 
-    {
-        return static_cast<Square>(data & 0x3f);   
+    Square from() const noexcept {
+        return static_cast<Square>(data & 0x3f);
     }
 
-    Square to() const noexcept 
-    {
+    Square to() const noexcept {
         return static_cast<Square>((data >> 6) & 0x3f);
     }
 
-    Flag flag() const noexcept 
-    {
+    Flag flag() const noexcept {
         return static_cast<Flag>((data >> 12) & 0x3);
     }
-    
-    PieceType promoted() const noexcept
-    {
+
+    PieceType promoted() const noexcept {
         return static_cast<PieceType>(((data >> 14) & 0x3) + 1);
     }
-    
+
     std::string str() const;
-    friend std::ostream& operator<<(std::ostream& o, Move);
+    friend std::ostream &operator<<(std::ostream &o, Move);
 };
 
 static_assert(std::is_trivial<Move>::value);
 
-constexpr Move NullMove = Move(Square::A1, Square::A1);
+constexpr Move NullMove = Move(SQ_A1, SQ_A1);
 
+class Position;
 bool move_is_capture(Position const &, Move);

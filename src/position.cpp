@@ -19,21 +19,17 @@
 #include "attacks.h"
 #include "stringparse.h"
 
-Position::Position()
-{
+Position::Position() {
     set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 }
 
-NetworkInput Position::to_net_input() const 
-{
+NetworkInput Position::to_net_input() const {
     NetworkInput input;
 
-    for (int j = 0; j < 64; j++)
-    {
+    for (int j = 0; j < 64; j++) {
         Square sq = Square(j);
-            
-        if (get_piece(Square(j)) != Piece::Empty)
-        {
+
+        if (get_piece(Square(j)) != PCE_NULL) {
             Piece p = get_piece(Square(j));
             input.push_back(calculate_input_index(sq, p));
         }
@@ -41,46 +37,42 @@ NetworkInput Position::to_net_input() const
     return input;
 }
 
-std::ostream& operator<<(std::ostream& o, Position const& position)
-{
+std::ostream &operator<<(std::ostream &o, Position const &position) {
     return o << position.get_fen();
 }
 
-bool Position::king_in_check() const 
-{
-    uint64_t king = get_bb(PieceType::King, side);
+bool Position::king_in_check() const {
+    std::uint64_t king = get_bb(PT_KING, side);
     return Attacks::square_attacked(*this, get_lsb(king), !side);
 }
 
-bool Position::drawn() const 
-{
-    for(int i = history_ply - 2;i >= 0 && i >= history_ply - halfmoves;i -= 2)
-    {
+bool Position::drawn() const {
+    for (int i = history_ply - 2; i >= 0 && i >= history_ply - halfmoves;
+         i -= 2) {
         if (history[i].key == key)
             return true;
     }
 
-    if (halfmoves >= 100) return true;
+    if (halfmoves >= 100)
+        return true;
 
-    auto const& bbs = bitboards;
+    auto const &bbs = bitboards;
 
-    if (bbs[Pawn] || bbs[Rook] || bbs[Queen])
+    if (bbs[PT_PAWN] || bbs[PT_ROOK] || bbs[PT_QUEEN])
         return false;
 
-    if (bbs[Knight])
-    {
-        if (bbs[Bishop])
+    if (bbs[PT_KNIGHT]) {
+        if (bbs[PT_BISHOP])
             return false;
 
-        return popcount64(bbs[Knight]) <= 2;
+        return popcount64(bbs[PT_KNIGHT]) <= 2;
     }
 
-    return   !is_several(bbs[Bishop] & get_bb(White))
-          && !is_several(bbs[Bishop] & get_bb(Black));
+    return !is_several(bbs[PT_BISHOP] & get_bb(CLR_WHITE)) &&
+           !is_several(bbs[PT_BISHOP] & get_bb(CLR_BLACK));
 }
 
-int Position::static_evaluation()
-{
+int Position::static_evaluation() {
     const int eval = static_cast<int>(network.calculate_last_layer());
-    return side == Color::White ? eval : -eval;
+    return side == CLR_WHITE ? eval : -eval;
 }

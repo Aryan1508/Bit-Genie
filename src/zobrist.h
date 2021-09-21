@@ -16,10 +16,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include <cstdint>
 
-class ZobristKey
-{
+class Position;
+class ZobristKey {
 public:
     ZobristKey();
     void generate(Position const &);
@@ -27,15 +27,16 @@ public:
     void hash_side();
     void hash_ep(Square);
     void hash_piece(Square, Piece);
-    void hash_castle(uint64_t old, uint64_t updated);
+    void hash_castle(std::uint64_t old, std::uint64_t updated);
     void reset();
 
-    uint64_t data() const { return hash; }
+    std::uint64_t data() const {
+        return hash;
+    }
 
     static void init();
 
-    bool operator==(ZobristKey other) const
-    {
+    bool operator==(ZobristKey other) const {
         return hash == other.hash;
     }
 
@@ -45,5 +46,5 @@ private:
     void hash_pieces(Position const &);
 
 private:
-    uint64_t hash;
+    std::uint64_t hash;
 };

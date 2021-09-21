@@ -16,56 +16,51 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+
 #include "move.h"
 #include <vector>
 
-enum class TEFlag : uint8_t
-{
-    none,
-    lower,
-    upper,
-    exact
-};
+enum class TEFlag : std::uint8_t { none, lower, upper, exact };
 
-struct TEntry
-{
-    uint64_t hash = 0;
-    int16_t score = 0;
-    int16_t seval = 0;
-    uint16_t move = 0;
-    uint8_t depth = 0;
-    TEFlag flag = TEFlag::none;
+struct TEntry {
+    std::uint64_t hash = 0;
+    int16_t score      = 0;
+    int16_t seval      = 0;
+    std::uint16_t move = 0;
+    std::uint8_t depth = 0;
+    TEFlag flag        = TEFlag::none;
 
     TEntry() = default;
 
-    TEntry(uint64_t h, int16_t s, Move m, uint8_t d, TEFlag fl, int16_t eval)
-        : hash(h), score(s), seval(eval), move(m.data), depth(d), flag(fl)
-    {
+    TEntry(
+        std::uint64_t h, int16_t s, Move m, std::uint8_t d, TEFlag fl,
+        int16_t eval)
+        : hash(h), score(s), seval(eval), move(m.data), depth(d), flag(fl) {
     }
 };
 
-class TTable
-{
+class TTable {
 public:
     TTable();
 
-    TTable(int mb) { resize(mb); }
+    TTable(int mb) {
+        resize(mb);
+    }
 
     void resize(int);
-   
-    void add(Position const &, Move, int16_t score, uint8_t depth, TEFlag, int16_t);
-   
-    void reset()
-    {
+
+    void
+    add(Position const &, Move, int16_t score, std::uint8_t depth, TEFlag,
+        int16_t);
+
+    void reset() {
         std::fill(entries.begin(), entries.end(), TEntry());
     }
 
     TEntry &retrieve(Position const &);
 
-    std::vector<Move> extract_pv(Position&, int);
+    std::vector<Move> extract_pv(Position &, int);
 
-    
 private:
     std::vector<TEntry> entries;
 };
