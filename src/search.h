@@ -74,6 +74,7 @@ public:
         reset_history(history, sizeof(history));
         reset_history(capture_history, sizeof(capture_history));
         reset_history(counter_history, sizeof(counter_history));
+        reset_history(eval, sizeof(eval));
     }
 };
 

@@ -63,6 +63,7 @@ void uci_go(UciParser const &parser, Position &position, SearchInit &worker) {
     UciGo options = parser.parse_go(position.get_side());
 
     SearchInfo &search = *worker.search;
+    search.reset_history_tables();
     search.limits.stopwatch.go();
     search.limits.max_depth = std::min(options.depth, 64);
 
