@@ -72,7 +72,7 @@ bool Position::drawn() const {
            !is_several(bbs[PT_BISHOP] & get_bb(CLR_BLACK));
 }
 
-std::int16_t Position::static_evaluation() {
+Score Position::static_evaluation() {
     const int eval = static_cast<int>(network.calculate_last_layer());
     return side == CLR_WHITE ? eval : -eval;
 }

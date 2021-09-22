@@ -15,20 +15,25 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "tt.h"
 #include "search.h"
 #include "moveorder.h"
 #include "position.h"
-#include "tt.h"
 
-#include <algorithm>
 #include <cmath>
 #include <sstream>
-
-int lmr_reductions_array[65][64]{ 0 };
-int lmp_margin[65][2]{ 0 };
+#include <algorithm>
 
 namespace {
-constexpr int see_pruning_margins[5]{ 0, -100, -100, -300, -325 };
+
+// Late-move reductions
+Depth LMR_TABLE[65][64]{ 0 };
+
+// Late-move pruning
+Depth LMP_TABLE[65][2];
+
+// Static-exchange evaluation pruning
+constexpr Score SP_TABLE[5]{ 0, -100, -100, -300, -325 };
 
 void update_search_info(SearchInfo &search) {
     search.stats.nodes++;
@@ -49,7 +54,7 @@ void revert_nullmove(SearchInfo &search) {
     search.stats.ply--;
 }
 
-void apply_move(SearchInfo &search, Move move) {
+void apply_move(SearchInfo &search, const Move move) {
     search.position.apply_move(move);
     search.stats.ply++;
 }
@@ -59,13 +64,96 @@ void revert_move(SearchInfo &search) {
     search.stats.ply--;
 }
 
-std::int16_t qsearch(SearchInfo &search, std::int16_t alpha, std::int16_t beta) {
+auto is_pv_node(const Score alpha, const Score beta) {
+    return std::abs(alpha - beta) > 1;
+}
+
+void add_killer(SearchInfo &search, const Move move) {
+    search.killers[search.stats.ply][1] = search.killers[search.stats.ply][0];
+    search.killers[search.stats.ply][0] = move;
+}
+
+Score mate_score_to_tt(const Score score, const Depth ply) {
+    return score > MIN_MATE_EVAL    ? score + ply
+           : score < -MIN_MATE_EVAL ? score - ply
+                                    : score;
+}
+
+Score tt_score_to_mate(const Score score, const Depth ply) {
+    return score > MIN_MATE_EVAL    ? score - ply
+           : score < -MIN_MATE_EVAL ? score + ply
+                                    : score;
+}
+
+Depth nmp_depth(const Depth depth, const Score eval, const Score beta) {
+    const auto reduction = std::max(4, 3 + depth / 3) + std::clamp((eval - beta) / 256, 0, 2);
+    return depth - reduction;
+}
+
+void update_tt_after_search(SearchInfo &search, SearchResult result, const Depth depth, const Score original, const Score beta, const Score eval) {
+    const auto flag  = result.score <= original ? TTFLAG_UPPER
+                       : result.score >= beta   ? TTFLAG_LOWER
+                                                : TTFLAG_EXACT;
+    const auto hash  = search.position.get_hash();
+    const auto move  = result.best_move;
+    const auto score = mate_score_to_tt(result.score, search.stats.ply);
+    const auto entry = TEntry{ hash, score, eval, move.get_move_bits(), depth, flag };
+    store_tentry(entry);
+}
+
+void update_history_tables_on_cutoff(SearchInfo &search, Movelist const &other, const Move move, const Depth depth) {
+    Position &position = search.position;
+
+    if (move_is_capture(position, move))
+        update_history(search.capture_history, position, move, other, depth);
+    else {
+        update_history(search.history, position, move, other, depth);
+
+        if (position.previous_move() != MOVE_NULL)
+            update_history(search.counter_history, position, move, other, depth);
+        add_killer(search, move);
+    }
+}
+
+bool use_lmr(const Depth depth, const std::uint8_t move_i) {
+    return depth > 2 && move_i > 3;
+}
+
+void update_search_result(SearchResult &result, const Score score, const Move move) {
+    if (score > result.score) {
+        result.best_move = move;
+        result.score     = score;
+    }
+}
+
+Depth calculate_lmr_depth(SearchInfo &search, MovePicker &picker, Move move, const Depth depth, const std::uint8_t move_i, const bool pv_node) {
+    const auto new_depth = depth - 1;
+    auto reduction       = LMR_TABLE[depth][std::min<Depth>(63, move_i)];
+
+    reduction -= pv_node;
+    reduction -= picker.stage == MovePicker::Stage::Killer2;
+
+    if (picker.stage == MovePicker::Stage::GiveQuiet)
+        reduction -= (get_history(search.history, search.position, move) / 14000);
+
+    reduction -= (picker.stage == MovePicker::Stage::GiveGoodNoisy);
+
+    return std::clamp(new_depth - reduction, 1, new_depth - 1);
+}
+
+Score calculate_rfp_margin(const Score eval, const Depth depth, const bool improving) {
+    auto margin = 100 * depth;
+    margin /= (improving + 1);
+    return eval - margin;
+}
+
+Score qsearch(SearchInfo &search, Score alpha, Score beta) {
     if (search.limits.stopped)
         return 0;
 
     update_search_info(search);
-    Position &position = search.position;
-    bool at_root       = search.stats.ply == 0;
+    auto &position     = search.position;
+    const auto at_root = search.stats.ply == 0;
 
     if (!at_root) {
         if (search.stats.ply >= MAX_PLY)
@@ -75,7 +163,7 @@ std::int16_t qsearch(SearchInfo &search, std::int16_t alpha, std::int16_t beta) 
             return 0;
     }
 
-    std::int16_t stand_pat = position.static_evaluation();
+    const auto stand_pat = position.static_evaluation();
 
     if (stand_pat >= beta)
         return beta;
@@ -86,7 +174,7 @@ std::int16_t qsearch(SearchInfo &search, std::int16_t alpha, std::int16_t beta) 
 
     for (Move move; picker.qnext(move);) {
         apply_move(search, move);
-        const std::int16_t score = -qsearch(search, -beta, -alpha);
+        const Score score = -qsearch(search, -beta, -alpha);
         revert_move(search);
 
         if (search.limits.stopped)
@@ -101,98 +189,7 @@ std::int16_t qsearch(SearchInfo &search, std::int16_t alpha, std::int16_t beta) 
     return alpha;
 }
 
-bool is_pv_node(int alpha, int beta) {
-    return std::abs(alpha - beta) > 1;
-}
-
-void add_killer(SearchInfo &search, Move move) {
-    search.killers[search.stats.ply][1] = search.killers[search.stats.ply][0];
-    search.killers[search.stats.ply][0] = move;
-}
-
-int16_t mate_score_to_tt(int score, int ply) {
-    return score > MIN_MATE_EVAL    ? score + ply
-           : score < -MIN_MATE_EVAL ? score - ply
-                                    : score;
-}
-
-int16_t tt_score_to_mate(int score, int ply) {
-    return score > MIN_MATE_EVAL    ? score - ply
-           : score < -MIN_MATE_EVAL ? score + ply
-                                    : score;
-}
-
-int nmp_depth(int depth, int eval, int beta) {
-    int reduction =
-        std::max(4, 3 + depth / 3) + std::clamp((eval - beta) / 256, 0, 2);
-    return depth - reduction;
-}
-
-void update_tt_after_search(
-    SearchInfo &search, SearchResult result, int depth, int original,
-    int beta, int eval) {
-    const auto flag  = result.score <= original ? TTFLAG_UPPER
-                       : result.score >= beta   ? TTFLAG_LOWER
-                                                : TTFLAG_EXACT;
-    const auto hash  = search.position.get_hash();
-    const auto move  = result.best_move;
-    const auto score = mate_score_to_tt(result.score, search.stats.ply);
-    const auto entry = TEntry{ hash, score, eval, move.get_move_bits(), depth, flag };
-    store_tentry(entry);
-}
-
-void update_history_tables_on_cutoff(
-    SearchInfo &search, Movelist const &other, Move move, int depth) {
-    Position &p = search.position;
-
-    if (move_is_capture(p, move))
-        update_history(search.capture_history, p, move, other, depth);
-    else {
-        update_history(search.history, p, move, other, depth);
-
-        if (p.previous_move() != MOVE_NULL)
-            update_history(search.counter_history, p, move, other, depth);
-        add_killer(search, move);
-    }
-}
-
-bool use_lmr(int depth, int move_i) {
-    return depth > 2 && move_i > 3;
-}
-
-void update_search_result(SearchResult &result, int score, Move move) {
-    if (score > result.score) {
-        result.best_move = move;
-        result.score     = score;
-    }
-}
-
-int calculate_lmr_depth(
-    SearchInfo &search, MovePicker &picker, Move move, int depth, int move_i,
-    bool pv_node) {
-    int R         = lmr_reductions_array[depth][std::min(63, move_i)];
-    int new_depth = depth - 1;
-
-    R -= pv_node;
-    R -= picker.stage == MovePicker::Stage::Killer2;
-
-    if (picker.stage == MovePicker::Stage::GiveQuiet)
-        R -= (get_history(search.history, search.position, move) / 14000);
-
-    R -= (picker.stage == MovePicker::Stage::GiveGoodNoisy);
-
-    return std::clamp(new_depth - R, 1, new_depth - 1);
-}
-
-int calculate_rfp_margin(int eval, int depth, bool improving) {
-    int margin = 100 * depth;
-
-    margin /= (improving + 1);
-
-    return eval - margin;
-}
-
-SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_null = true) {
+SearchResult pvs(SearchInfo &search, Depth depth, Score alpha, Score beta, const bool do_null = true) {
     if (search.limits.stopped)
         return 0;
 
@@ -224,8 +221,8 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
     }
 
     if (entry.depth >= depth && tthit) {
-        Move move = Move(entry.move);
-        int score = tt_score_to_mate(entry.score, search.stats.ply);
+        const auto move  = Move(entry.move);
+        const auto score = tt_score_to_mate(entry.score, search.stats.ply);
 
         if (entry.flag == TTFLAG_EXACT ||
             (entry.flag == TTFLAG_LOWER && score >= beta) ||
@@ -238,7 +235,7 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
         }
     }
 
-    std::int16_t eval             = tthit ? entry.seval : position.static_evaluation();
+    const auto eval               = tthit ? entry.seval : position.static_evaluation();
     search.eval[search.stats.ply] = eval;
 
     bool improving = eval > search.eval[std::max(0, search.stats.ply - 2)];
@@ -269,17 +266,17 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
         depth--;
 
     for (Move move; picker.next(move);) {
-        if (move_num > lmp_margin[depth][improving])
+        if (move_num > LMP_TABLE[depth][improving])
             break;
 
         if (depth < 5 && move_is_capture(position, move) &&
-            move.get_score() < see_pruning_margins[depth])
+            move.get_score() < SP_TABLE[depth])
             continue;
 
         move_num++;
         apply_move(search, move);
 
-        int score = 0;
+        Score score = 0;
 
         if (use_lmr(depth, move_num)) {
             int new_depth = calculate_lmr_depth(
@@ -329,14 +326,14 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
     return result;
 }
 
-int mate_distance(int score) {
+Score mate_distance(const Score score) {
     if (score > 0)
         return (MATE_EVAL - score) / 2 + 1;
     else
         return -((MATE_EVAL + score) / 2 + 1);
 }
 
-std::string print_score(int score) {
+std::string print_score(const Score score) {
     std::stringstream o;
     if (score > MIN_MATE_EVAL || score < -MIN_MATE_EVAL) {
         o << "mate " << mate_distance(score);
@@ -347,26 +344,26 @@ std::string print_score(int score) {
 }
 
 std::vector<Move> extract_pv(Position &position, int depth) {
-    auto move_exists = [&](Move move) {
+    auto move_exists = [&](const Move move) {
         Movelist movelist;
         position.generate_legal(movelist);
-        return std::find(movelist.begin(), movelist.end(), move) !=
-               movelist.end();
+        return std::find(movelist.begin(), movelist.end(), move) != movelist.end();
     };
 
     std::vector<Move> pv;
-    int distance  = 0;
-    TEntry *entry = &TT.probe(position.get_hash());
+    auto entry    = &TT.probe(position.get_hash());
+    auto distance = 0;
 
     while (entry->hash == position.get_hash() && depth != 0) {
-        Move pv_move = Move(entry->move);
+        const auto pv_move = Move(entry->move);
         if (move_exists(pv_move)) {
             distance++;
+            depth--;
             position.apply_move(pv_move);
             pv.push_back(pv_move);
-            depth--;
-        } else
+        } else {
             break;
+        }
 
         entry = &TT.probe(position.get_hash());
     }
@@ -378,7 +375,6 @@ std::vector<Move> extract_pv(Position &position, int depth) {
 }
 
 void print_info_string(SearchResult result, SearchInfo &search, int depth) {
-    using namespace std::chrono;
     std::cout << "info";
     std::cout << " depth " << depth;
     std::cout << " seldepth " << search.stats.seldepth;
@@ -398,11 +394,11 @@ void print_info_string(SearchResult result, SearchInfo &search, int depth) {
 void init_search_tables() {
     for (int i = 0; i < 65; i++) {
         for (int j = 0; j < 64; j++) {
-            lmr_reductions_array[i][j] = log(i) * log(j) / 1.2;
+            LMR_TABLE[i][j] = log(i) * log(j) / 1.2;
         }
 
-        lmp_margin[i][0] = 2 + i * i / 1.5;
-        lmp_margin[i][1] = 2 + i * i;
+        LMP_TABLE[i][0] = 2 + i * i / 1.5;
+        LMP_TABLE[i][1] = 2 + i * i;
     }
 }
 

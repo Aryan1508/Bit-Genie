@@ -51,7 +51,7 @@ enum Piece : std::uint8_t {
 
     PCE_BPAWN  , PCE_BKNIGHT,
     PCE_BBISHOP, PCE_BROOK  ,
-    PCE_BQUEEN , PCE_BKING  , PCE_TOTAL, PCE_NULL
+    PCE_BQUEEN , PCE_BKING  , PCE_TOTAL, PCE_NULL = 12
 };
 
 enum Direction : std::int8_t {
@@ -74,6 +74,9 @@ enum MoveFlag : std::uint8_t {
 enum TTFlag : std::uint8_t {
     TTFLAG_LOWER, TTFLAG_UPPER, TTFLAG_EXACT, TTFLAG_NULL = 0
 };
+
+typedef std::int8_t Depth;
+typedef std::int16_t Score;
 
 // clang-format on
 

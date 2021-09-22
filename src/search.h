@@ -21,45 +21,44 @@
 #include "history.h"
 #include <atomic>
 
-constexpr std::uint8_t MAX_PLY       = 64;
-constexpr std::int16_t MIN_EVAL      = -32001;
-constexpr std::int16_t MAX_EVAL      = -MIN_EVAL;
-constexpr std::int16_t MATE_EVAL     = MAX_EVAL - 1;
-constexpr std::int16_t MIN_MATE_EVAL = MATE_EVAL - MAX_PLY;
+constexpr Depth MAX_PLY       = 64;
+constexpr Score MIN_EVAL      = -32001;
+constexpr Score MAX_EVAL      = -MIN_EVAL;
+constexpr Score MATE_EVAL     = MAX_EVAL - 1;
+constexpr Score MIN_MATE_EVAL = MATE_EVAL - MAX_PLY;
 
-// clang-format off
 struct SearchStats {
-    std::uint64_t nodes   = 0;
-    std::uint8_t ply      = 0;
-    std::uint8_t depth    = 0;
-    std::uint8_t seldepth = 0;
+    std::uint64_t nodes = 0;
+    Depth ply           = 0;
+    Depth depth         = 0;
+    Depth seldepth      = 0;
 };
 
 struct SearchLimits {
-    StopWatch<>  stopwatch;
-    std::int64_t movetime  = -1;
-    std::uint8_t max_depth = 64;
-    bool stopped           = false;
-    bool time_set          = false;
+    StopWatch<> stopwatch;
+    std::int64_t movetime = -1;
+    Depth max_depth       = 64;
+    bool stopped          = false;
+    bool time_set         = false;
 };
 
 struct SearchResult {
-    std::int16_t score      = MIN_EVAL;
-    Move best_move          = MOVE_NULL;
+    Score score    = MIN_EVAL;
+    Move best_move = MOVE_NULL;
 
-    SearchResult(const std::int16_t score, const Move move = MOVE_NULL)   
-        : score(score), best_move(move)
-    {}
+    SearchResult(const Score score, const Move move = MOVE_NULL)
+        : score(score), best_move(move) {
+    }
 
     SearchResult() = default;
 };
 
 struct SearchInfo {
 public:
-    Position     position;
-    SearchStats  stats;
+    Position position;
+    SearchStats stats;
     SearchLimits limits;
-    EvalTable    eval;
+    EvalTable eval;
     KilllerTable killers;
     HistoryTable history;
     HistoryTable capture_history;

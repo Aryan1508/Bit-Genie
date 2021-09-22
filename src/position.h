@@ -82,7 +82,7 @@ public:
     bool is_pseudolegal(Move) const;
 
     // Return a side relative static evaluation
-    std::int16_t static_evaluation();
+    Score static_evaluation();
 
     // Perform a move over the board, UB if move is not legal
     void apply_move(Move);

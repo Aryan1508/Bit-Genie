@@ -20,16 +20,16 @@
 
 #include <cstring>
 
-typedef int16_t HistoryTable[2][64][64];
-typedef int16_t CounterHistoryTable[12][64][12][64];
+typedef Score HistoryTable[2][64][64];
+typedef Score CounterHistoryTable[12][64][12][64];
 typedef Move KilllerTable[64][12];
-typedef std::int16_t EvalTable[64];
+typedef Score EvalTable[64];
 
-inline int16_t &get_history(HistoryTable table, Position const &position, Move move) {
+inline auto &get_history(HistoryTable table, Position const &position, Move move) {
     return table[position.get_side()][move.get_from()][move.get_to()];
 }
 
-inline int16_t &get_history(CounterHistoryTable table, Position const &position, Move move) {
+inline auto &get_history(CounterHistoryTable table, Position const &position, Move move) {
     Move previous_move   = position.previous_move();
     Piece previous_piece = position.get_piece(previous_move.get_to());
     Piece current_piece  = position.get_piece(move.get_from());

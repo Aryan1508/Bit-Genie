@@ -119,6 +119,15 @@ constexpr bool is_several(const std::uint64_t bb) {
     return bb & (bb - 1);
 }
 
+constexpr auto isolate_lsb(const std::uint64_t bb) {
+    assert(bb);
+    return bb & -bb;
+}
+
+constexpr auto make_bb(const Square bit) {
+    return static_cast<std::uint64_t>(1ull << bit);
+}
+
 constexpr auto compute_knight_attack_bb(const Square sq) {
     assert(is_ok(sq));
     return KNIGHT_ATTACK_BB_LOOKUP[sq];

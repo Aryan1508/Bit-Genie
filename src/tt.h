@@ -23,10 +23,10 @@
 
 struct TEntry {
     std::uint64_t hash;
-    std::int16_t score;
-    std::int16_t seval;
+    Score score;
+    Score seval;
     std::uint16_t move;
-    std::uint8_t depth;
+    Depth depth;
     TTFlag flag;
 };
 
