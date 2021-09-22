@@ -150,16 +150,20 @@ constexpr auto compute_pawn_attack_bb(const Square sq, const Color clr) {
     return shift(forward, DIR_EAST) | shift(forward, DIR_WEST);
 }
 
+// clang-format off
 constexpr auto get_castling_path(const Square sq) {
     assert(sq == SQ_C1 || sq == SQ_G1 || sq == SQ_C8 || sq == SQ_G8);
-    // clang-format off
     return sq == SQ_C1 ? 0x0000000000000000000E : 
            sq == SQ_G1 ? 0x00000000000000000060 : 
            sq == SQ_C8 ? 0x00000e00000000000000 : 0x00006000000000000000;
 }
 
-constexpr auto compute_attack_bb(const PieceType piece, const Square sq, const std::uint64_t occ) {
-    switch (piece) {
+// clang-format on 
+constexpr auto compute_attack_bb(const PieceType pce, const Square sq, const std::uint64_t occ) {
+    assert(pce == PT_KNIGHT || pce == PT_BISHOP || pce == PT_ROOK || pce == PT_QUEEN || pce == PT_KING);
+    assert(is_ok(sq));
+    
+    switch (pce) {
     case PT_KNIGHT:
         return compute_knight_attack_bb(sq);
     case PT_BISHOP:

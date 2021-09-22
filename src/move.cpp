@@ -103,7 +103,7 @@ void Position::apply_move(Move move) {
     halfmoves++;
 
     if (ep_sq != SQ_NULL) {
-        key.hash_ep(ep_sq);
+        zobrist_hash_ep(key, ep_sq);
         ep_sq = SQ_NULL;
     }
 
@@ -116,7 +116,7 @@ void Position::apply_move(Move move) {
 
     std::uint64_t old_rooks = castle_rooks;
     update_castle_rooks(castle_rooks, move);
-    key.hash_castle(old_rooks, castle_rooks);
+    zobrist_hash_castle(key, old_rooks ^ castle_rooks);
 
     if (flag == Move::Flag::normal) {
         if (captured != PCE_NULL) {
@@ -140,7 +140,7 @@ void Position::apply_move(Move move) {
 
                 if (enemy_pawns & ep_slots) {
                     ep_sq = static_cast<Square>(to ^ 8);
-                    key.hash_ep(ep_sq);
+                    zobrist_hash_ep(key, ep_sq);
                 }
             }
         }
@@ -202,7 +202,7 @@ void Position::apply_move(Move move) {
     }
 
     side = !side;
-    key.hash_side();
+    zobrist_hash_side(key);
     network.update_hidden_layer(updates);
 }
 
@@ -215,9 +215,9 @@ void Position::apply_nullmove() {
     halfmoves++;
 
     if (ep_sq != SQ_NULL)
-        key.hash_ep(ep_sq);
+        zobrist_hash_ep(key, ep_sq);
 
-    key.hash_side();
+    zobrist_hash_side(key);
     side = !side;
 }
 

@@ -16,35 +16,21 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "types.h"
 #include <cstdint>
 
 class Position;
-class ZobristKey {
-public:
-    ZobristKey();
-    void generate(Position const &);
 
-    void hash_side();
-    void hash_ep(Square);
-    void hash_piece(Square, Piece);
-    void hash_castle(std::uint64_t old, std::uint64_t updated);
-    void reset();
+typedef std::uint64_t ZobristKey;
 
-    std::uint64_t data() const {
-        return hash;
-    }
+ZobristKey generate_zobrist_hash(Position const &);
 
-    static void init();
+void zobrist_hash_piece(ZobristKey &, const Piece, const Square);
 
-    bool operator==(ZobristKey other) const {
-        return hash == other.hash;
-    }
+void zobrist_hash_side(ZobristKey &);
 
-    friend std::ostream &operator<<(std::ostream &o, const ZobristKey);
+void zobrist_hash_ep(ZobristKey &, const Square);
 
-private:
-    void hash_pieces(Position const &);
+void zobrist_hash_castle(ZobristKey &, const std::uint64_t castle_bits);
 
-private:
-    std::uint64_t hash;
-};
+void init_zobrist_keys();

@@ -129,6 +129,11 @@ constexpr auto operator++(Square &sq, int) {
     return pre;
 }
 
+constexpr auto operator+=(Square &sq, const int delta) {
+    sq = static_cast<Square>(sq + delta);
+    return sq;
+}
+
 constexpr auto make_piece(const PieceType pt, const Color clr) {
     assert(is_ok(pt) && is_ok(clr));
     return static_cast<Piece>(pt + clr * 6);

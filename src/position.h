@@ -104,6 +104,16 @@ public:
         return history_ply > 0 ? history[history_ply - 1].move : NullMove;
     }
 
+    // const_iterator to start of piece array
+    auto begin() const {
+        return pieces.begin();
+    }
+
+    // const_iterator to end of piece array
+    auto end() const {
+        return pieces.end();
+    }
+
     // Add a piece on the board
     void add_piece(Square sq, Piece piece) {
         get_piece(sq) = piece;
@@ -137,24 +147,27 @@ public:
     }
 
     // Add a piece on the board with hash update
-    void add_piece_hash(Square sq, Piece piece) {
-        add_piece(sq, piece);
-        key.hash_piece(sq, piece);
+    void add_piece_hash(const Square sq, const Piece pce) {
+        assert(is_ok(sq) && is_ok(pce));
+        add_piece(sq, pce);
+        zobrist_hash_piece(key, pce, sq);
     }
 
     // Remove a piece from the board  with hash update
-    Piece remove_piece_hash(Square sq) {
-        Piece piece = remove_piece(sq);
-        key.hash_piece(sq, piece);
-        return piece;
+    auto remove_piece_hash(const Square sq) {
+        assert(is_ok(sq));
+        const auto pce = remove_piece(sq);
+        zobrist_hash_piece(key, pce, sq);
+        return pce;
     }
 
     // Move piece from square a to square b with hash update
-    void move_piece_hash(Square a, Square b) {
-        Piece piece = get_piece(a);
+    void move_piece_hash(const Square a, const Square b) {
+        assert(is_ok(a) && is_ok(b));
+        const auto pce = get_piece(a);
         move_piece(a, b);
-        key.hash_piece(a, piece);
-        key.hash_piece(b, piece);
+        zobrist_hash_piece(key, pce, a);
+        zobrist_hash_piece(key, pce, b);
     }
 
     std::uint64_t &get_bb(PieceType pt) {
@@ -182,14 +195,14 @@ public:
     }
 
     std::uint64_t get_key() const {
-        return key.data();
+        return key;
     }
 
     std::uint64_t get_bb() const {
         return colors[CLR_WHITE] | colors[CLR_BLACK];
     }
 
-    std::uint64_t get_castle_rooks() const {
+    std::uint64_t get_castle_bits() const {
         return castle_rooks;
     }
 

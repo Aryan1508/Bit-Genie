@@ -161,7 +161,7 @@ void generate_enpassant(
 void generate_castle(
     Position const &position, Movelist &movelist, Square from, Square to,
     std::uint64_t occ_cond, std::uint64_t att_cond) {
-    if (!test_bit(position.get_castle_rooks(), to))
+    if (!test_bit(position.get_castle_bits(), to))
         return;
 
     if (occ_cond & position.get_bb())
