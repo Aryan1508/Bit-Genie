@@ -67,6 +67,10 @@ enum Rank : std::uint8_t {
     RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_TOTAL 
 };
 
+enum MoveFlag : std::uint8_t {
+    MVEFLAG_NORMAL, MVEFLAG_ENPASSANT, MVEFLAG_CASTLE, MVEFLAG_PROMOTION, MVEFLAG_TOTAL
+};
+
 // clang-format on
 
 constexpr auto is_ok(const Square sq) {
@@ -76,6 +80,10 @@ constexpr auto is_ok(const Square sq) {
 constexpr auto is_ok(const Direction dir) {
     return dir == DIR_NORTH || dir == DIR_SOUTH ||
            dir == DIR_EAST || dir == DIR_WEST;
+}
+
+constexpr auto is_ok(const MoveFlag flag) {
+    return flag < MVEFLAG_TOTAL;
 }
 
 constexpr auto is_ok(const Color clr) {

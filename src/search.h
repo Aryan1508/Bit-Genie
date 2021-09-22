@@ -27,7 +27,7 @@ struct Info {
     Position *position;
     Stats stats;
     Limits limits;
-    Move killers[64][2]                 = { NullMove };
+    Move killers[64][2]                 = { MOVE_NULL };
     HistoryTable history                = { 0 };
     HistoryTable capture_history        = { 0 };
     CounterHistoryTable counter_history = { 0 };

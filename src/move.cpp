@@ -42,8 +42,8 @@ constexpr uint64_t castle_updates[64]{
 
 void update_castle_rooks(std::uint64_t &rooks, Move move) {
     constexpr auto &mask = castle_updates;
-    rooks &= mask[move.from()];
-    rooks &= mask[move.to()];
+    rooks &= mask[move.get_from()];
+    rooks &= mask[move.get_to()];
 }
 } // namespace
 
@@ -55,27 +55,27 @@ void Position::revert_move() {
     auto captured = history[history_ply].captured;
     castle_rooks  = history[history_ply].castle_rooks;
     halfmoves     = history[history_ply].halfmoves;
-    key           = history[history_ply].key;
+    hash          = history[history_ply].key;
     ep_sq         = history[history_ply].ep_sq;
 
     side      = !side;
-    auto from = move.from();
-    auto to   = move.to();
-    auto flag = move.flag();
+    auto from = move.get_from();
+    auto to   = move.get_to();
+    auto flag = move.get_flag();
 
-    if (flag == Move::Flag::normal) {
+    if (flag == MVEFLAG_NORMAL) {
         move_piece(to, from);
         if (captured != PCE_NULL)
             add_piece(to, captured);
     }
 
-    else if (flag == Move::Flag::promotion) {
+    else if (flag == MVEFLAG_PROMOTION) {
         add_piece(from, make_piece(PT_PAWN, side));
         remove_piece(to);
 
         if (captured != PCE_NULL)
             add_piece(to, captured);
-    } else if (flag == Move::Flag::castle) {
+    } else if (flag == MVEFLAG_CASTLE) {
         move_piece(to, from);
         if (to == SQ_C1)
             move_piece(SQ_D1, SQ_A1);
@@ -95,7 +95,7 @@ void Position::apply_move(Move move) {
     history[history_ply].move         = move;
     history[history_ply].castle_rooks = castle_rooks;
     history[history_ply].halfmoves    = halfmoves++;
-    history[history_ply].key          = key;
+    history[history_ply].key          = hash;
     history[history_ply].ep_sq        = ep_sq;
 
     Piece &hist_captured = history[history_ply++].captured = PCE_NULL;
@@ -103,22 +103,22 @@ void Position::apply_move(Move move) {
     halfmoves++;
 
     if (ep_sq != SQ_NULL) {
-        zobrist_hash_ep(key, ep_sq);
+        zobrist_hash_ep(hash, ep_sq);
         ep_sq = SQ_NULL;
     }
 
     NetworkUpdateList updates;
-    auto from     = move.from();
-    auto to       = move.to();
-    auto flag     = move.flag();
+    auto from     = move.get_from();
+    auto to       = move.get_to();
+    auto flag     = move.get_flag();
     auto moving   = get_piece(from);
     auto captured = get_piece(to);
 
     std::uint64_t old_rooks = castle_rooks;
     update_castle_rooks(castle_rooks, move);
-    zobrist_hash_castle(key, old_rooks ^ castle_rooks);
+    zobrist_hash_castle(hash, old_rooks ^ castle_rooks);
 
-    if (flag == Move::Flag::normal) {
+    if (flag == MVEFLAG_NORMAL) {
         if (captured != PCE_NULL) {
             hist_captured = remove_piece_hash(to);
             halfmoves     = 0;
@@ -140,13 +140,13 @@ void Position::apply_move(Move move) {
 
                 if (enemy_pawns & ep_slots) {
                     ep_sq = static_cast<Square>(to ^ 8);
-                    zobrist_hash_ep(key, ep_sq);
+                    zobrist_hash_ep(hash, ep_sq);
                 }
             }
         }
     }
 
-    else if (flag == Move::Flag::promotion) {
+    else if (flag == MVEFLAG_PROMOTION) {
         halfmoves = 0;
 
         if (captured != PCE_NULL) {
@@ -155,7 +155,7 @@ void Position::apply_move(Move move) {
                 InputUpdate(to, hist_captured, InputUpdate::Removal));
         }
 
-        Piece promoted = make_piece(move.promoted(), get_side());
+        Piece promoted = make_piece(move.get_promoted(), get_side());
         remove_piece_hash(from);
         add_piece_hash(to, promoted);
 
@@ -163,7 +163,7 @@ void Position::apply_move(Move move) {
         updates.push_back(InputUpdate(to, promoted, InputUpdate::Addition));
     }
 
-    else if (flag == Move::Flag::castle) {
+    else if (flag == MVEFLAG_CASTLE) {
         Square rook_from = SQ_NULL, rook_to = SQ_NULL;
         if (to == SQ_C1) {
             rook_from = SQ_A1;
@@ -202,48 +202,48 @@ void Position::apply_move(Move move) {
     }
 
     side = !side;
-    zobrist_hash_side(key);
+    zobrist_hash_side(hash);
     network.update_hidden_layer(updates);
 }
 
 void Position::apply_nullmove() {
-    history[history_ply].key   = key;
+    history[history_ply].key   = hash;
     history[history_ply].ep_sq = ep_sq;
-    history[history_ply].move  = NullMove;
+    history[history_ply].move  = MOVE_NULL;
 
     history_ply++;
     halfmoves++;
 
     if (ep_sq != SQ_NULL)
-        zobrist_hash_ep(key, ep_sq);
+        zobrist_hash_ep(hash, ep_sq);
 
-    zobrist_hash_side(key);
+    zobrist_hash_side(hash);
     side = !side;
 }
 
 void Position::revert_nullmove() {
     history_ply--;
     halfmoves--;
-    key   = history[history_ply].key;
+    hash  = history[history_ply].key;
     ep_sq = history[history_ply].ep_sq;
 
     side = !side;
 }
 
 bool move_is_capture(Position const &position, Move move) {
-    return position.get_piece(move.to()) != PCE_NULL;
+    return position.get_piece(move.get_to()) != PCE_NULL;
 }
 
-std::string Move::str() const {
+std::string Move::to_str() const {
     std::stringstream o;
-    o << from() << to();
+    o << get_from() << get_to();
 
-    if (flag() == Move::Flag::promotion)
-        o << promoted();
+    if (get_flag() == MVEFLAG_PROMOTION)
+        o << get_promoted();
 
     return o.str();
 }
 
 std::ostream &operator<<(std::ostream &o, Move move) {
-    return o << move.str();
+    return o << move.to_str();
 }

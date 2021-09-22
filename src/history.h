@@ -24,15 +24,15 @@ typedef int16_t CounterHistoryTable[12][64][12][64];
 
 inline int16_t& get_history(HistoryTable table, Position const& position, Move move)
 {
-    return table[position.get_side()][move.from()][move.to()];
+    return table[position.get_side()][move.get_from()][move.get_to()];
 }
 
 inline int16_t& get_history(CounterHistoryTable table, Position const& position, Move move)
 {
     Move previous_move   = position.previous_move();
-    Piece previous_piece = position.get_piece(previous_move.to());
-    Piece current_piece  = position.get_piece(move.from()); 
-    return table[previous_piece][previous_move.to()][current_piece][move.to()];
+    Piece previous_piece = position.get_piece(previous_move.get_to());
+    Piece current_piece  = position.get_piece(move.get_from()); 
+    return table[previous_piece][previous_move.get_to()][current_piece][move.get_to()];
 }
 
 inline void history_bonus(int16_t& cur, int bonus) 

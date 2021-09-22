@@ -42,9 +42,9 @@ public:
     Movelist movelist;
     Stage stage = Stage::HashMove;
     bool skip_quiets = false;
-    Move hash_move = NullMove;
-    Move killer1 = NullMove;
-    Move killer2 = NullMove;
+    Move hash_move = MOVE_NULL;
+    Move killer1 = MOVE_NULL;
+    Move killer2 = MOVE_NULL;
 
 private:
     Search::Info *search;

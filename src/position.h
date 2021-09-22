@@ -18,10 +18,10 @@
 #pragma once
 #include "types.h"
 #include "network.h"
+#include "zobrist.h"
 #include "bitboard.h"
 #include "movelist.h"
 #include "fixed_list.h"
-#include "position_undo.h"
 
 #include <array>
 #include <memory>
@@ -29,20 +29,36 @@
 
 class Position {
 private:
-    FixedList<PositionUndo, 2046> history;
-    std::array<Piece, 64> pieces;
-    std::array<std::uint64_t, 6> bitboards;
-    std::array<std::uint64_t, 2> colors;
-    Network network;
+    // clang-format off
+    struct Undo {
+        std::uint64_t castle_rooks;
+        ZobristKey    key;
+        Move          move;
+        std::uint16_t halfmoves;
+        Square        ep_sq;
+        Piece         captured;
+    };
+    // clang-format on
 
-    ZobristKey key;
+    Network network;
+    FixedList<Undo, 2046> history;
+    std::array<Piece, SQ_TOTAL> pieces;
+    std::array<std::uint64_t, PT_TOTAL> bitboards;
+    std::array<std::uint64_t, CLR_TOTAL> colors;
+
+    ZobristKey hash;
     std::uint64_t castle_rooks;
-    int halfmoves, history_ply;
+    std::uint16_t halfmoves;
+    std::uint16_t history_ply;
     Square ep_sq;
     Color side;
 
 public:
     Position();
+
+    Position(Position const &) = delete;
+
+    Position &operator=(Position const &) = delete;
 
     // Set a fen string, does not attempt to validtae it
     void set_fen(std::string_view);
@@ -101,7 +117,7 @@ public:
 
     // Previous move played
     Move previous_move() const {
-        return history_ply > 0 ? history[history_ply - 1].move : NullMove;
+        return history_ply > 0 ? history[history_ply - 1].move : MOVE_NULL;
     }
 
     // const_iterator to start of piece array
@@ -114,35 +130,95 @@ public:
         return pieces.end();
     }
 
+    auto &get_bb(const PieceType pt) {
+        assert(is_ok(pt));
+        return bitboards[pt];
+    }
+
+    auto get_bb(const PieceType pt) const {
+        assert(is_ok(pt));
+        return bitboards[pt];
+    }
+
+    auto &get_bb(const Color clr) {
+        assert(is_ok(clr));
+        return colors[clr];
+    }
+
+    auto get_bb(const Color clr) const {
+        assert(is_ok(clr));
+        return colors[clr];
+    }
+
+    auto get_bb(const PieceType pt, const Color clr) const {
+        assert(is_ok(clr) && is_ok(pt));
+        return bitboards[pt] & colors[clr];
+    }
+
+    auto get_bb(const Piece pce) const {
+        assert(is_ok(pce));
+        return get_bb(compute_piece_type(pce), compute_color(pce));
+    }
+
+    auto get_key() const {
+        return hash;
+    }
+
+    auto get_bb() const {
+        return colors[CLR_WHITE] | colors[CLR_BLACK];
+    }
+
+    auto get_castle_bits() const {
+        return castle_rooks;
+    }
+
+    auto &get_piece(const Square sq) {
+        assert(is_ok(sq));
+        return pieces[sq];
+    }
+
+    auto get_piece(const Square sq) const {
+        assert(is_ok(sq));
+        return pieces[sq];
+    }
+
+    auto get_ep() const {
+        return ep_sq;
+    }
+
+    auto get_side() const {
+        return side;
+    }
+
     // Add a piece on the board
-    void add_piece(Square sq, Piece piece) {
-        get_piece(sq) = piece;
-        set_bit(get_bb(compute_piece_type(piece)), sq);
-        set_bit(get_bb(compute_color(piece)), sq);
+    void add_piece(const Square sq, const Piece pce) {
+        assert(is_ok(sq) && is_ok(pce));
+        get_piece(sq) = pce;
+        set_bit(get_bb(compute_piece_type(pce)), sq);
+        set_bit(get_bb(compute_color(pce)), sq);
     }
 
     // Remove a piece from the board
-    Piece remove_piece(Square sq) {
-        Piece piece = get_piece(sq);
-        flip_bit(get_bb(compute_piece_type(piece)), sq);
-        flip_bit(get_bb(compute_color(piece)), sq);
+    auto remove_piece(const Square sq) {
+        assert(is_ok(sq));
+        const auto pce = get_piece(sq);
+        flip_bit(get_bb(compute_piece_type(pce)), sq);
+        flip_bit(get_bb(compute_color(pce)), sq);
         get_piece(sq) = PCE_NULL;
-
-        return piece;
+        return pce;
     }
 
     // Move piece from square a to square b
-    void move_piece(Square a, Square b) {
-        Piece piece    = get_piece(a);
-        PieceType type = compute_piece_type(piece);
-        Color color    = compute_color(piece);
-
-        flip_bit(get_bb(type), a);
-        flip_bit(get_bb(color), a);
-        flip_bit(get_bb(type), b);
-        flip_bit(get_bb(color), b);
-
-        get_piece(b) = piece;
+    void move_piece(const Square a, const Square b) {
+        assert(is_ok(a) && is_ok(b));
+        const auto pce = get_piece(a);
+        const auto pt  = compute_piece_type(pce);
+        const auto clr = compute_color(pce);
+        flip_bit(get_bb(pt), a);
+        flip_bit(get_bb(clr), a);
+        flip_bit(get_bb(pt), b);
+        flip_bit(get_bb(clr), b);
+        get_piece(b) = pce;
         get_piece(a) = PCE_NULL;
     }
 
@@ -150,14 +226,14 @@ public:
     void add_piece_hash(const Square sq, const Piece pce) {
         assert(is_ok(sq) && is_ok(pce));
         add_piece(sq, pce);
-        zobrist_hash_piece(key, pce, sq);
+        zobrist_hash_piece(hash, pce, sq);
     }
 
     // Remove a piece from the board  with hash update
     auto remove_piece_hash(const Square sq) {
         assert(is_ok(sq));
         const auto pce = remove_piece(sq);
-        zobrist_hash_piece(key, pce, sq);
+        zobrist_hash_piece(hash, pce, sq);
         return pce;
     }
 
@@ -166,60 +242,8 @@ public:
         assert(is_ok(a) && is_ok(b));
         const auto pce = get_piece(a);
         move_piece(a, b);
-        zobrist_hash_piece(key, pce, a);
-        zobrist_hash_piece(key, pce, b);
-    }
-
-    std::uint64_t &get_bb(PieceType pt) {
-        return bitboards[pt];
-    }
-
-    std::uint64_t get_bb(PieceType pt) const {
-        return bitboards[pt];
-    }
-
-    std::uint64_t &get_bb(Color color) {
-        return colors[color];
-    }
-
-    std::uint64_t get_bb(Color color) const {
-        return colors[color];
-    }
-
-    std::uint64_t get_bb(PieceType pt, Color color) const {
-        return bitboards[pt] & colors[color];
-    }
-
-    std::uint64_t get_bb(Piece piece) const {
-        return get_bb(compute_piece_type(piece), compute_color(piece));
-    }
-
-    std::uint64_t get_key() const {
-        return key;
-    }
-
-    std::uint64_t get_bb() const {
-        return colors[CLR_WHITE] | colors[CLR_BLACK];
-    }
-
-    std::uint64_t get_castle_bits() const {
-        return castle_rooks;
-    }
-
-    Piece &get_piece(Square sq) {
-        return pieces[sq];
-    }
-
-    Piece get_piece(Square sq) const {
-        return pieces[sq];
-    }
-
-    Square get_ep() const {
-        return ep_sq;
-    }
-
-    Color get_side() const {
-        return side;
+        zobrist_hash_piece(hash, pce, a);
+        zobrist_hash_piece(hash, pce, b);
     }
 
     NetworkInput to_net_input() const;

@@ -40,11 +40,11 @@ enum {
 
 struct SearchResult {
     int score      = MinEval;
-    Move best_move = NullMove;
+    Move best_move = MOVE_NULL;
 
     SearchResult() = default;
 
-    SearchResult(int best_score, Move best = NullMove)
+    SearchResult(int best_score, Move best = MOVE_NULL)
         : score(best_score), best_move(best) {
     }
 };
@@ -158,7 +158,7 @@ void update_history_tables_on_cutoff(
     else {
         update_history(search.history, p, move, other, depth);
 
-        if (p.previous_move() != NullMove)
+        if (p.previous_move() != MOVE_NULL)
             update_history(search.counter_history, p, move, other, depth);
         add_killer(search, move);
     }
@@ -282,7 +282,7 @@ pvs(Search::Info &search, int depth, int alpha, int beta, bool do_null = true) {
             break;
 
         if (depth < 5 && move_is_capture(position, move) &&
-            move.score < see_pruning_margins[depth])
+            move.get_score() < see_pruning_margins[depth])
             continue;
 
         move_num++;
@@ -396,7 +396,7 @@ uint64_t bestmove(Info &search, bool log) {
     constexpr int window = 12;
 
     SEARCH_ABORT   = false;
-    Move best_move = NullMove;
+    Move best_move = MOVE_NULL;
     SearchResult result;
     int score = 0;
 

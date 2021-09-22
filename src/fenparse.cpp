@@ -124,7 +124,7 @@ void Position::set_fen(std::string_view fen) {
 
     ep_sq     = parts[3] == "-" ? SQ_NULL : s_to_sq(parts[3]);
     halfmoves = std::stoi(parts[4]);
-    key       = generate_zobrist_hash(*this);
+    hash       = generate_zobrist_hash(*this);
 
     network.recalculate_hidden_layer(to_net_input());
 }

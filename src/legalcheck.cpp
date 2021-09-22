@@ -58,14 +58,14 @@ static bool castle_path_is_clear(Position const &position, Square rook) {
 }
 
 bool Position::is_legal(Move move) const {
-    if (move.data == 0)
+    if (move == MOVE_NULL)
         return false;
 
-    auto from = move.from();
-    auto to   = move.to();
-    auto flag = move.flag();
+    auto from = move.get_from();
+    auto to   = move.get_to();
+    auto flag = move.get_flag();
 
-    if (flag == Move::Flag::normal || flag == Move::Flag::promotion) {
+    if (flag == MVEFLAG_NORMAL || flag == MVEFLAG_PROMOTION) {
         if (get_piece(from) == PCE_WKING || get_piece(from) == PCE_BKING) {
             std::uint64_t occupancy = get_bb() ^ (1ull << from);
             return !square_is_attacked(to, !side, occupancy);
@@ -101,7 +101,7 @@ bool Position::is_legal(Move move) const {
         }
     }
 
-    else if (move.flag() == Move::Flag::castle) {
+    else if (move.get_flag() == MVEFLAG_CASTLE) {
         return !square_is_attacked(to, !side);
     }
 
@@ -133,14 +133,14 @@ bool Position::is_legal(Move move) const {
 }
 
 bool Position::is_pseudolegal(Move move) const {
-    if (!move.data)
+    if (move == MOVE_NULL)
         return false;
 
-    Square from     = move.from();
-    Square to       = move.to();
-    Move::Flag flag = move.flag();
-    Piece moving    = get_piece(from);
-    Piece captured  = get_piece(to);
+    Square from    = move.get_from();
+    Square to      = move.get_to();
+    MoveFlag flag  = move.get_flag();
+    Piece moving   = get_piece(from);
+    Piece captured = get_piece(to);
 
     if (moving == PCE_NULL)
         return false;
@@ -151,7 +151,7 @@ bool Position::is_pseudolegal(Move move) const {
     if (captured != PCE_NULL && compute_color(captured) == side)
         return false;
 
-    if (flag == Move::Flag::castle) {
+    if (flag == MVEFLAG_CASTLE) {
         if (!test_bit(castle_rooks, to))
             return false;
 
@@ -179,17 +179,17 @@ bool Position::is_pseudolegal(Move move) const {
             side == CLR_WHITE ? RANK_7_BB : RANK_2_BB;
         std::uint64_t from_sq_bb = 1ull << from;
 
-        if (flag == Move::Flag::promotion) {
+        if (flag == MVEFLAG_PROMOTION) {
             if ((prom_rank & from_sq_bb) == 0)
                 return false;
         }
 
         if (from_sq_bb & prom_rank) {
-            if (flag != Move::Flag::promotion)
+            if (flag != MVEFLAG_PROMOTION)
                 return false;
         }
 
-        if (flag == Move::Flag::normal || flag == Move::Flag::promotion) {
+        if (flag == MVEFLAG_NORMAL || flag == MVEFLAG_PROMOTION) {
             if (get_piece(to) == PCE_NULL) {
                 const auto double_push    = forward + forward;
                 const auto double_push_sq = from + double_push;
@@ -224,7 +224,7 @@ bool Position::is_pseudolegal(Move move) const {
     }
 
     else {
-        if (flag != Move::Flag::normal)
+        if (flag != MVEFLAG_NORMAL)
             return false;
 
         std::uint64_t attacks =

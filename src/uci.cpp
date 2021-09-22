@@ -100,7 +100,7 @@ void uci_setposition(UciParser const &parser, Position &position) {
         position.generate_legal(movelist);
 
         for (auto m : movelist)
-            if (m.str() == move)
+            if (m.to_str() == move)
                 position.apply_move(m);
     }
 }

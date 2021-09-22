@@ -35,7 +35,7 @@ struct TEntry {
     TEntry(
         std::uint64_t h, int16_t s, Move m, std::uint8_t d, TEFlag fl,
         int16_t eval)
-        : hash(h), score(s), seval(eval), move(m.data), depth(d), flag(fl) {
+        : hash(h), score(s), seval(eval), move(m.get_move_bits()), depth(d), flag(fl) {
     }
 };
 

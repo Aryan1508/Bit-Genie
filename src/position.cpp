@@ -49,7 +49,7 @@ bool Position::king_in_check() const {
 bool Position::drawn() const {
     for (int i = history_ply - 2; i >= 0 && i >= history_ply - halfmoves;
          i -= 2) {
-        if (history[i].key == key)
+        if (history[i].key == hash)
             return true;
     }
 

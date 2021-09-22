@@ -38,26 +38,26 @@ constexpr std::uint64_t get_promotion_rank_bb(const Color clr) {
 }
 
 void verified_add(Movelist &movelist, Position const &position, Move move) {
-    if (position.is_legal(move))
+    if (position.is_legal(move)) {
         movelist.push_back(move);
+    }
 }
 
-void serialize_bitboard(
-    Movelist &movelist, Position const &position, std::uint64_t bb,
-    Square from) {
-    while (bb)
-        verified_add(movelist, position, Move(from, pop_lsb(bb)));
-}
-
-template <Move::Flag flag = Move::Flag::normal>
-void serialize_bitboard(
-    Movelist &movelist, Position const &position, std::uint64_t bb,
-    int delta) {
+void serialize_bitboard(Movelist &movelist, Position const &position, std::uint64_t bb, const Square from) {
+    assert(is_ok(from));
     while (bb) {
-        Square to       = pop_lsb(bb);
+        verified_add(movelist, position, Move(from, pop_lsb(bb)));
+    }
+}
+
+template <MoveFlag flag = MVEFLAG_NORMAL>
+void serialize_bitboard(Movelist &movelist, Position const &position, std::uint64_t bb, const int delta) {
+    while (bb) {
+        const auto to   = pop_lsb(bb);
         const auto from = static_cast<Square>(to - delta);
 
-        if (flag == Move::Flag::promotion) {
+        assert(is_ok(from) && is_ok(to));
+        if (flag == MVEFLAG_PROMOTION) {
             verified_add(movelist, position, Move(from, to, PT_KNIGHT));
             verified_add(movelist, position, Move(from, to, PT_BISHOP));
             verified_add(movelist, position, Move(from, to, PT_ROOK));
@@ -108,10 +108,10 @@ void generate_pawn_captures(
         movelist, position, captures_r & ~promo_bb,
         compute_relative_forward(side) + DIR_EAST);
 
-    serialize_bitboard<Move::Flag::promotion>(
+    serialize_bitboard<MVEFLAG_PROMOTION>(
         movelist, position, captures_l & promo_bb,
         compute_relative_forward(side) + DIR_WEST);
-    serialize_bitboard<Move::Flag::promotion>(
+    serialize_bitboard<MVEFLAG_PROMOTION>(
         movelist, position, captures_r & promo_bb,
         compute_relative_forward(side) + DIR_EAST);
 }
@@ -136,7 +136,7 @@ void generate_pawn_pushes(
         movelist, position, push_2,
         compute_relative_forward(side) + compute_relative_forward(side));
 
-    serialize_bitboard<Move::Flag::promotion>(
+    serialize_bitboard<MVEFLAG_PROMOTION>(
         movelist, position, push_1 & promo_bb, compute_relative_forward(side));
 }
 
@@ -152,9 +152,9 @@ void generate_enpassant(
     std::uint64_t ep_l = ep_bb & shift(forwarded_pawns, DIR_WEST);
     std::uint64_t ep_r = ep_bb & shift(forwarded_pawns, DIR_EAST);
 
-    serialize_bitboard<Move::Flag::enpassant>(
+    serialize_bitboard<MVEFLAG_ENPASSANT>(
         movelist, position, ep_l, compute_relative_forward(side) + DIR_WEST);
-    serialize_bitboard<Move::Flag::enpassant>(
+    serialize_bitboard<MVEFLAG_ENPASSANT>(
         movelist, position, ep_r, compute_relative_forward(side) + DIR_EAST);
 }
 
@@ -172,7 +172,7 @@ void generate_castle(
                 pop_lsb(att_cond), !position.get_side()))
             return;
 
-    verified_add(movelist, position, Move(from, to, Move::Flag::castle));
+    verified_add(movelist, position, Move(from, to, MVEFLAG_CASTLE));
 }
 
 template <Color side>
