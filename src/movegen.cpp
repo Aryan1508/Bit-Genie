@@ -17,7 +17,6 @@
 */
 
 #include "bitboard.h"
-#include "movelist.h"
 #include "position.h"
 
 namespace {

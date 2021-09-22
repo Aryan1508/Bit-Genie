@@ -17,13 +17,10 @@
 */
 #pragma once
 #include "search.h"
-#include "movelist.h"
 
-class MovePicker
-{
+class MovePicker {
 public:
-    enum class Stage
-    {
+    enum class Stage {
         HashMove,
         GenNoisy,
         GiveGoodNoisy,
@@ -34,17 +31,17 @@ public:
         GiveQuiet
     };
 
-    MovePicker(Search::Info&);
+    MovePicker(Search::Info &);
 
     bool next(Move &);
     bool qnext(Move &);
 
     Movelist movelist;
-    Stage stage = Stage::HashMove;
+    Stage stage      = Stage::HashMove;
     bool skip_quiets = false;
-    Move hash_move = MOVE_NULL;
-    Move killer1 = MOVE_NULL;
-    Move killer2 = MOVE_NULL;
+    Move hash_move   = MOVE_NULL;
+    Move killer1     = MOVE_NULL;
+    Move killer2     = MOVE_NULL;
 
 private:
     Search::Info *search;

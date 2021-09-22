@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "fixed_list.h"
+#include "utils.h"
 #include "types.h"
 
 #include <vector>
@@ -26,7 +26,8 @@ inline std::uint16_t calculate_input_index(Square sq, Piece piece) {
 }
 
 struct InputUpdate {
-    enum : std::int8_t { Addition = 1, Removal = -1 };
+    enum : std::int8_t { Addition = 1,
+                         Removal  = -1 };
 
     std::uint16_t index;
     std::int8_t coeff;

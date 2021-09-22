@@ -17,7 +17,7 @@
 */
 #include "position.h"
 
-#include "stringparse.h"
+#include "utils.h"
 
 Position::Position() {
     set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");

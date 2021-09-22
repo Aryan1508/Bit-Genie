@@ -17,11 +17,11 @@
 */
 #include "tt.h"
 #include "uci.h"
+#include "utils.h"
 #include "search.h"
 #include "uciparse.h"
 #include "position.h"
 #include "benchmark.h"
-#include "stringparse.h"
 #include "searchinit.h"
 
 #include <cstring>
@@ -47,8 +47,6 @@ void uci_setoption(UciParser const &parser) {
     auto [name, value] = parser.parse_setoption();
 
     if (name == "hash") {
-        if (!string_is_number(value))
-            return;
         TT.resize(std::stoi(value));
     }
 

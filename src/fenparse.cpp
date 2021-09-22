@@ -15,9 +15,9 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "utils.h"
 #include "bitboard.h"
 #include "position.h"
-#include "stringparse.h"
 
 #include <sstream>
 
@@ -124,7 +124,7 @@ void Position::set_fen(std::string_view fen) {
 
     ep_sq     = parts[3] == "-" ? SQ_NULL : s_to_sq(parts[3]);
     halfmoves = std::stoi(parts[4]);
-    hash       = generate_zobrist_hash(*this);
+    hash      = generate_zobrist_hash(*this);
 
     network.recalculate_hidden_layer(to_net_input());
 }

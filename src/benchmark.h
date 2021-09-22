@@ -16,9 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "utils.h"
 #include "search.h"
 #include "position.h"
-#include "stopwatch.h"
 
 #include <cmath>
 #include <string>

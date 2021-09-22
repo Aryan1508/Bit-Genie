@@ -17,8 +17,7 @@
 */
 #pragma once
 #include <vector>
-
-#include "fixed_list.h"
+#include "utils.h"
 #include "net_input.h"
 
 class Network {

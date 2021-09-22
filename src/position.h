@@ -16,12 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "move.h"
 #include "types.h"
 #include "network.h"
 #include "zobrist.h"
 #include "bitboard.h"
-#include "movelist.h"
-#include "fixed_list.h"
 
 #include <array>
 #include <memory>

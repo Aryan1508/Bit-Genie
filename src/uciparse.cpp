@@ -16,12 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "uciparse.h"
-#include "stringparse.h"
+#include "utils.h"
 #include <utility>
 
 bool UciParser::take_input() {
     auto &val = std::getline(std::cin, command);
-    trim(command);
+    trim_str(command);
     return bool(val);
 }
 
@@ -29,9 +29,6 @@ int UciParser::parse_perft() const {
     auto options = split_string(command);
 
     if (options.size() != 2)
-        return 0;
-
-    if (!string_is_number(options[1]))
         return 0;
 
     return std::stoi(options[1]);
@@ -110,7 +107,7 @@ UciParser::parse_position_command() const {
         }
     }
 
-    return std::pair{fen, moves};
+    return std::pair{ fen, moves };
 }
 
 UciGo UciParser::parse_go(Color side) const {
@@ -156,19 +153,19 @@ std::pair<std::string, std::string> UciParser::parse_setoption() const {
         if (token == "name") {
             stream >> token;
 
-            if (tolower(token) == "clear") {
+            if (convert_str_to_lower(token) == "clear") {
                 name = std::move(token);
                 stream >> token;
-                name += " " + std::move(tolower(token));
+                name += " " + std::move(convert_str_to_lower(token));
             } else
                 name = std::move(token);
         }
 
         else if (token == "value") {
             stream >> token;
-            value = std::move(tolower(token));
+            value = std::move(convert_str_to_lower(token));
             break;
         }
     }
-    return {name, value};
+    return { name, value };
 }

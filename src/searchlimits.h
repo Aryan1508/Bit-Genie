@@ -16,23 +16,20 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "utils.h"
 
-#include "stopwatch.h"
+namespace Search {
+class Limits {
+public:
+    Limits() = default;
 
-namespace Search 
-{
-    class Limits 
-    {
-    public:
-        Limits() = default;
-        
-        void set_movetime(int64_t);
-        void update();
+    void set_movetime(int64_t);
+    void update();
 
-        StopWatch<> stopwatch;
-        int64_t movetime  = -1;
-        int     max_depth = 64;
-        bool    stopped   = false;
-        bool    time_set  = false;
-    };
-}
+    StopWatch<> stopwatch;
+    int64_t movetime = -1;
+    int max_depth    = 64;
+    bool stopped     = false;
+    bool time_set    = false;
+};
+} // namespace Search

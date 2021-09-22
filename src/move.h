@@ -16,6 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "utils.h"
 #include "types.h"
 
 #include <string>
@@ -89,6 +90,8 @@ public:
     std::string to_str() const;
     friend std::ostream &operator<<(std::ostream &o, Move);
 };
+
+using Movelist = FixedList<Move, 256>;
 
 constexpr Move MOVE_NULL = Move(SQ_A1, SQ_A1);
 
