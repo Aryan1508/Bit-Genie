@@ -25,13 +25,9 @@ Position::Position() {
 
 NetworkInput Position::to_net_input() const {
     NetworkInput input;
-
-    for (int j = 0; j < 64; j++) {
-        Square sq = Square(j);
-
-        if (get_piece(Square(j)) != Piece::PCE_NULL) {
-            Piece p = get_piece(Square(j));
-            input.push_back(calculate_input_index(sq, p));
+    for (auto sq = SQ_A1; sq < SQ_TOTAL; sq++) {
+        if (get_piece(sq) != Piece::PCE_NULL) {
+            input.push_back(calculate_input_index(sq, get_piece(sq)));
         }
     }
     return input;
@@ -82,12 +78,12 @@ bool Position::square_is_attacked(const Square sq, const Color enemy) const {
 }
 
 bool Position::square_is_attacked(const Square sq, const Color enemy, const std::uint64_t occupancy) const {
-    std::uint64_t pawns   = get_bb(PT_PAWN, enemy);
-    std::uint64_t knights = get_bb(PT_KNIGHT, enemy);
-    std::uint64_t queens  = get_bb(PT_QUEEN, enemy);
-    std::uint64_t kings   = get_bb(PT_KING, enemy);
-    std::uint64_t rooks   = get_bb(PT_ROOK, enemy) | queens;
-    std::uint64_t bishops = get_bb(PT_BISHOP, enemy) | queens;
+    const auto pawns   = get_bb(PT_PAWN, enemy);
+    const auto knights = get_bb(PT_KNIGHT, enemy);
+    const auto queens  = get_bb(PT_QUEEN, enemy);
+    const auto kings   = get_bb(PT_KING, enemy);
+    const auto rooks   = get_bb(PT_ROOK, enemy) | queens;
+    const auto bishops = get_bb(PT_BISHOP, enemy) | queens;
 
     return (compute_pawn_attack_bb(sq, !enemy) & pawns) ||
            (compute_bishop_attack_bb(sq, occupancy) & bishops) || (compute_rook_attack_bb(sq, occupancy) & rooks) ||
@@ -95,17 +91,15 @@ bool Position::square_is_attacked(const Square sq, const Color enemy, const std:
 }
 
 std::uint64_t Position::attackers_to_sq(const Square sq) const {
-    std::uint64_t occ     = get_bb();
-    std::uint64_t wpawns  = get_bb(PCE_WPAWN);
-    std::uint64_t bpawns  = get_bb(PCE_BPAWN);
-    std::uint64_t knights = get_bb(PT_KNIGHT);
-    std::uint64_t queens  = get_bb(PT_QUEEN);
-    std::uint64_t kings   = get_bb(PT_KING);
-    std::uint64_t rooks   = get_bb(PT_ROOK) | queens;
-    std::uint64_t bishops = get_bb(PT_BISHOP) | queens;
-
-    std::uint64_t p_attackers =
-        (compute_pawn_attack_bb(sq, CLR_WHITE) & bpawns) | (compute_pawn_attack_bb(sq, CLR_BLACK) & wpawns);
+    const auto occ         = get_bb();
+    const auto wpawns      = get_bb(PCE_WPAWN);
+    const auto bpawns      = get_bb(PCE_BPAWN);
+    const auto knights     = get_bb(PT_KNIGHT);
+    const auto queens      = get_bb(PT_QUEEN);
+    const auto kings       = get_bb(PT_KING);
+    const auto rooks       = get_bb(PT_ROOK) | queens;
+    const auto bishops     = get_bb(PT_BISHOP) | queens;
+    const auto p_attackers = (compute_pawn_attack_bb(sq, CLR_WHITE) & bpawns) | (compute_pawn_attack_bb(sq, CLR_BLACK) & wpawns);
 
     return p_attackers | (compute_knight_attack_bb(sq) & knights) | (compute_king_attack_bb(sq) & kings) |
            (compute_bishop_attack_bb(sq, occ) & bishops) | (compute_rook_attack_bb(sq, occ) & rooks);
