@@ -21,13 +21,12 @@
 
 Position::Position()
 {
-    net = std::make_unique<Trainer::Network>();
     set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 }
 
-Trainer::NetworkInput Position::to_net_input() const 
+NetworkInput Position::to_net_input() const 
 {
-    Trainer::NetworkInput input;
+    NetworkInput input;
 
     for (int j = 0; j < 64; j++)
     {
@@ -36,7 +35,7 @@ Trainer::NetworkInput Position::to_net_input() const
         if (get_piece(Square(j)) != Piece::Empty)
         {
             Piece p = get_piece(Square(j));
-            input.activated_input_indices.push_back(Trainer::calculate_input_index(sq, p));
+            input.push_back(calculate_input_index(sq, p));
         }
     }
     return input;
@@ -82,6 +81,6 @@ bool Position::drawn() const
 
 int Position::static_evaluation()
 {
-    int eval = static_cast<int>(net->quick_feed());
+    const int eval = static_cast<int>(network.calculate_last_layer());
     return side == Color::White ? eval : -eval;
 }

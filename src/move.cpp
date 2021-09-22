@@ -33,7 +33,7 @@ namespace
 void Position::revert_move()
 {
     history_ply--;
-    net->revert_hidden_updates();
+    network.revert_hidden_updates();
 
     auto move     = history[history_ply].move;
     auto captured = history[history_ply].captured;
@@ -79,7 +79,6 @@ void Position::revert_move()
 
 void Position::apply_move(Move move)
 {
-    using namespace Trainer;
     history[history_ply].move         = move;
     history[history_ply].castle_rooks = castle_rooks;
     history[history_ply].halfmoves    = halfmoves++;
@@ -205,7 +204,7 @@ void Position::apply_move(Move move)
 
     side = !side;
     key.hash_side();
-    net->update_hidden(updates);
+    network.update_hidden_layer(updates);
 }
 
 void Position::apply_nullmove()

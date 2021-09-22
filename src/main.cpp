@@ -16,14 +16,16 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "uci.h"
+#include "search.h"
 #include "attacks.h"
 #include "zobrist.h"
-#include "search.h"
+#include "network.h"
 
 int main(int argc, char** argv)
 {
     Attacks::init();
     ZobristKey::init();
     Search::init();
+    Network::init();
     UCI::init(argc, argv);
 }
