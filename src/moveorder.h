@@ -31,7 +31,7 @@ public:
         GiveQuiet
     };
 
-    MovePicker(Search::Info &);
+    MovePicker(SearchInfo &);
 
     bool next(Move &);
     bool qnext(Move &);
@@ -44,6 +44,6 @@ public:
     Move killer2     = MOVE_NULL;
 
 private:
-    Search::Info *search;
+    SearchInfo *search;
     Movelist::iterator current;
 };

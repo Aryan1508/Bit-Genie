@@ -31,7 +31,7 @@ public:
         return worker.joinable();
     }
 
-    Search::Info *search;
+    SearchInfo *search;
 
 private:
     std::thread worker;

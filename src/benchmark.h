@@ -66,8 +66,9 @@ void run_perft(Position &position, std::uint8_t depth, std::ostream &out = std::
     out << std::endl;
 }
 
-void run_bench(Position &position) {
+void run_bench() {
     StopWatch watch;
+    SearchInfo info;
     std::uint64_t nodes = 0;
 
     std::ifstream bench_file("bench.txt");
@@ -77,14 +78,12 @@ void run_bench(Position &position) {
 
     watch.go();
     for (std::string fen; std::getline(bench_file, fen);) {
-        position.set_fen(fen);
-        Search::Info info;
-        info.position         = &position;
+        info.position.set_fen(fen);
         info.limits.max_depth = 11;
 
-        auto count = Search::bestmove(info, false);
-        std::cout << fen << ": " << count << '\n';
-        nodes += count;
+        bestmove(info, false);
+        std::cout << fen << ": " << info.stats.nodes << '\n';
+        nodes += info.stats.nodes;
     }
     watch.stop();
 

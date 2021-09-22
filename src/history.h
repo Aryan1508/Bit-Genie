@@ -18,8 +18,12 @@
 #pragma once
 #include "position.h"
 
+#include <cstring>
+
 typedef int16_t HistoryTable[2][64][64];
 typedef int16_t CounterHistoryTable[12][64][12][64];
+typedef Move KilllerTable[64][12];
+typedef std::int16_t EvalTable[64];
 
 inline int16_t &get_history(HistoryTable table, Position const &position, Move move) {
     return table[position.get_side()][move.get_from()][move.get_to()];
@@ -39,6 +43,11 @@ inline void history_bonus(int16_t &cur, int bonus) {
 template <typename HistoryType>
 inline void history_bonus(HistoryType table, Position const &position, Move move, int depth) {
     history_bonus(get_history(table, position, move), depth * depth);
+}
+
+template <typename HistoryType>
+inline void reset_history(HistoryType table, std::size_t size) {
+    std::memset(&table[0], 0, size);
 }
 
 template <typename HistoryType>

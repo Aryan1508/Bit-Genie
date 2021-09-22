@@ -16,29 +16,71 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "history.h"
 #include "move.h"
-#include "searchlimits.h"
-#include "searchstats.h"
+#include "utils.h"
+#include "history.h"
 #include <atomic>
 
-namespace Search {
-struct Info {
-    Position *position;
-    Stats stats;
-    Limits limits;
-    Move killers[64][2]                 = { MOVE_NULL };
-    HistoryTable history                = { 0 };
-    HistoryTable capture_history        = { 0 };
-    CounterHistoryTable counter_history = { 0 };
+constexpr std::uint8_t MAX_PLY       = 64;
+constexpr std::int16_t MIN_EVAL      = -32001;
+constexpr std::int16_t MAX_EVAL      = -MIN_EVAL;
+constexpr std::int16_t MATE_EVAL     = MAX_EVAL - 1;
+constexpr std::int16_t MIN_MATE_EVAL = MATE_EVAL - MAX_PLY;
 
-    int eval[64] = { 0 };
-
-    void update();
+// clang-format off
+struct SearchStats {
+    std::uint64_t nodes   = 0;
+    std::uint8_t ply      = 0;
+    std::uint8_t depth    = 0;
+    std::uint8_t seldepth = 0;
 };
 
-void init();
-std::uint64_t bestmove(Info &, bool log);
-} // namespace Search
+struct SearchLimits {
+    StopWatch<>  stopwatch;
+    std::int64_t movetime  = -1;
+    std::uint8_t max_depth = 64;
+    bool stopped           = false;
+    bool time_set          = false;
+};
+
+struct SearchResult {
+    std::int16_t score      = MIN_EVAL;
+    Move best_move          = MOVE_NULL;
+
+    SearchResult(const std::int16_t score, const Move move = MOVE_NULL)   
+        : score(score), best_move(move)
+    {}
+
+    SearchResult() = default;
+};
+
+struct SearchInfo {
+public:
+    Position     position;
+    SearchStats  stats;
+    SearchLimits limits;
+    EvalTable    eval;
+    KilllerTable killers;
+    HistoryTable history;
+    HistoryTable capture_history;
+    CounterHistoryTable counter_history;
+
+public:
+    SearchInfo() {
+        reset_history_tables();
+    }
+
+    void reset_history_tables() {
+        reset_history(killers, sizeof(killers));
+        reset_history(history, sizeof(history));
+        reset_history(capture_history, sizeof(capture_history));
+        reset_history(counter_history, sizeof(counter_history));
+    }
+};
+
+// clang-format on
+void init_search_tables();
+
+SearchResult bestmove(SearchInfo &, bool log);
 
 inline std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);

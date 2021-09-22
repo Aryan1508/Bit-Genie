@@ -62,10 +62,7 @@ void uci_stop(SearchInit &worker) {
 void uci_go(UciParser const &parser, Position &position, SearchInit &worker) {
     UciGo options = parser.parse_go(position.get_side());
 
-    Search::Info &search = *worker.search;
-
-    search          = Search::Info();
-    search.position = &position;
+    SearchInfo &search = *worker.search;
     search.limits.stopwatch.go();
     search.limits.max_depth = std::min(options.depth, 64);
 
@@ -107,11 +104,11 @@ void uci_setposition(UciParser const &parser, Position &position) {
 namespace UCI {
 void init(int argc, char **argv) {
     UciParser command;
-    Position position;
     SearchInit worker;
+    Position &position = worker.search->position;
 
     if (argc > 1 && !strncmp(argv[1], "bench", 5)) {
-        run_bench(position);
+        run_bench();
         return;
     }
 
@@ -147,7 +144,7 @@ void init(int argc, char **argv) {
 
         else if (command == UciCommands::bench) {
             TT.reset();
-            run_bench(position);
+            run_bench();
         }
 
         else if (command == UciCommands::ucinewgame) {

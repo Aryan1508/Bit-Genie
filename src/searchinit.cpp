@@ -1,7 +1,7 @@
 #include "searchinit.h"
 
 SearchInit::SearchInit() {
-    search = new Search::Info;
+    search = new SearchInfo;
 }
 
 SearchInit::~SearchInit() {
@@ -13,7 +13,7 @@ void SearchInit::begin() {
         end();
 
     using std::ref;
-    worker = std::thread(Search::bestmove, ref(*search), true);
+    worker = std::thread(bestmove, ref(*search), true);
 }
 
 void SearchInit::end() {

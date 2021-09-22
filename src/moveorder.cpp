@@ -90,8 +90,8 @@ int16_t see(Position &position, Move move) {
 }
 
 template <bool quiet = false>
-void score_movelist(Movelist &movelist, Search::Info &search) {
-    Position &position = *search.position;
+void score_movelist(Movelist &movelist, SearchInfo &search) {
+    Position &position = search.position;
     for (auto &move : movelist) {
         if constexpr (!quiet) {
             int score = see(position, move);
@@ -124,13 +124,13 @@ void bubble_top_move(Movelist::iterator begin, Movelist::iterator end) {
 }
 } // namespace
 
-MovePicker::MovePicker(Search::Info &s)
+MovePicker::MovePicker(SearchInfo &s)
     : search(&s) {
     stage = Stage::HashMove;
 }
 
 bool MovePicker::qnext(Move &move) {
-    Position &position = *search->position;
+    Position &position = search->position;
 
     if (stage == Stage::HashMove) {
         position.generate_noisy(movelist);
@@ -154,7 +154,7 @@ bool MovePicker::qnext(Move &move) {
 }
 
 bool MovePicker::next(Move &move) {
-    Position &position = *search->position;
+    Position &position = search->position;
 
     auto can_move = [&](Move m) {
         return position.is_pseudolegal(m) && position.is_legal(m);

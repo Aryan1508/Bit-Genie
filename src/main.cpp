@@ -23,7 +23,7 @@
 int main(int argc, char **argv) {
     init_magic_moves();
     init_zobrist_keys();
-    Search::init();
+    init_search_tables();
     Network::init();
     UCI::init(argc, argv);
 }
