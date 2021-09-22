@@ -31,8 +31,8 @@ public:
         if (worker.joinable())
             end();
 
-        search->reset();
-        search->limits.stopwatch.go();
+        search->reset_history_tables();
+        search->reset_stats();
         worker = std::thread(bestmove, std::ref(*search), true);
     }
 
@@ -43,7 +43,7 @@ public:
         }
     }
 
-    bool is_searching() const noexcept {
+    bool is_searching() const {
         return worker.joinable();
     }
 
