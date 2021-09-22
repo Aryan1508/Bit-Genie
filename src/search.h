@@ -30,7 +30,6 @@ constexpr Score MIN_MATE_EVAL = MATE_EVAL - MAX_PLY;
 struct SearchStats {
     std::uint64_t nodes = 0;
     Depth ply           = 0;
-    Depth depth         = 0;
     Depth seldepth      = 0;
 };
 
@@ -66,7 +65,7 @@ public:
 
 public:
     SearchInfo() {
-        reset_history_tables();
+        reset();
     }
 
     void reset_history_tables() {
@@ -75,6 +74,23 @@ public:
         reset_history(capture_history, sizeof(capture_history));
         reset_history(counter_history, sizeof(counter_history));
         reset_history(eval, sizeof(eval));
+    }
+
+    void reset_limits() {
+        limits.time_set = false;
+        limits.stopped  = false;
+        limits.stopwatch.reset();
+        limits.max_depth = MAX_PLY;
+    }
+
+    void reset_stats() {
+        stats.nodes = stats.ply = stats.seldepth = 0;
+    }
+
+    void reset() {
+        reset_stats();
+        reset_limits();
+        reset_history_tables();
     }
 };
 

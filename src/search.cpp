@@ -37,6 +37,7 @@ constexpr Score SP_TABLE[5]{ 0, -100, -100, -300, -325 };
 
 void update_search_info(SearchInfo &search) {
     search.stats.nodes++;
+    search.stats.seldepth = std::max(search.stats.seldepth, search.stats.ply);
 
     if (search.stats.nodes % 2046 == 0) {
         const bool overtime   = search.limits.stopwatch.elapsed_time().count() >= search.limits.movetime;
@@ -411,7 +412,7 @@ SearchResult bestmove(SearchInfo &search, bool log) {
     SEARCH_ABORT       = false;
 
     for (std::int16_t depth = 1; depth <= search.limits.max_depth; depth++) {
-        search.stats.ply = 0;
+        search.stats.ply = search.stats.seldepth = 0;
 
         std::int16_t alpha = MIN_EVAL;
         std::int16_t beta  = MAX_EVAL;
