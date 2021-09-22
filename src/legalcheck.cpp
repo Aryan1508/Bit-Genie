@@ -18,7 +18,7 @@
 
 #include "position.h"
 
-constexpr uint64_t neighbor_files[64]{
+constexpr uint64_t ADJ_FILES_BB[64]{
     0X00202020202020202, 0X00505050505050505, 0X00a0a0a0a0a0a0a0a, 0X01414141414141414, 0X02828282828282828,
     0X05050505050505050, 0X0a0a0a0a0a0a0a0a0, 0X04040404040404040, 0X00202020202020202, 0X00505050505050505,
     0X00a0a0a0a0a0a0a0a, 0X01414141414141414, 0X02828282828282828, 0X05050505050505050, 0X0a0a0a0a0a0a0a0a0,
@@ -34,7 +34,7 @@ constexpr uint64_t neighbor_files[64]{
     0X02828282828282828, 0X05050505050505050, 0X0a0a0a0a0a0a0a0a0, 0X04040404040404040
 };
 
-constexpr uint64_t castle_attack_path[64]{
+constexpr uint64_t CASTLE_CHECK_MASK[64]{
     0x000000000000000000, 0x00000000000000000000, 0x00000000000000000008, 0x0000000000000000000,
     0x000000000000000000, 0x00000000000000000000, 0x00000000000000000020, 0x0000000000000000000,
     0x000000000000000000, 0x00000000000000000000, 0x00000000000000000000, 0x0000000000000000000,
@@ -53,45 +53,33 @@ constexpr uint64_t castle_attack_path[64]{
     0x000000000000000000, 0x00000000000000000000, 0x00002000000000000000, 0x0000000000000000000
 };
 
-static bool castle_path_is_clear(Position const &position, Square rook) {
-    return !(position.get_bb() & get_castling_path(rook));
-}
-
 bool Position::is_legal(Move move) const {
     if (move == MOVE_NULL)
         return false;
 
-    auto from = move.get_from();
-    auto to   = move.get_to();
-    auto flag = move.get_flag();
+    const auto from = move.get_from();
+    const auto to   = move.get_to();
+    const auto flag = move.get_flag();
 
     if (flag == MVEFLAG_NORMAL || flag == MVEFLAG_PROMOTION) {
         if (get_piece(from) == PCE_WKING || get_piece(from) == PCE_BKING) {
-            std::uint64_t occupancy = get_bb() ^ (1ull << from);
-            return !square_is_attacked(to, !side, occupancy);
-        }
-
-        else {
-            std::uint64_t occupancy = get_bb() ^ (1ull << from) ^ (1ull << to);
-            std::uint64_t enemy     = get_bb(!get_side());
-
-            Piece captured = get_piece(to);
+            return !square_is_attacked(to, !side, get_bb() ^ make_bb(from));
+        } else {
+            auto occupancy = get_bb() ^ make_bb(from) ^ make_bb(to);
+            auto enemy     = get_bb(!get_side());
+            auto captured  = get_piece(to);
 
             if (captured != PCE_NULL) {
-                occupancy ^= (1ull << to);
-                enemy ^= (1ull << to);
+                occupancy ^= make_bb(to);
+                enemy ^= make_bb(to);
             }
 
-            std::uint64_t pawns   = get_bb(PT_PAWN) & enemy;
-            std::uint64_t knights = get_bb(PT_KNIGHT) & enemy;
-            std::uint64_t bishops = get_bb(PT_BISHOP) & enemy;
-            std::uint64_t rooks   = get_bb(PT_ROOK) & enemy;
-            std::uint64_t queens  = get_bb(PT_QUEEN) & enemy;
-
-            Square king = get_lsb(get_bb(PT_KING, get_side()));
-
-            bishops |= queens;
-            rooks |= queens;
+            const auto queens  = get_bb(PT_QUEEN) & enemy;
+            const auto pawns   = get_bb(PT_PAWN) & enemy;
+            const auto knights = get_bb(PT_KNIGHT) & enemy;
+            const auto bishops = (get_bb(PT_BISHOP) | queens) & enemy;
+            const auto rooks   = (get_bb(PT_ROOK) | queens) & enemy;
+            const auto king    = get_lsb(get_bb(PT_KING, get_side()));
 
             return !(
                 (compute_pawn_attack_bb(king, side) & pawns) ||
@@ -99,28 +87,19 @@ bool Position::is_legal(Move move) const {
                 (compute_rook_attack_bb(king, occupancy) & rooks) ||
                 (compute_knight_attack_bb(king) & knights));
         }
-    }
-
-    else if (move.get_flag() == MVEFLAG_CASTLE) {
+    } else if (move.get_flag() == MVEFLAG_CASTLE) {
         return !square_is_attacked(to, !side);
-    }
+    } else {
+        const auto ep_bb = make_bb(static_cast<Square>(to ^ 8));
+        auto occupancy   = get_bb() ^ make_bb(from) ^ make_bb(to) ^ ep_bb;
+        auto enemy       = get_bb(!get_side()) ^ ep_bb;
 
-    else {
-        Square ep = static_cast<Square>(to ^ 8);
-        std::uint64_t occupancy =
-            get_bb() ^ (1ull << from) ^ (1ull << to) ^ (1ull << ep);
-        std::uint64_t enemy = get_bb(!get_side()) ^ (1ull << ep);
-
-        std::uint64_t pawns   = get_bb(PT_PAWN) & enemy;
-        std::uint64_t knights = get_bb(PT_KNIGHT) & enemy;
-        std::uint64_t bishops = get_bb(PT_BISHOP) & enemy;
-        std::uint64_t rooks   = get_bb(PT_ROOK) & enemy;
-        std::uint64_t queens  = get_bb(PT_QUEEN) & enemy;
-
-        Square king = get_lsb(get_bb(PT_KING, get_side()));
-
-        bishops |= queens;
-        rooks |= queens;
+        const auto queens  = get_bb(PT_QUEEN) & enemy;
+        const auto pawns   = get_bb(PT_PAWN) & enemy;
+        const auto knights = get_bb(PT_KNIGHT) & enemy;
+        const auto bishops = (get_bb(PT_BISHOP) | queens) & enemy;
+        const auto rooks   = (get_bb(PT_ROOK) | queens) & enemy;
+        const auto king    = get_lsb(get_bb(PT_KING, get_side()));
 
         return !(
             (compute_pawn_attack_bb(king, side) & pawns) ||
@@ -155,13 +134,13 @@ bool Position::is_pseudolegal(Move move) const {
         if (!test_bit(castle_rooks, to))
             return false;
 
-        if (!castle_path_is_clear(*this, to))
+        if (get_bb() & get_castling_path(to))
             return false;
 
         if (square_is_attacked(from, !get_side()))
             return false;
 
-        std::uint64_t path = castle_attack_path[to];
+        std::uint64_t path = CASTLE_CHECK_MASK[to];
         while (path) {
             Square sq = pop_lsb(path);
             if (square_is_attacked(sq, !side))
@@ -208,7 +187,7 @@ bool Position::is_pseudolegal(Move move) const {
             if (to != ep_sq)
                 return false;
 
-            if (!((neighbor_files[ep_sq]) & (1ull << from)))
+            if ((ADJ_FILES_BB[ep_sq] & make_bb(from)) == 0)
                 return false;
 
             captured = get_piece(static_cast<Square>(to ^ 8));
