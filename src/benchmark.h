@@ -68,20 +68,19 @@ void run_perft(Position &position, std::uint8_t depth, std::ostream &out = std::
 
 void run_bench() {
     StopWatch watch;
-    SearchInfo info;
     std::uint64_t nodes = 0;
 
-    std::ifstream bench_file("bench.txt");
-
-    if (!bench_file)
-        throw std::runtime_error("Couldn't find bench.txt to run benchmark");
+    const std::vector<std::string> bench_positions{
+#include "bench.txt"
+    };
 
     watch.go();
-    for (std::string fen; std::getline(bench_file, fen);) {
+    for (std::string const &fen : bench_positions) {
+        SearchInfo info;
         info.position.set_fen(fen);
         info.limits.max_depth = 11;
-
         bestmove(info, false);
+
         std::cout << fen << ": " << info.stats.nodes << '\n';
         nodes += info.stats.nodes;
     }
