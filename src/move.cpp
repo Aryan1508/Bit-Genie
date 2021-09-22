@@ -20,8 +20,7 @@
 #include "position.h"
 #include <sstream>
 
-namespace {
-constexpr uint64_t castle_updates[64]{
+static constexpr uint64_t CASTLE_UPDATE_MASK[64]{
     0x004400000000000040, 0x004400000000000044, 0x004400000000000044, 0x004400000000000044,
     0x004400000000000000, 0x004400000000000044, 0x004400000000000044, 0x004400000000000004,
     0x004400000000000044, 0x004400000000000044, 0x004400000000000044, 0x004400000000000044,
@@ -40,28 +39,26 @@ constexpr uint64_t castle_updates[64]{
     0x000000000000000044, 0x004400000000000044, 0x004400000000000044, 0x000400000000000044
 };
 
-void update_castle_rooks(std::uint64_t &rooks, Move move) {
-    constexpr auto &mask = castle_updates;
+static void update_castle_rooks(std::uint64_t &rooks, Move move) {
+    constexpr auto &mask = CASTLE_UPDATE_MASK;
     rooks &= mask[move.get_from()];
     rooks &= mask[move.get_to()];
 }
-} // namespace
 
 void Position::revert_move() {
     history_ply--;
     network.revert_hidden_updates();
 
-    auto move     = history[history_ply].move;
-    auto captured = history[history_ply].captured;
-    castle_rooks  = history[history_ply].castle_rooks;
-    halfmoves     = history[history_ply].halfmoves;
-    hash          = history[history_ply].key;
-    ep_sq         = history[history_ply].ep_sq;
-
-    side      = !side;
-    auto from = move.get_from();
-    auto to   = move.get_to();
-    auto flag = move.get_flag();
+    const auto move     = history[history_ply].move;
+    const auto captured = history[history_ply].captured;
+    const auto from     = move.get_from();
+    const auto to       = move.get_to();
+    const auto flag     = move.get_flag();
+    castle_rooks        = history[history_ply].castle_rooks;
+    halfmoves           = history[history_ply].halfmoves;
+    hash                = history[history_ply].key;
+    ep_sq               = history[history_ply].ep_sq;
+    side                = !side;
 
     if (flag == MVEFLAG_NORMAL) {
         move_piece(to, from);
@@ -92,29 +89,28 @@ void Position::revert_move() {
 }
 
 void Position::apply_move(Move move) {
+
     history[history_ply].move         = move;
     history[history_ply].castle_rooks = castle_rooks;
     history[history_ply].halfmoves    = halfmoves++;
     history[history_ply].key          = hash;
     history[history_ply].ep_sq        = ep_sq;
 
-    Piece &hist_captured = history[history_ply++].captured = PCE_NULL;
-
-    halfmoves++;
+    auto &hist_captured = history[history_ply++].captured;
+    const auto from     = move.get_from();
+    const auto to       = move.get_to();
+    const auto flag     = move.get_flag();
+    const auto moving   = get_piece(from);
+    const auto captured = get_piece(to);
+    hist_captured       = PCE_NULL;
+    NetworkUpdateList updates;
 
     if (ep_sq != SQ_NULL) {
         zobrist_hash_ep(hash, ep_sq);
         ep_sq = SQ_NULL;
     }
 
-    NetworkUpdateList updates;
-    auto from     = move.get_from();
-    auto to       = move.get_to();
-    auto flag     = move.get_flag();
-    auto moving   = get_piece(from);
-    auto captured = get_piece(to);
-
-    std::uint64_t old_rooks = castle_rooks;
+    const auto old_rooks = castle_rooks;
     update_castle_rooks(castle_rooks, move);
     zobrist_hash_castle(hash, old_rooks ^ castle_rooks);
 
@@ -122,8 +118,7 @@ void Position::apply_move(Move move) {
         if (captured != PCE_NULL) {
             hist_captured = remove_piece_hash(to);
             halfmoves     = 0;
-            updates.push_back(
-                InputUpdate(to, hist_captured, InputUpdate::Removal));
+            updates.push_back(InputUpdate(to, hist_captured, InputUpdate::Removal));
         }
 
         updates.push_back(InputUpdate(from, moving, InputUpdate::Removal));
@@ -134,9 +129,8 @@ void Position::apply_move(Move move) {
         if (moving == PCE_WPAWN || moving == PCE_BPAWN) {
             halfmoves = 0;
             if ((to ^ from) == 16) {
-                std::uint64_t enemy_pawns = get_bb(PT_PAWN, !get_side());
-                std::uint64_t ep_slots =
-                    compute_pawn_attack_bb(static_cast<Square>(to ^ 8), get_side());
+                const auto enemy_pawns = get_bb(PT_PAWN, !get_side());
+                const auto ep_slots    = compute_pawn_attack_bb(static_cast<Square>(to ^ 8), get_side());
 
                 if (enemy_pawns & ep_slots) {
                     ep_sq = static_cast<Square>(to ^ 8);
@@ -151,11 +145,10 @@ void Position::apply_move(Move move) {
 
         if (captured != PCE_NULL) {
             hist_captured = remove_piece_hash(to);
-            updates.push_back(
-                InputUpdate(to, hist_captured, InputUpdate::Removal));
+            updates.push_back(InputUpdate(to, hist_captured, InputUpdate::Removal));
         }
 
-        Piece promoted = make_piece(move.get_promoted(), get_side());
+        const auto promoted = make_piece(move.get_promoted(), get_side());
         remove_piece_hash(from);
         add_piece_hash(to, promoted);
 
@@ -164,7 +157,7 @@ void Position::apply_move(Move move) {
     }
 
     else if (flag == MVEFLAG_CASTLE) {
-        Square rook_from = SQ_NULL, rook_to = SQ_NULL;
+        auto rook_from = SQ_NULL, rook_to = SQ_NULL;
         if (to == SQ_C1) {
             rook_from = SQ_A1;
             rook_to   = SQ_D1;
@@ -179,7 +172,7 @@ void Position::apply_move(Move move) {
             rook_to   = SQ_F8;
         }
 
-        Piece king = moving, rook = get_piece(rook_from);
+        const auto king = moving, rook = get_piece(rook_from);
 
         move_piece_hash(from, to);
         move_piece_hash(rook_from, rook_to);
@@ -189,18 +182,18 @@ void Position::apply_move(Move move) {
         updates.push_back(InputUpdate(rook_from, rook, InputUpdate::Removal));
         updates.push_back(InputUpdate(rook_to, rook, InputUpdate::Addition));
     } else {
-        halfmoves = 0;
-        move_piece_hash(from, to);
-        Square cap_sq = static_cast<Square>(to ^ 8);
+        halfmoves         = 0;
+        const auto cap_sq = static_cast<Square>(to ^ 8);
 
         hist_captured = remove_piece_hash(cap_sq);
+        move_piece_hash(from, to);
 
         updates.push_back(InputUpdate(from, moving, InputUpdate::Removal));
         updates.push_back(InputUpdate(to, moving, InputUpdate::Addition));
-        updates.push_back(
-            InputUpdate(cap_sq, hist_captured, InputUpdate::Removal));
+        updates.push_back(InputUpdate(cap_sq, hist_captured, InputUpdate::Removal));
     }
 
+    halfmoves++;
     side = !side;
     zobrist_hash_side(hash);
     network.update_hidden_layer(updates);
