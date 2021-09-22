@@ -142,6 +142,45 @@ protected:
     State clock_state = State::idle;
 };
 
+template <typename Entry>
+class HashTable {
+private:
+    std::vector<Entry> entries;
+
+public:
+    HashTable() {
+        resize(8);
+    }
+
+    explicit HashTable(const std::uint64_t mb) {
+        resize(mb);
+    }
+
+    void resize(const std::uint64_t mb) {
+        entries.resize((mb * 1024 * 1024) / sizeof(Entry), Entry());
+    }
+
+    void reset(Entry const &entry) {
+        std::fill(entries.begin(), entries.end(), entry);
+    }
+
+    void reset() {
+        reset(Entry());
+    }
+
+    auto &probe(const std::uint64_t hash) {
+        return entries[hash % entries.size()];
+    }
+
+    auto const &probe(const std::uint64_t hash) const {
+        return entries[hash % entries.size()];
+    }
+
+    void add(const std::uint64_t hash, Entry const &entry) {
+        probe(hash) = entry;
+    }
+};
+
 inline void trim_str(std::string &str) {
     if (str.length() == 0)
         return;

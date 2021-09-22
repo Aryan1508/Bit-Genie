@@ -141,12 +141,14 @@ int nmp_depth(int depth, int eval, int beta) {
 void update_tt_after_search(
     Search::Info &search, SearchResult result, int depth, int original,
     int beta, int eval) {
-    TEFlag flag = result.score <= original ? TEFlag::upper
-                  : result.score >= beta   ? TEFlag::lower
-                                           : TEFlag::exact;
-    TT.add(
-        *search.position, result.best_move,
-        mate_score_to_tt(result.score, search.stats.ply), depth, flag, eval);
+    const auto flag  = result.score <= original ? TTFLAG_UPPER
+                       : result.score >= beta   ? TTFLAG_LOWER
+                                                : TTFLAG_EXACT;
+    const auto hash  = search.position->get_hash();
+    const auto move  = result.best_move;
+    const auto score = mate_score_to_tt(result.score, search.stats.ply);
+    const auto entry = TEntry{ hash, score, eval, move.get_move_bits(), depth, flag };
+    store_tentry(entry);
 }
 
 void update_history_tables_on_cutoff(
@@ -216,11 +218,11 @@ pvs(Search::Info &search, int depth, int alpha, int beta, bool do_null = true) {
     SearchResult result;
     MovePicker picker  = MovePicker(search);
     Position &position = *search.position;
-    TEntry &entry      = TT.retrieve(position);
+    TEntry &entry      = TT.probe(position.get_hash());
     bool pv_node       = is_pv_node(alpha, beta);
     bool in_check      = position.king_in_check();
     bool at_root       = search.stats.ply == 0;
-    bool tthit         = entry.hash == position.get_key();
+    bool tthit         = entry.hash == position.get_hash();
     int move_num       = 0;
     int original       = alpha;
 
@@ -236,9 +238,9 @@ pvs(Search::Info &search, int depth, int alpha, int beta, bool do_null = true) {
         Move move = Move(entry.move);
         int score = tt_score_to_mate(entry.score, search.stats.ply);
 
-        if (entry.flag == TEFlag::exact ||
-            (entry.flag == TEFlag::lower && score >= beta) ||
-            (entry.flag == TEFlag::upper && score <= alpha)) {
+        if (entry.flag == TTFLAG_EXACT ||
+            (entry.flag == TTFLAG_LOWER && score >= beta) ||
+            (entry.flag == TTFLAG_UPPER && score <= alpha)) {
             if (score >= beta)
                 update_history_tables_on_cutoff(
                     search, picker.movelist, move, depth);
@@ -355,6 +357,37 @@ std::string print_score(int score) {
     return o.str();
 }
 
+std::vector<Move> extract_pv(Position &position, int depth) {
+    auto move_exists = [&](Move move) {
+        Movelist movelist;
+        position.generate_legal(movelist);
+        return std::find(movelist.begin(), movelist.end(), move) !=
+               movelist.end();
+    };
+
+    std::vector<Move> pv;
+    int distance  = 0;
+    TEntry *entry = &TT.probe(position.get_hash());
+
+    while (entry->hash == position.get_hash() && depth != 0) {
+        Move pv_move = Move(entry->move);
+        if (move_exists(pv_move)) {
+            distance++;
+            position.apply_move(pv_move);
+            pv.push_back(pv_move);
+            depth--;
+        } else
+            break;
+
+        entry = &TT.probe(position.get_hash());
+    }
+
+    while (distance--)
+        position.revert_move();
+
+    return pv;
+}
+
 void print_info_string(SearchResult result, Search::Info &search, int depth) {
     using namespace std::chrono;
     std::cout << "info";
@@ -365,7 +398,7 @@ void print_info_string(SearchResult result, Search::Info &search, int depth) {
     std::cout << " time " << search.limits.stopwatch.elapsed_time().count();
     std::cout << " pv ";
 
-    for (auto m : TT.extract_pv(*search.position, depth)) {
+    for (auto m : extract_pv(*search.position, depth)) {
         std::cout << m << ' ';
     }
 

@@ -159,7 +159,7 @@ public:
         return get_bb(compute_piece_type(pce), compute_color(pce));
     }
 
-    auto get_key() const {
+    auto get_hash() const {
         return hash;
     }
 

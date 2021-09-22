@@ -6,7 +6,7 @@ EVALFILE = defaultnet.nn
 
 LFLAGS   := -lpthread
 WFLAGS   := -Wall -Wextra
-CXXFLAGS := -std=c++17 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
+CXXFLAGS := -std=c++17 $(WFLAGS) -O3 -g -march=native
 RFLAGS   := -std=c++17 -O3 -DNDEBUG -static 
 
 default:

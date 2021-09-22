@@ -16,53 +16,29 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include "move.h"
+#include "position.h"
+
 #include <vector>
 
-enum class TEFlag : std::uint8_t { none, lower, upper, exact };
-
 struct TEntry {
-    std::uint64_t hash = 0;
-    int16_t score      = 0;
-    int16_t seval      = 0;
-    std::uint16_t move = 0;
-    std::uint8_t depth = 0;
-    TEFlag flag        = TEFlag::none;
-
-    TEntry() = default;
-
-    TEntry(
-        std::uint64_t h, int16_t s, Move m, std::uint8_t d, TEFlag fl,
-        int16_t eval)
-        : hash(h), score(s), seval(eval), move(m.get_move_bits()), depth(d), flag(fl) {
-    }
+    std::uint64_t hash;
+    std::int16_t score;
+    std::int16_t seval;
+    std::uint16_t move;
+    std::uint8_t depth;
+    TTFlag flag;
 };
 
-class TTable {
-public:
-    TTable();
+inline HashTable<TEntry> TT;
 
-    TTable(int mb) {
-        resize(mb);
+inline void store_tentry(TEntry const &entry) {
+    auto &current = TT.probe(entry.hash);
+    if (entry.flag != TTFLAG_EXACT && entry.hash == current.hash && entry.depth < current.depth - 1) {
+        return;
     }
 
-    void resize(int);
-
-    void
-    add(Position const &, Move, int16_t score, std::uint8_t depth, TEFlag,
-        int16_t);
-
-    void reset() {
-        std::fill(entries.begin(), entries.end(), TEntry());
+    if (entry.flag == TTFLAG_EXACT || entry.depth * 3 > current.depth) {
+        current = entry;
     }
-
-    TEntry &retrieve(Position const &);
-
-    std::vector<Move> extract_pv(Position &, int);
-
-private:
-    std::vector<TEntry> entries;
-};
-
-inline TTable TT(8);
+}

@@ -162,11 +162,11 @@ bool MovePicker::next(Move &move) {
 
     if (stage == Stage::HashMove) {
         stage       = Stage::GenNoisy;
-        auto &entry = TT.retrieve(position);
+        auto &entry = TT.probe(position.get_hash());
 
         Move hmove = Move(entry.move);
 
-        if (entry.hash == position.get_key() && can_move(hmove)) {
+        if (entry.hash == position.get_hash() && can_move(hmove)) {
             move      = hmove;
             hash_move = move;
             return true;

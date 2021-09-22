@@ -71,6 +71,10 @@ enum MoveFlag : std::uint8_t {
     MVEFLAG_NORMAL, MVEFLAG_ENPASSANT, MVEFLAG_CASTLE, MVEFLAG_PROMOTION, MVEFLAG_TOTAL
 };
 
+enum TTFlag : std::uint8_t {
+    TTFLAG_LOWER, TTFLAG_UPPER, TTFLAG_EXACT, TTFLAG_NULL = 0
+};
+
 // clang-format on
 
 constexpr auto is_ok(const Square sq) {
