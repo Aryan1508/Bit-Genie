@@ -24,6 +24,6 @@ int main(int argc, char **argv) {
     init_magic_moves();
     init_zobrist_keys();
     init_search_tables();
-    Network::init();
-    UCI::init(argc, argv);
+    Network::init_weights();
+    init_uci(argc, argv);
 }

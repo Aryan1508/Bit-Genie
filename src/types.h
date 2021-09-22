@@ -75,7 +75,7 @@ enum TTFlag : std::uint8_t {
     TTFLAG_LOWER, TTFLAG_UPPER, TTFLAG_EXACT, TTFLAG_NULL = 0
 };
 
-typedef std::int16_t Depth;
+typedef std::int8_t Depth;
 typedef std::int16_t Score;
 
 // clang-format on

@@ -16,23 +16,46 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include "search.h"
+
 #include <thread>
+#include <memory>
 
-class SearchInit {
+class SearchThreadManager {
 public:
-    SearchInit();
-    ~SearchInit();
+    SearchThreadManager() {
+        search = std::make_unique<SearchInfo>();
+    }
 
-    void begin();
-    void end();
+    void start_new_search() {
+        if (worker.joinable())
+            end();
+
+        search->reset();
+        search->limits.stopwatch.go();
+        worker = std::thread(bestmove, std::ref(*search), true);
+    }
+
+    void end() {
+        if (is_searching()) {
+            SEARCH_ABORT = true;
+            worker.join();
+        }
+    }
+
     bool is_searching() const noexcept {
         return worker.joinable();
     }
 
-    SearchInfo *search;
+    void set_limits(SearchLimits const &limits) {
+        search->limits = limits;
+    }
+
+    auto &get_position() {
+        return search->position;
+    }
 
 private:
+    std::unique_ptr<SearchInfo> search;
     std::thread worker;
 };

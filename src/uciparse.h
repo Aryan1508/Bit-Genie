@@ -20,31 +20,29 @@
 #include <sstream>
 #include <vector>
 
-enum class UciCommands {
-    uci,
-    quit,
-    isready,
-    position,
-    go,
-    stop,
-    setoption,
-    ucinewgame,
-
-    // *debugging/other purpose commands*
-    print,
-    perft,
-    bench
+enum UciCommands {
+    UCICMD_UCI,
+    UCICMD_QUIT,
+    UCICMD_ISREADY,
+    UCICMD_POSITION,
+    UCICMD_GO,
+    UCICMD_STOP,
+    UCICMD_SETOPTION,
+    UCICMD_NEWGAME,
+    UCICMD_PRINT,
+    UCICMD_PERFT,
+    UCICMD_BENCH,
 };
 
 struct UciGo {
     int depth     = 64;
     int movestogo = 20;
 
-    int64_t btime    = -1;
-    int64_t wtime    = -1;
-    int64_t movetime = -1;
-    int64_t binc     = -1;
-    int64_t winc     = -1;
+    std::int64_t btime    = -1;
+    std::int64_t wtime    = -1;
+    std::int64_t movetime = -1;
+    std::int64_t binc     = -1;
+    std::int64_t winc     = -1;
 };
 
 class UciParser {

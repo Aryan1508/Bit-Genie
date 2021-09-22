@@ -23,13 +23,12 @@
 
 INCBIN(Network, EVALFILE);
 
-void Network::init() {
+void Network::init_weights() {
     auto data = reinterpret_cast<const std::uint32_t *>(gNetworkData);
     hash      = *(data + 1);
 
     data += 6;
-    std::memcpy(
-        &hidden_weights[0], data, HIDDEN_SIZE * INPUT_SIZE * sizeof(float));
+    std::memcpy(&hidden_weights[0], data, HIDDEN_SIZE * INPUT_SIZE * sizeof(float));
     data += HIDDEN_SIZE * INPUT_SIZE;
 
     std::memcpy(&hidden_biases[0], data, HIDDEN_SIZE * sizeof(float));
@@ -55,8 +54,7 @@ float Network::calculate_last_layer() {
     float sum = 0.0f;
 
     for (std::size_t k = 0; k < output_weights.size(); k++)
-        sum +=
-            std::max<float>(hidden_neurons.back()[k], 0.0f) * output_weights[k];
+        sum += std::max<float>(hidden_neurons.back()[k], 0.0f) * output_weights[k];
 
     return sum + output_bias;
 }
@@ -75,8 +73,7 @@ float Network::feed(NetworkInput const &sample) {
     return calculate_last_layer();
 }
 
-std::array<std::array<float, Network::HIDDEN_SIZE>, Network::INPUT_SIZE>
-    Network::hidden_weights;
+std::array<std::array<float, Network::HIDDEN_SIZE>, Network::INPUT_SIZE> Network::hidden_weights;
 std::array<float, Network::HIDDEN_SIZE> Network::hidden_biases;
 std::array<float, Network::HIDDEN_SIZE> Network::output_weights;
 float Network::output_bias;

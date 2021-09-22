@@ -30,7 +30,7 @@ namespace {
 Depth LMR_TABLE[65][64]{ 0 };
 
 // Late-move pruning
-Depth LMP_TABLE[65][2];
+std::int16_t LMP_TABLE[65][2];
 
 // Static-exchange evaluation pruning
 constexpr Score SP_TABLE[5]{ 0, -100, -100, -300, -325 };
@@ -378,7 +378,7 @@ std::vector<Move> extract_pv(Position &position, int depth) {
 void print_info_string(SearchResult result, SearchInfo &search, int depth) {
     std::cout << "info";
     std::cout << " depth " << depth;
-    std::cout << " seldepth " << search.stats.seldepth;
+    std::cout << " seldepth " << static_cast<int>(search.stats.seldepth);
     std::cout << " nodes " << search.stats.nodes;
     std::cout << " score " << print_score(result.score);
     std::cout << " time " << search.limits.stopwatch.elapsed_time().count();

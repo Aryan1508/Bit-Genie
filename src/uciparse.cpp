@@ -36,37 +36,37 @@ int UciParser::parse_perft() const {
 
 bool UciParser::operator==(UciCommands type) const {
     switch (type) {
-    case UciCommands::uci:
+    case UCICMD_UCI:
         return command == "uci";
 
-    case UciCommands::isready:
+    case UCICMD_ISREADY:
         return command == "isready";
 
-    case UciCommands::position:
+    case UCICMD_POSITION:
         return starts_with(command, "position");
 
-    case UciCommands::quit:
+    case UCICMD_QUIT:
         return command == "quit";
 
-    case UciCommands::print:
+    case UCICMD_PRINT:
         return command == "print";
 
-    case UciCommands::perft:
+    case UCICMD_PERFT:
         return starts_with(command, "perft");
 
-    case UciCommands::stop:
+    case UCICMD_STOP:
         return command == "stop";
 
-    case UciCommands::go:
+    case UCICMD_GO:
         return starts_with(command, "go");
 
-    case UciCommands::setoption:
+    case UCICMD_SETOPTION:
         return starts_with(command, "setoption");
 
-    case UciCommands::bench:
+    case UCICMD_BENCH:
         return command == "bench";
 
-    case UciCommands::ucinewgame:
+    case UCICMD_NEWGAME:
         return command == "ucinewgame";
 
     default:
@@ -75,9 +75,7 @@ bool UciParser::operator==(UciCommands type) const {
     }
 }
 
-std::pair<std::string, std::vector<std::string>>
-
-UciParser::parse_position_command() const {
+std::pair<std::string, std::vector<std::string>> UciParser::parse_position_command() const {
     std::string fen;
     std::vector<std::string> moves;
 
