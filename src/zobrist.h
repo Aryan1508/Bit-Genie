@@ -1,49 +1,32 @@
 /*
   Bit-Genie is an open-source, UCI-compliant chess engine written by
   Aryan Parekh - https://github.com/Aryan1508/Bit-Genie
-
   Bit-Genie is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-
   Bit-Genie is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "board.h"
 
-class ZobristKey
-{
-public:
-    ZobristKey();
-    void generate(Position const &);
+class Position;
 
-    void hash_side();
-    void hash_ep(Square);
-    void hash_piece(Square, Piece);
-    void hash_castle(uint64_t old, uint64_t updated);
-    void reset();
+typedef uint64_t ZobristKey;
 
-    uint64_t data() const { return hash; }
+ZobristKey generate_zobrist_hash(Position const &);
 
-    static void init();
+void zobrist_hash_piece(ZobristKey &, Piece, Square);
 
-    bool operator==(ZobristKey other) const
-    {
-        return hash == other.hash;
-    }
+void zobrist_hash_side(ZobristKey &);
 
-    friend std::ostream &operator<<(std::ostream &o, const ZobristKey);
+void zobrist_hash_ep(ZobristKey &, Square);
 
-private:
-    void hash_pieces(Position const &);
+void zobrist_hash_castle(ZobristKey &, uint64_t castle_bits);
 
-private:
-    uint64_t hash;
-};
+void init_zobrist_keys();

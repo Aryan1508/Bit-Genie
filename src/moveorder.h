@@ -19,34 +19,32 @@
 #include "search.h"
 #include "movelist.h"
 
-class MovePicker
-{
-public:
-    enum class Stage
-    {
-        HashMove,
-        GenNoisy,
-        GiveGoodNoisy,
-        Killer1,
-        Killer2,
-        GiveBadNoisy,
-        GenQuiet,
-        GiveQuiet
-    };
+enum MovePickStage : uint8_t {
+    STAGE_HASH_MOVE,
+    STAGE_GEN_NOISY,
+    STAGE_GOOD_NOISY,
+    STAGE_KILLER_1,
+    STAGE_KILLER_2,
+    STAGE_BAD_NOISY,
+    STAGE_GEN_QUIET,
+    STAGE_QUIET
+};
 
-    MovePicker(Search::Info&);
+class MovePicker {
+public:
+    MovePicker(SearchInfo &);
 
     bool next(Move &);
     bool qnext(Move &);
 
     Movelist movelist;
-    Stage stage = Stage::HashMove;
-    bool skip_quiets = false;
-    Move hash_move = NullMove;
-    Move killer1 = NullMove;
-    Move killer2 = NullMove;
+    MovePickStage stage = STAGE_HASH_MOVE;
+    bool skip_quiets    = false;
+    Move hash_move      = MOVE_NULL;
+    Move killer1        = MOVE_NULL;
+    Move killer2        = MOVE_NULL;
 
 private:
-    Search::Info *search;
+    SearchInfo *search;
     Movelist::iterator current;
 };

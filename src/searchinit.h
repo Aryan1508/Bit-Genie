@@ -16,24 +16,26 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "board.h"
 #include "search.h"
-#include <thread>
 
-class SearchInit
-{
+#include <thread>
+#include <memory>
+
+class SearchInit {
 public:
     SearchInit();
-    ~SearchInit();
-    
+
     void begin();
+
     void end();
-    bool is_searching() const noexcept
-    {
+
+    bool is_searching() const noexcept {
         return worker.joinable();
     }
 
-    Search::Info *search;
+    std::unique_ptr<SearchInfo> search;
+
 private:
     std::thread worker;
 };

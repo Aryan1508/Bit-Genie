@@ -21,32 +21,28 @@
 #include "net_input.h"
 #include "fixed_list.h"
 
-class Network
-{
+class Network {
 public:
     static constexpr int INPUT_SIZE  = 768;
     static constexpr int HIDDEN_SIZE = 128;
     static constexpr int OUTPUT_SIZE = 1;
 
-    Network()
-    {
+    Network() {
         hidden_neurons.push_back({});
         hidden_neurons.back().fill(0.0f);
     }
 
     float calculate_last_layer();
-    
-    float feed(NetworkInput const&);
-    
-    void update_hidden_layer(NetworkUpdateList const&);
 
-    void revert_hidden_updates()
-    {
+    float feed(NetworkInput const &);
+
+    void update_hidden_layer(NetworkUpdateList const &);
+
+    void revert_hidden_updates() {
         hidden_neurons.pop_back();
     }
 
-    void recalculate_hidden_layer(NetworkInput const& input)
-    {
+    void recalculate_hidden_layer(NetworkInput const &input) {
         hidden_neurons.clear();
         hidden_neurons.push_back({});
         feed(input);
@@ -54,10 +50,10 @@ public:
 
     static void init();
 
-    static std::uint32_t get_hash() 
-    {
+    static std::uint32_t get_hash() {
         return hash;
     }
+
 private:
     std::vector<std::array<float, HIDDEN_SIZE>> hidden_neurons;
 

@@ -21,11 +21,10 @@
 #include "zobrist.h"
 #include "network.h"
 
-int main(int argc, char** argv)
-{
-    Attacks::init();
-    ZobristKey::init();
-    Search::init();
+int main(int argc, char **argv) {
+    init_magics();
+    init_zobrist_keys();
+    init_search_tables();
     Network::init();
-    UCI::init(argc, argv);
+    init_uci(argc, argv);
 }

@@ -20,100 +20,69 @@
 #include "position.h"
 #include "magicmoves.hpp"
 
-namespace Attacks
-{
-    inline void init()
-    {
-        initmagicmoves();
+inline uint64_t generate_pawn_attacks_bb(Square sq, Color side) {
+    return PAWN_ATTACKS_BB[side][sq];
+}
+
+inline uint64_t generate_knight_attacks_bb(Square sq) {
+    return KNIGHT_ATTACKS_BB[sq];
+}
+
+inline uint64_t generate_king_attacks_bb(Square sq) {
+    return KING_ATTACKS_BB[sq];
+}
+
+inline uint64_t generate_bishop_attacks_bb(Square sq, uint64_t occ) {
+    return Bmagic(sq, occ);
+}
+
+inline uint64_t generate_rook_attacks_bb(Square sq, uint64_t occ) {
+    return Rmagic(sq, occ);
+}
+
+inline uint64_t generate_queen_attacks_bb(Square sq, uint64_t occ) {
+    return Qmagic(sq, occ);
+}
+
+inline bool square_is_attacked(Position const &position, Square sq, Color enemy, uint64_t occupancy) {
+    auto pawns   = position.get_bb(PT_PAWN, enemy);
+    auto knights = position.get_bb(PT_KNIGHT, enemy);
+    auto queens  = position.get_bb(PT_QUEEN, enemy);
+    auto kings   = position.get_bb(PT_KING, enemy);
+    auto rooks   = position.get_bb(PT_ROOK, enemy) | queens;
+    auto bishops = position.get_bb(PT_BISHOP, enemy) | queens;
+    return (PAWN_ATTACKS_BB[!enemy][sq] & pawns) || (generate_bishop_attacks_bb(sq, occupancy) & bishops) || (generate_rook_attacks_bb(sq, occupancy) & rooks) || (generate_knight_attacks_bb(sq) & knights) || (generate_king_attacks_bb(sq) & kings);
+}
+
+inline bool square_is_attacked(Position const &position, Square sq, Color enemy) {
+    return square_is_attacked(position, sq, enemy, position.get_bb());
+}
+
+inline uint64_t generate_sq_attackers_bb(Position const &position, Square sq) {
+    auto occ         = position.get_bb();
+    auto wpawns      = position.get_bb(PCE_WPAWN);
+    auto bpawns      = position.get_bb(PCE_BPAWN);
+    auto knights     = position.get_bb(PT_KNIGHT);
+    auto queens      = position.get_bb(PT_QUEEN);
+    auto kings       = position.get_bb(PT_KING);
+    auto rooks       = position.get_bb(PT_ROOK) | queens;
+    auto bishops     = position.get_bb(PT_BISHOP) | queens;
+    auto p_attackers = (generate_pawn_attacks_bb(sq, CLR_WHITE) & bpawns) | (generate_pawn_attacks_bb(sq, CLR_BLACK) & wpawns);
+    return p_attackers | (generate_knight_attacks_bb(sq) & knights) | (generate_king_attacks_bb(sq) & kings) | (generate_bishop_attacks_bb(sq, occ) & bishops) | (generate_rook_attacks_bb(sq, occ) & rooks);
+}
+
+inline uint64_t generate_attacks_bb(PieceType piece, Square sq, uint64_t occ) {
+    switch (piece) {
+    case PT_KNIGHT:
+        return generate_knight_attacks_bb(sq);
+    case PT_BISHOP:
+        return generate_bishop_attacks_bb(sq, occ);
+    case PT_ROOK:
+        return generate_rook_attacks_bb(sq, occ);
+    case PT_QUEEN:
+        return generate_queen_attacks_bb(sq, occ);
+    default:
+        return generate_king_attacks_bb(sq);
     }
-
-    inline uint64_t pawn(uint64_t pawns, Color side)
-    {
-        uint64_t forward = shift(pawns, relative_forward(side));
-        return shift<Direction::west>(forward) | shift<Direction::east>(forward);
-    }
-
-    inline uint64_t pawn(Square sq, Color side)
-    {
-        return BitMask::pawn_attacks[side][sq];
-    }
-
-    inline uint64_t knight(Square sq)
-    {
-        return BitMask::knight_attacks[sq];
-    }
-
-    inline uint64_t king(Square sq)
-    {
-        return BitMask::king_attacks[sq];
-    }
-
-    inline uint64_t bishop(Square sq, uint64_t occ)
-    {
-        return Bmagic(sq, occ);
-    }
-
-    inline uint64_t rook(Square sq, uint64_t occ)
-    {
-        return Rmagic(sq, occ);
-    }
-
-    inline uint64_t queen(Square sq, uint64_t occ)
-    {
-        return Qmagic(sq, occ);
-    }
-
-    inline bool square_attacked(Position const &position, Square sq, Color enemy, uint64_t occupancy)
-    { 
-        uint64_t pawns   = position.get_bb(Pawn  , enemy);
-        uint64_t knights = position.get_bb(Knight, enemy);
-        uint64_t queens  = position.get_bb(Queen , enemy);
-        uint64_t kings   = position.get_bb(King  , enemy);
-        uint64_t rooks   = position.get_bb(Rook  , enemy) | queens;
-        uint64_t bishops = position.get_bb(Bishop, enemy) | queens;
-
-        return (BitMask::pawn_attacks[!enemy][sq] & pawns) 
-            || (bishop(sq, occupancy) & bishops) 
-            || (rook  (sq, occupancy) & rooks  )
-            || (knight(sq           ) & knights) 
-            || (king  (sq           ) & kings  );
-    }
-
-    inline bool square_attacked(Position const &position, Square sq, Color enemy)
-    {
-        return square_attacked(position, sq, enemy, position.get_bb());
-    }
-
-    inline uint64_t attackers_to_sq(Position const &position, Square sq)
-    {
-        uint64_t occ     = position.get_bb();
-        uint64_t wpawns  = position.get_bb(Piece::wPawn);
-        uint64_t bpawns  = position.get_bb(Piece::bPawn);
-        uint64_t knights = position.get_bb(Knight);
-        uint64_t queens  = position.get_bb(Queen );
-        uint64_t kings   = position.get_bb(King  );
-        uint64_t rooks   = position.get_bb(Rook  ) | queens;
-        uint64_t bishops = position.get_bb(Bishop) | queens;
-
-        uint64_t p_attackers =  (pawn(sq, Color::White) & bpawns)
-                             |  (pawn(sq, Color::Black) & wpawns);
-        
-        return p_attackers | (knight(sq     ) & knights)
-                           | (king  (sq     ) & kings  )
-                           | (bishop(sq, occ) & bishops)
-                           | (rook  (sq, occ) & rooks  );
-    }
-
-    inline uint64_t generate(PieceType piece, Square sq, uint64_t occ)
-    {
-        switch (piece)
-        {
-            case Knight: return knight(sq);
-            case Bishop: return bishop(sq, occ);
-            case Rook  : return rook(sq, occ);
-            case Queen : return queen(sq, occ);
-            default    : return king(sq);
-        }
-        return 0;
-    }
+    return 0;
 }

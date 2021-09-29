@@ -18,12 +18,11 @@
 #include "move.h"
 #include "zobrist.h"
 
-struct PositionUndo
-{
-    int        halfmoves;
-    Square     ep_sq;
-    ZobristKey key;
-    Piece      captured;
-    Move       move;
-    uint64_t   castle_rooks;
+struct PositionUndo {
+    int halfmoves;
+    Square ep_sq;
+    ZobristKey hash;
+    Piece captured;
+    Move move;
+    uint64_t castle_rooks;
 };

@@ -19,71 +19,60 @@
 #include "position.h"
 #include <algorithm>
 
-static inline int mb_to_b(int mb)
-{
+static inline int mb_to_b(int mb) {
     return mb * 1024 * 1024;
 }
 
-TTable::TTable()
-{
+TTable::TTable() {
     resize(8);
 }
 
-void TTable::resize(int mb)
-{
+void TTable::resize(int mb) {
     entries.resize(mb_to_b(mb) / sizeof(TEntry), TEntry());
 }
 
-void TTable::add(Position const &position, Move move, int16_t score, uint8_t depth, TEFlag flag, int16_t seval)
-{
-    uint64_t hash = position.get_key();
-    uint64_t index = hash % entries.size(); 
+void TTable::add(Position const &position, Move move, int16_t score, uint8_t depth, TTFlag flag, int16_t seval) {
+    auto hash  = position.get_key();
+    auto index = hash % entries.size();
 
-    if (flag != TEFlag::exact && hash == entries[index].hash && depth < entries[index].depth - 1) return;
+    if (flag != TTFLAG_EXACT && hash == entries[index].hash && depth < entries[index].depth - 1)
+        return;
 
-    if (flag == TEFlag::exact || depth * 3 > entries[index].depth)
+    if (flag == TTFLAG_EXACT || depth * 3 > entries[index].depth)
         entries[index] = TEntry(hash, score, move, depth, flag, seval);
 }
 
-TEntry &TTable::retrieve(Position const &position)
-{
-    uint64_t hash = position.get_key();
-    uint64_t index = hash % entries.size();
+TEntry &TTable::retrieve(Position const &position) {
+    auto hash  = position.get_key();
+    auto index = hash % entries.size();
     return entries[index];
 }
 
-std::vector<Move> TTable::extract_pv(Position& position, int depth) 
-{
-    auto move_exists = 
-    [&](Move move)
-    {
-        Movelist movelist;
-        position.generate_legal(movelist);
-        return std::find(movelist.begin(), movelist.end(), move) != movelist.end();
-    };
+std::vector<Move> TTable::extract_pv(Position &position, int depth) {
+    auto move_exists =
+        [&](Move move) {
+            Movelist movelist;
+            position.generate_legal(movelist);
+            return std::find(movelist.begin(), movelist.end(), move) != movelist.end();
+        };
 
     std::vector<Move> pv;
-    int distance = 0;
-    TEntry *entry = &retrieve(position);
+    auto distance = 0;
+    auto entry    = &retrieve(position);
 
-    while (entry->hash == position.get_key() && depth != 0)
-    {
+    while (entry->hash == position.get_key() && depth != 0) {
         Move pv_move = Move(entry->move);
-        if (move_exists(pv_move))
-        {
+        if (move_exists(pv_move)) {
             distance++;
             position.apply_move(pv_move);
             pv.push_back(pv_move);
             depth--;
-        }
-        else
+        } else
             break;
-
         entry = &retrieve(position);
     }
-
-    while(distance--)
+    while (distance--) {
         position.revert_move();
-
+    }
     return pv;
 }

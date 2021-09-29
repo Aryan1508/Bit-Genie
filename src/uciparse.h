@@ -18,10 +18,8 @@
 #pragma once
 #include <sstream>
 #include <vector>
-#include "misc.h"
-
-enum class UciCommands
-{
+#include "board.h"
+enum class UciCommands {
     uci,
     quit,
     isready,
@@ -37,20 +35,18 @@ enum class UciCommands
     bench
 };
 
-struct UciGo
-{
-    int depth = 64;
+struct UciGo {
+    int depth     = 64;
     int movestogo = 20;
 
-    int64_t btime = -1;
-    int64_t wtime = -1;
+    int64_t btime    = -1;
+    int64_t wtime    = -1;
     int64_t movetime = -1;
-    int64_t binc = -1;
-    int64_t winc = -1;
+    int64_t binc     = -1;
+    int64_t winc     = -1;
 };
 
-class UciParser
-{
+class UciParser {
 public:
     UciParser() = default;
 
@@ -61,7 +57,7 @@ public:
     parse_position_command() const;
 
     int parse_perft() const;
-    UciGo parse_go(Color) const;
+    UciGo parse_go() const;
     std::pair<std::string, std::string>
     parse_setoption() const;
 

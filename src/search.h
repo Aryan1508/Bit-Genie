@@ -22,25 +22,21 @@
 #include "searchlimits.h"
 #include <atomic>
 
-namespace Search 
-{
-    struct Info
-    {
-        Position*  position;
-        Stats      stats;
-        Limits     limits;
-        Move       killers[64][2] = {NullMove};
-        HistoryTable    history = {0};
-        HistoryTable   capture_history = {0};   
-        CounterHistoryTable counter_history = {0};
+struct SearchInfo {
+    Position *position;
+    SearchStats stats;
+    SearchLimits limits;
+    KillerTable killers                 = { MOVE_NULL };
+    EvalHistory eval                    = { 0 };
+    HistoryTable history                = { 0 };
+    HistoryTable capture_history        = { 0 };
+    CounterHistoryTable counter_history = { 0 };
 
-        int eval[64] = {0};
+    void update();
+};
 
-        void update();
-    };
+void init_search_tables();
 
-    void init();
-    uint64_t bestmove(Info&, bool log);
-}
+void search_position(SearchInfo &, bool log);
 
 inline std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);

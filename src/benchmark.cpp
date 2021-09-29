@@ -23,76 +23,65 @@
 #include <iomanip>
 #include <cmath>
 
-namespace 
-{
-    const std::array<std::string, 50> benchmark_fens
-    {
-        #include "bench.txt"
-    };
+namespace {
+const std::array<std::string, 50> benchmark_fens{
+#include "bench.txt"
+};
 
-    uint64_t perft(Position& position, int depth, bool root=true)
-    {
-        Movelist movelist;
-        position.generate_legal(movelist);
-        uint64_t nodes = 0;
+uint64_t perft(Position &position, int depth, bool root = true) {
+    Movelist movelist;
+    position.generate_legal(movelist);
+    uint64_t nodes = 0;
 
-        if (depth == 1)
-            return movelist.size();
+    if (depth == 1)
+        return movelist.size();
 
-        for(auto move : movelist)
-        {
-            position.apply_move(move);
-            uint64_t child = perft(position, depth - 1, false);
-            position.revert_move();
+    for (auto move : movelist) {
+        position.apply_move(move);
+        uint64_t child = perft(position, depth - 1, false);
+        position.revert_move();
 
-            if (root)
-                std::cout << move << ": " << child << '\n';
-            nodes += child;
-        }
-        return nodes;
+        if (root)
+            std::cout << move << ": " << child << '\n';
+        nodes += child;
     }
+    return nodes;
+}
 }
 
-namespace BenchMark
-{
-    void perft(Position &position, int depth)
-    {
-        StopWatch<> watch;
-        watch.go();
-        uint64_t nodes = ::perft(position, depth);
-        watch.stop();
+void perft(Position &position, int depth) {
+    StopWatch<> watch;
+    watch.go();
+    auto nodes = perft(position, depth, true);
+    watch.stop();
 
-        long long elapsed = std::max(1ll, static_cast<long long>((watch.elapsed_time()).count()));
-        double elapsed_seconds = elapsed / 1000.0f;
+    long long elapsed      = std::max(1ll, static_cast<long long>((watch.elapsed_time()).count()));
+    double elapsed_seconds = elapsed / 1000.0f;
 
-        std::cout << "\nnodes: " << nodes;
-        std::cout << "\ttime: " << std::setprecision(2) << std::fixed << elapsed_seconds << " seconds";
-        
-        if (elapsed_seconds >= 1)
-            std::cout << "\tnps: " << int(nodes / elapsed_seconds);
-        
-        std::cout << std::endl;
+    std::cout << "\nnodes: " << nodes;
+    std::cout << "\ttime: " << std::setprecision(2) << std::fixed << elapsed_seconds << " seconds";
+
+    if (elapsed_seconds >= 1)
+        std::cout << "\tnps: " << int(nodes / elapsed_seconds);
+
+    std::cout << std::endl;
+}
+
+void bench(Position &position) {
+    StopWatch watch;
+    watch.go();
+    auto nodes = 0;
+    for (auto const &fen : benchmark_fens) {
+        position.set_fen(fen);
+        SearchInfo info;
+        info.position         = &position;
+        info.limits.max_depth = 11;
+        search_position(info, false);
+
+        std::cout << fen << ": " << info.stats.nodes << '\n';
+        nodes += info.stats.nodes;
     }
-
-    void bench(Position& position) 
-    {
-        StopWatch<> watch;
-        watch.go();
-        uint64_t nodes = 0;
-        for (std::string_view fen : benchmark_fens)
-        {
-            position.set_fen(fen);
-            Search::Info info;
-            info.position = &position;
-            info.limits.max_depth = 11;
-
-            auto count = Search::bestmove(info, false);
-            std::cout << fen << ": " << count << '\n';
-            nodes += count;
-        }
-        watch.stop();
-        long long elapsed = watch.elapsed_time().count();
-
-        std::cout << nodes << " nodes " << std::fixed << std::setprecision(0) << std::round(nodes / (elapsed / 1000.0f)) << " nps" << std::endl;
-    }
+    watch.stop();
+    auto elapsed = watch.elapsed_time().count();
+    std::cout << nodes << " nodes " << std::fixed << std::setprecision(0) << std::round(nodes / (elapsed / 1000.0f)) << " nps" << std::endl;
 }

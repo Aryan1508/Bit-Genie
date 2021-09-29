@@ -16,56 +16,52 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "board.h"
 #include "move.h"
 #include <vector>
 
-enum class TEFlag : uint8_t
-{
-    none,
-    lower,
-    upper,
-    exact
+enum TTFlag : uint8_t {
+    TTFLAG_LOWER,
+    TTFLAG_UPPER,
+    TTFLAG_EXACT,
+    TTFLAG_NULL = 0
 };
 
-struct TEntry
-{
+struct TEntry {
     uint64_t hash = 0;
     int16_t score = 0;
     int16_t seval = 0;
     uint16_t move = 0;
     uint8_t depth = 0;
-    TEFlag flag = TEFlag::none;
+    TTFlag flag   = TTFLAG_NULL;
 
     TEntry() = default;
 
-    TEntry(uint64_t h, int16_t s, Move m, uint8_t d, TEFlag fl, int16_t eval)
-        : hash(h), score(s), seval(eval), move(m.data), depth(d), flag(fl)
-    {
+    TEntry(uint64_t h, int16_t s, Move m, uint8_t d, TTFlag fl, int16_t eval)
+        : hash(h), score(s), seval(eval), move(m.data), depth(d), flag(fl) {
     }
 };
 
-class TTable
-{
+class TTable {
 public:
     TTable();
 
-    TTable(int mb) { resize(mb); }
+    TTable(int mb) {
+        resize(mb);
+    }
 
     void resize(int);
-   
-    void add(Position const &, Move, int16_t score, uint8_t depth, TEFlag, int16_t);
-   
-    void reset()
-    {
+
+    void add(Position const &, Move, int16_t score, uint8_t depth, TTFlag, int16_t);
+
+    void reset() {
         std::fill(entries.begin(), entries.end(), TEntry());
     }
 
     TEntry &retrieve(Position const &);
 
-    std::vector<Move> extract_pv(Position&, int);
+    std::vector<Move> extract_pv(Position &, int);
 
-    
 private:
     std::vector<TEntry> entries;
 };

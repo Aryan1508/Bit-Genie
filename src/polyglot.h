@@ -15,38 +15,35 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#pragma once 
-#include "misc.h"
-#include <string_view>
+#pragma once
+#include "move.h"
+#include "board.h"
 #include <vector>
+#include <string_view>
 
-namespace PolyGlot
-{
-    class Book
-    {
-    public:
-        Book() = default;
+namespace PolyGlot {
+class Book {
+public:
+    Book() = default;
 
-        void open(std::string_view path);
-        Move probe(Position const&) const;
+    void open(std::string_view path);
+    Move probe(Position const &) const;
 
-        size_t size() const 
-        {
-            return entries.size();
-        }
+    size_t size() const {
+        return entries.size();
+    }
 
-        bool enabled = false;
+    bool enabled = false;
 
-    private:
-        struct Entry 
-        {
-            uint64_t key;
-            uint16_t move;
-            uint16_t weight;
-            uint32_t learn;
-        };
-        std::vector<Entry> entries; 
+private:
+    struct Entry {
+        uint64_t key;
+        uint16_t move;
+        uint16_t weight;
+        uint32_t learn;
     };
+    std::vector<Entry> entries;
+};
 
-    inline Book book;
+inline Book book;
 }

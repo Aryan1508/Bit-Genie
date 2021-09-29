@@ -16,10 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "misc.h"
+#include "board.h"
 
-namespace BenchMark
-{
-    void perft(Position &, int depth);
-    void bench(Position&);
-}
+void perft(Position &, int depth);
+void bench(Position &);

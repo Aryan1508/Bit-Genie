@@ -16,22 +16,19 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "move.h"
-#include "bitmask.h"
+#include "attacks.h"
 #include "position.h"
 #include <sstream>
 
-namespace 
-{
-    void update_castle_rooks(uint64_t& rooks, Move move)
-    {
-        constexpr auto& mask = BitMask::castle_updates;
-        rooks &= mask[move.from()];
-        rooks &= mask[move.to()];
-    }
+namespace {
+void update_castle_rooks(uint64_t &rooks, Move move) {
+    constexpr auto &mask = CASTLE_MOVE_UPDATES_BB;
+    rooks &= mask[move.from()];
+    rooks &= mask[move.to()];
+}
 }
 
-void Position::revert_move()
-{
+void Position::revert_move() {
     history_ply--;
     network.revert_hidden_updates();
 
@@ -39,79 +36,71 @@ void Position::revert_move()
     auto captured = history[history_ply].captured;
     castle_rooks  = history[history_ply].castle_rooks;
     halfmoves     = history[history_ply].halfmoves;
-    key           = history[history_ply].key;
+    hash          = history[history_ply].hash;
     ep_sq         = history[history_ply].ep_sq;
+    side          = !side;
+    auto from     = move.from();
+    auto to       = move.to();
+    auto flag     = move.flag();
 
-    side = !side;
-    auto  from     = move.from();
-    auto  to       = move.to();
-    auto  flag     = move.flag();
-
-    if (flag == Move::Flag::normal)
-    {
+    if (flag == MVEFLAG_NORMAL) {
         move_piece(to, from);
-        if (captured != Piece::Empty)
+        if (captured != PCE_NULL)
             add_piece(to, captured);
     }
 
-    else if (flag == Move::Flag::promotion)
-    {
-        add_piece(from, make_piece(PieceType::Pawn, side));
+    else if (flag == MVEFLAG_PROMOTION) {
+        add_piece(from, make_piece(PT_PAWN, side));
         remove_piece(to);
 
-        if (captured != Piece::Empty)
+        if (captured != PCE_NULL)
             add_piece(to, captured);
-    }
-    else if (flag == Move::Flag::castle)
-    {
+    } else if (flag == MVEFLAG_CASTLE) {
         move_piece(to, from);
-        if       (to == Square::C1) move_piece(Square::D1, Square::A1);
-        else if  (to == Square::G1) move_piece(Square::F1, Square::H1);
-        else if  (to == Square::C8) move_piece(Square::D8, Square::A8);
-        else if  (to == Square::G8) move_piece(Square::F8, Square::H8);
-    }
-    else 
-    {
+        if (to == SQ_C1)
+            move_piece(SQ_D1, SQ_A1);
+        else if (to == SQ_G1)
+            move_piece(SQ_F1, SQ_H1);
+        else if (to == SQ_C8)
+            move_piece(SQ_D8, SQ_A8);
+        else if (to == SQ_G8)
+            move_piece(SQ_F8, SQ_H8);
+    } else {
         move_piece(to, from);
         add_piece(static_cast<Square>(to ^ 8), captured);
     }
 }
 
-void Position::apply_move(Move move)
-{
+void Position::apply_move(Move move) {
     history[history_ply].move         = move;
     history[history_ply].castle_rooks = castle_rooks;
     history[history_ply].halfmoves    = halfmoves++;
-    history[history_ply].key          = key;
+    history[history_ply].hash         = hash;
     history[history_ply].ep_sq        = ep_sq;
-
-    Piece& hist_captured = history[history_ply++].captured = Piece::Empty;
-
-    halfmoves++;
-    
-    if (ep_sq != Square::bad_sq)
-    {
-        key.hash_ep(ep_sq);
-        ep_sq = Square::bad_sq;
-    }
+    auto &hist_captured = history[history_ply++].captured = PCE_NULL;
 
     NetworkUpdateList updates;
-    auto  from     = move.from();
-    auto  to       = move.to();
-    auto  flag     = move.flag();
-    auto  moving   = get_piece(from);
-    auto  captured = get_piece(to);
+    auto from      = move.from();
+    auto to        = move.to();
+    auto flag      = move.flag();
+    auto moving    = get_piece(from);
+    auto captured  = get_piece(to);
+    auto old_rooks = castle_rooks;
 
-    uint64_t old_rooks = castle_rooks;
+    halfmoves++;
+
+    if (ep_sq != SQ_NULL) {
+        zobrist_hash_ep(hash, ep_sq);
+        ep_sq = SQ_NULL;
+    }
+
     update_castle_rooks(castle_rooks, move);
-    key.hash_castle(old_rooks, castle_rooks);
+    zobrist_hash_castle(hash, old_rooks ^ castle_rooks);
 
-    if (flag == Move::Flag::normal)
-    {
-        if (captured != Piece::Empty)
-        {
+    if (flag == MVEFLAG_NORMAL) {
+        if (captured != PCE_NULL) {
             hist_captured = remove_piece_hash(to);
-            halfmoves = 0;
+            halfmoves     = 0;
             updates.push_back(InputUpdate(to, hist_captured, InputUpdate::Removal));
         }
 
@@ -120,136 +109,112 @@ void Position::apply_move(Move move)
 
         move_piece_hash(from, to);
 
-        if (moving == wPawn || moving == bPawn)
-        {
+        if (moving == PCE_WPAWN || moving == PCE_BPAWN) {
             halfmoves = 0;
-            if ((to ^ from) == 16)
-            {
-                uint64_t enemy_pawns = get_bb(PieceType::Pawn, !get_side());
-                uint64_t ep_slots    = BitMask::pawn_attacks[get_side()][to ^ 8];
+            if ((to ^ from) == 16) {
+                auto enemy_pawns = get_bb(PT_PAWN, !get_side());
+                auto ep_slots    = generate_pawn_attacks_bb(static_cast<Square>(to ^ 8), get_side());
 
-                if (enemy_pawns & ep_slots)
-                {
+                if (enemy_pawns & ep_slots) {
                     ep_sq = static_cast<Square>(to ^ 8);
-                    key.hash_ep(ep_sq);
+                    zobrist_hash_ep(hash, ep_sq);
                 }
             }
         }
     }
 
-    else if (flag == Move::Flag::promotion)
-    {
+    else if (flag == MVEFLAG_PROMOTION) {
         halfmoves = 0;
 
-        if (captured != Piece::Empty)
-        {
+        if (captured != PCE_NULL) {
             hist_captured = remove_piece_hash(to);
             updates.push_back(InputUpdate(to, hist_captured, InputUpdate::Removal));
         }
 
-        Piece promoted = make_piece(move.promoted(), get_side());
+        auto promoted = make_piece(move.promoted(), get_side());
         remove_piece_hash(from);
         add_piece_hash(to, promoted);
 
         updates.push_back(InputUpdate(from, moving, InputUpdate::Removal));
-        updates.push_back(InputUpdate(  to, promoted, InputUpdate::Addition));
+        updates.push_back(InputUpdate(to, promoted, InputUpdate::Addition));
     }
 
-    else if (flag == Move::Flag::castle)
-    {
-        Square rook_from = bad_sq, rook_to =bad_sq;
-        if (to == Square::C1)
-        {
-            rook_from = Square::A1;
-            rook_to   = Square::D1;
-        }
-        else if (to == Square::G1)
-        {
-            rook_from = Square::H1;
-            rook_to   = Square::F1;
-        }
-        else if  (to == Square::C8)
-        {
-            rook_from = Square::A8;
-            rook_to   = Square::D8;
-        }
-        else if  (to == Square::G8) 
-        {
-            rook_from = Square::H8;
-            rook_to   = Square::F8;
+    else if (flag == MVEFLAG_CASTLE) {
+        auto rook_from = SQ_NULL, rook_to = SQ_NULL;
+        if (to == SQ_C1) {
+            rook_from = SQ_A1;
+            rook_to   = SQ_D1;
+        } else if (to == SQ_G1) {
+            rook_from = SQ_H1;
+            rook_to   = SQ_F1;
+        } else if (to == SQ_C8) {
+            rook_from = SQ_A8;
+            rook_to   = SQ_D8;
+        } else if (to == SQ_G8) {
+            rook_from = SQ_H8;
+            rook_to   = SQ_F8;
         }
 
-        Piece king = moving, rook = get_piece(rook_from);
-
+        auto king = moving, rook = get_piece(rook_from);
         move_piece_hash(from, to);
         move_piece_hash(rook_from, rook_to);
-
         updates.push_back(InputUpdate(from, king, InputUpdate::Removal));
-        updates.push_back(InputUpdate(  to, king, InputUpdate::Addition));
+        updates.push_back(InputUpdate(to, king, InputUpdate::Addition));
         updates.push_back(InputUpdate(rook_from, rook, InputUpdate::Removal));
-        updates.push_back(InputUpdate(rook_to  , rook, InputUpdate::Addition));
-    }
-    else 
-    {
+        updates.push_back(InputUpdate(rook_to, rook, InputUpdate::Addition));
+    } else {
         halfmoves = 0;
         move_piece_hash(from, to);
-        Square cap_sq = static_cast<Square>(to ^ 8);
-
+        auto cap_sq   = static_cast<Square>(to ^ 8);
         hist_captured = remove_piece_hash(cap_sq);
-
         updates.push_back(InputUpdate(from, moving, InputUpdate::Removal));
-        updates.push_back(InputUpdate(  to, moving, InputUpdate::Addition));
+        updates.push_back(InputUpdate(to, moving, InputUpdate::Addition));
         updates.push_back(InputUpdate(cap_sq, hist_captured, InputUpdate::Removal));
     }
 
     side = !side;
-    key.hash_side();
+    zobrist_hash_side(hash);
     network.update_hidden_layer(updates);
 }
 
-void Position::apply_nullmove()
-{
-    history[history_ply].key          = key;
-    history[history_ply].ep_sq        = ep_sq;
-    history[history_ply].move         = NullMove;
+void Position::apply_nullmove() {
+    history[history_ply].hash  = hash;
+    history[history_ply].ep_sq = ep_sq;
+    history[history_ply].move  = MOVE_NULL;
 
     history_ply++;
     halfmoves++;
 
-    if (ep_sq != bad_sq)   
-        key.hash_ep(ep_sq);
+    if (ep_sq != SQ_NULL)
+        zobrist_hash_ep(hash, ep_sq);
 
-    key.hash_side();
+    zobrist_hash_side(hash);
     side = !side;
-}   
+}
 
-void Position::revert_nullmove()
-{
+void Position::revert_nullmove() {
     history_ply--;
     halfmoves--;
-    key           = history[history_ply].key;
-    ep_sq         = history[history_ply].ep_sq;
+    hash  = history[history_ply].hash;
+    ep_sq = history[history_ply].ep_sq;
 
     side = !side;
 }
 
-bool move_is_capture(Position const &position, Move move)
-{
-    return position.get_piece(move.to()) != Piece::Empty;
+bool move_is_capture(Position const &position, Move move) {
+    return position.get_piece(move.to()) != PCE_NULL;
 }
 
-std::string Move::str() const 
-{
+std::string Move::str() const {
     std::stringstream o;
     o << from() << to();
 
-    if (flag() == Move::Flag::promotion)
+    if (flag() == MVEFLAG_PROMOTION)
         o << promoted();
-        
+
     return o.str();
 }
 
-std::ostream& operator<<(std::ostream& o, Move move)
-{
+std::ostream &operator<<(std::ostream &o, Move move) {
     return o << move.str();
 }

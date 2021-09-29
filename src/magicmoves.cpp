@@ -19,11 +19,10 @@
  */
 #include "magicmoves.hpp"
 #include "bitboard.h"
-// altered source 
+// altered source
 
 U64 magicmovesbdb[5248];
-const U64 *magicmoves_b_indices[64] =
-{
+const U64 *magicmoves_b_indices[64] = {
     magicmovesbdb + 4992, magicmovesbdb + 2624, magicmovesbdb + 256, magicmovesbdb + 896,
     magicmovesbdb + 1280, magicmovesbdb + 1664, magicmovesbdb + 4800, magicmovesbdb + 5120,
     magicmovesbdb + 2560, magicmovesbdb + 2656, magicmovesbdb + 288, magicmovesbdb + 928,
@@ -43,8 +42,7 @@ const U64 *magicmoves_b_indices[64] =
 };
 
 U64 magicmovesrdb[102400];
-const U64 *magicmoves_r_indices[64] =
-{
+const U64 *magicmoves_r_indices[64] = {
     magicmovesrdb + 86016, magicmovesrdb + 73728, magicmovesrdb + 36864, magicmovesrdb + 43008,
     magicmovesrdb + 47104, magicmovesrdb + 51200, magicmovesrdb + 77824, magicmovesrdb + 94208,
     magicmovesrdb + 69632, magicmovesrdb + 32768, magicmovesrdb + 38912, magicmovesrdb + 10240,
@@ -63,8 +61,7 @@ const U64 *magicmoves_r_indices[64] =
     magicmovesrdb + 49152, magicmovesrdb + 55296, magicmovesrdb + 79872, magicmovesrdb + 98304
 };
 
-U64 initmagicmoves_occ(const int *squares, const int numSquares, const U64 linocc)
-{
+U64 initmagicmoves_occ(const int *squares, const int numSquares, const U64 linocc) {
     int i;
     U64 ret = 0;
     for (i = 0; i < numSquares; i++)
@@ -73,27 +70,23 @@ U64 initmagicmoves_occ(const int *squares, const int numSquares, const U64 linoc
     return ret;
 }
 
-U64 initmagicmoves_Rmoves(const int square, const U64 occ)
-{
+U64 initmagicmoves_Rmoves(const int square, const U64 occ) {
     U64 ret = 0;
     U64 bit;
     U64 rowbits = (((U64)0xFF) << (8 * (square / 8)));
 
     bit = (((U64)(1)) << square);
-    do
-    {
+    do {
         bit <<= 8;
         ret |= bit;
     } while (bit && !(bit & occ));
     bit = (((U64)(1)) << square);
-    do
-    {
+    do {
         bit >>= 8;
         ret |= bit;
     } while (bit && !(bit & occ));
     bit = (((U64)(1)) << square);
-    do
-    {
+    do {
         bit <<= 1;
         if (bit & rowbits)
             ret |= bit;
@@ -101,8 +94,7 @@ U64 initmagicmoves_Rmoves(const int square, const U64 occ)
             break;
     } while (!(bit & occ));
     bit = (((U64)(1)) << square);
-    do
-    {
+    do {
         bit >>= 1;
         if (bit & rowbits)
             ret |= bit;
@@ -112,17 +104,15 @@ U64 initmagicmoves_Rmoves(const int square, const U64 occ)
     return ret;
 }
 
-U64 initmagicmoves_Bmoves(const int square, const U64 occ)
-{
+U64 initmagicmoves_Bmoves(const int square, const U64 occ) {
     U64 ret = 0;
     U64 bit;
     U64 bit2;
     U64 rowbits = (((U64)0xFF) << (8 * (square / 8)));
 
-    bit = (((U64)(1)) << square);
+    bit  = (((U64)(1)) << square);
     bit2 = bit;
-    do
-    {
+    do {
         bit <<= 8 - 1;
         bit2 >>= 1;
         if (bit2 & rowbits)
@@ -130,10 +120,9 @@ U64 initmagicmoves_Bmoves(const int square, const U64 occ)
         else
             break;
     } while (bit && !(bit & occ));
-    bit = (((U64)(1)) << square);
+    bit  = (((U64)(1)) << square);
     bit2 = bit;
-    do
-    {
+    do {
         bit <<= 8 + 1;
         bit2 <<= 1;
         if (bit2 & rowbits)
@@ -141,10 +130,9 @@ U64 initmagicmoves_Bmoves(const int square, const U64 occ)
         else
             break;
     } while (bit && !(bit & occ));
-    bit = (((U64)(1)) << square);
+    bit  = (((U64)(1)) << square);
     bit2 = bit;
-    do
-    {
+    do {
         bit >>= 8 - 1;
         bit2 <<= 1;
         if (bit2 & rowbits)
@@ -152,10 +140,9 @@ U64 initmagicmoves_Bmoves(const int square, const U64 occ)
         else
             break;
     } while (bit && !(bit & occ));
-    bit = (((U64)(1)) << square);
+    bit  = (((U64)(1)) << square);
     bit2 = bit;
-    do
-    {
+    do {
         bit >>= 8 + 1;
         bit2 >>= 1;
         if (bit2 & rowbits)
@@ -169,12 +156,10 @@ U64 initmagicmoves_Bmoves(const int square, const U64 occ)
 #define BmagicNOMASK2(square, occupancy) *(magicmoves_b_indices2[square] + (((occupancy)*magicmoves_b_magics[square]) >> magicmoves_b_shift[square]))
 #define RmagicNOMASK2(square, occupancy) *(magicmoves_r_indices2[square] + (((occupancy)*magicmoves_r_magics[square]) >> magicmoves_r_shift[square]))
 
-void initmagicmoves(void)
-{
+void init_magics(void) {
     int i;
 
-    U64 *magicmoves_b_indices2[64] =
-    {
+    U64 *magicmoves_b_indices2[64] = {
         magicmovesbdb + 4992, magicmovesbdb + 2624, magicmovesbdb + 256, magicmovesbdb + 896,
         magicmovesbdb + 1280, magicmovesbdb + 1664, magicmovesbdb + 4800, magicmovesbdb + 5120,
         magicmovesbdb + 2560, magicmovesbdb + 2656, magicmovesbdb + 288, magicmovesbdb + 928,
@@ -193,8 +178,7 @@ void initmagicmoves(void)
         magicmovesbdb + 1632, magicmovesbdb + 2272, magicmovesbdb + 4896, magicmovesbdb + 5184
     };
 
-    U64 *magicmoves_r_indices2[64] 
-    {
+    U64 *magicmoves_r_indices2[64]{
         magicmovesrdb + 86016, magicmovesrdb + 73728, magicmovesrdb + 36864, magicmovesrdb + 43008,
         magicmovesrdb + 47104, magicmovesrdb + 51200, magicmovesrdb + 77824, magicmovesrdb + 94208,
         magicmovesrdb + 69632, magicmovesrdb + 32768, magicmovesrdb + 38912, magicmovesrdb + 10240,
@@ -213,45 +197,37 @@ void initmagicmoves(void)
         magicmovesrdb + 49152, magicmovesrdb + 55296, magicmovesrdb + 79872, magicmovesrdb + 98304
     };
 
-
-    for (i = 0; i < 64; i++)
-    {
+    for (i = 0; i < 64; i++) {
         int squares[64];
         int numsquares = 0;
-        uint64_t temp = magicmoves_b_mask[i];
-        while (temp)
-        {
-            Square sq = pop_lsb(temp);
+        uint64_t temp  = magicmoves_b_mask[i];
+        while (temp) {
+            Square sq             = pop_lsb(temp);
             squares[numsquares++] = sq;
         }
 
-        for (temp = 0; temp < (((U64)(1)) << numsquares); temp++)
-        {
-            U64 tempocc = initmagicmoves_occ(squares, numsquares, temp);
+        for (temp = 0; temp < (((U64)(1)) << numsquares); temp++) {
+            U64 tempocc               = initmagicmoves_occ(squares, numsquares, temp);
             BmagicNOMASK2(i, tempocc) = initmagicmoves_Bmoves(i, tempocc);
         }
     }
-    
-    for (i = 0; i < 64; i++)
-    {
+
+    for (i = 0; i < 64; i++) {
         int squares[64];
         int numsquares = 0;
-        uint64_t temp = magicmoves_r_mask[i];
-        while (temp)
-        {
-            Square sq = pop_lsb(temp);
+        uint64_t temp  = magicmoves_r_mask[i];
+        while (temp) {
+            Square sq             = pop_lsb(temp);
             squares[numsquares++] = sq;
         }
 
-        for (temp = 0; temp < (((U64)(1)) << numsquares); temp++)
-        {
-            U64 tempocc = initmagicmoves_occ(squares, numsquares, temp);
+        for (temp = 0; temp < (((U64)(1)) << numsquares); temp++) {
+            U64 tempocc               = initmagicmoves_occ(squares, numsquares, temp);
             RmagicNOMASK2(i, tempocc) = initmagicmoves_Rmoves(i, tempocc);
         }
     }
 }
 
-void initMagics()
-{
-    initmagicmoves();
+void initMagics() {
+    init_magics();
 }

@@ -23,11 +23,10 @@
 
 INCBIN(Network, EVALFILE);
 
-void Network::init()
-{
-    auto data = reinterpret_cast<const uint32_t*>(gNetworkData);
-    hash = *(data + 1);
-    
+void Network::init() {
+    auto data = reinterpret_cast<const uint32_t *>(gNetworkData);
+    hash      = *(data + 1);
+
     data += 6;
     std::memcpy(&hidden_weights[0], data, HIDDEN_SIZE * INPUT_SIZE * sizeof(float));
     data += HIDDEN_SIZE * INPUT_SIZE;
@@ -41,33 +40,28 @@ void Network::init()
     std::memcpy(&output_bias, data, sizeof(float));
 }
 
-void Network::update_hidden_layer(NetworkUpdateList const& updates)
-{
+void Network::update_hidden_layer(NetworkUpdateList const &updates) {
     hidden_neurons.push_back(hidden_neurons.back());
 
-    for(auto const& update : updates)
-    {
-        for(std::size_t i = 0;i < hidden_neurons.back().size();i++)
+    for (auto const &update : updates) {
+        for (std::size_t i = 0; i < hidden_neurons.back().size(); i++)
             hidden_neurons.back()[i] += update.coeff * hidden_weights[update.index][i];
     }
 }
 
-float Network::calculate_last_layer()
-{
-    float sum = 0.0f;
+float Network::calculate_last_layer() {
+    auto sum = 0.0f;
 
     for (std::size_t k = 0; k < output_weights.size(); k++)
-        sum +=  std::max<float>(hidden_neurons.back()[k], 0.0f) * output_weights[k];
+        sum += std::max<float>(hidden_neurons.back()[k], 0.0f) * output_weights[k];
 
     return sum + output_bias;
 }
 
-float Network::feed(NetworkInput const& sample)
-{
+float Network::feed(NetworkInput const &sample) {
     hidden_neurons.back().fill(0);
 
-    for (auto index : sample)
-    {
+    for (auto index : sample) {
         for (std::size_t i = 0; i < HIDDEN_SIZE; i++)
             hidden_neurons.back()[i] += hidden_weights[index][i];
     }

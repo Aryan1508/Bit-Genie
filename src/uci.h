@@ -17,7 +17,4 @@
 */
 #pragma once
 
-namespace UCI 
-{
-    void init(int argc, char **argv); 
-}
+void init_uci(int argc, char **argv);

@@ -22,169 +22,146 @@
 #include "position.h"
 #include "polyglot.h"
 #include "benchmark.h"
-#include "stringparse.h"
 #include "searchinit.h"
+#include "stringparse.h"
 
 #include <cstring>
 #include <algorithm>
 
 const std::string version = "9.01";
 
-namespace
-{
-    void uci_ok()
-    {
-        std::cout << "id name Bit-Genie " << version << '\n';
-        std::cout << "id author Aryan Parekh" << '\n';
-        std::cout << "id network " << std::hex << Network::get_hash() << std::dec << '\n';
-        std::cout << "option name Hash type spin default 8 min 2 max 3000" << '\n';
-        std::cout << "option name Clear Hash type button" << '\n';
-        std::cout << "option name OwnBook type check default false" << '\n';
-        std::cout << "option name BookPath type string" << '\n';
-        std::cout << "uciok" << std::endl;
-    }
-
-    void uci_ready()
-    {
-        std::cout << "readyok" << std::endl;
-    }
-
-    void uci_setoption(UciParser const &parser)
-    {
-        auto [name, value] = parser.parse_setoption();
-
-        if (name == "hash")
-        {
-            if (!string_is_number(value))
-                return;
-            TT.resize(std::stoi(value));
-        }
-
-        else if (name == "clear hash")
-            TT.reset();
-
-        else if (name == "ownbook")
-            PolyGlot::book.enabled = (value == "true");
-
-        else if (name == "bookpath")
-            PolyGlot::book.open(value);
-    }
-
-    void uci_stop(SearchInit &worker)
-    {
-        if (worker.is_searching())
-            worker.end();
-    }
-
-    void uci_go(UciParser const &parser, Position &position, SearchInit &worker)
-    {
-        UciGo options = parser.parse_go(position.get_side());
-
-        Search::Info& search = *worker.search;
-
-        search = Search::Info();
-        search.position = &position;
-        search.limits.stopwatch.go();
-        search.limits.max_depth = std::min(options.depth, 64);
-
-        if (options.movetime == -1)
-        {
-            auto &t   = position.get_side() == White ? options.wtime : options.btime;
-            auto &inc = position.get_side() == White ? options.winc  : options.binc;
-
-            if (t == -1)
-                search.limits.movetime = std::numeric_limits<int64_t>::max();
-
-            else
-            {
-                search.limits.time_set = true;
-                search.limits.movetime = t / options.movestogo + inc - 50;
-            }
-        }
-        else
-        {
-            search.limits.movetime = options.movetime - 50;
-            search.limits.time_set = true;
-        }
-
-        worker.begin();
-    }
-
-    void uci_setposition(UciParser const &parser, Position &position)
-    {
-        auto [fen, moves] = parser.parse_position_command();
-
-        position.set_fen(fen);
-
-        for (std::string const &move : moves)
-        {
-            Movelist movelist;
-            position.generate_legal(movelist);
-
-            for(auto m : movelist)
-                if (m.str() == move)
-                    position.apply_move(m);
-        }
-    }
+namespace {
+void uci_ok() {
+    std::cout << "id name Bit-Genie " << version << '\n';
+    std::cout << "id author Aryan Parekh" << '\n';
+    std::cout << "id network " << std::hex << Network::get_hash() << std::dec << '\n';
+    std::cout << "option name Hash type spin default 8 min 2 max 3000" << '\n';
+    std::cout << "option name Clear Hash type button" << '\n';
+    std::cout << "option name OwnBook type check default false" << '\n';
+    std::cout << "option name BookPath type string" << '\n';
+    std::cout << "uciok" << std::endl;
 }
 
-namespace UCI 
-{
-    void init(int argc, char **argv)
-    {
-        UciParser  command;
-        Position   position;
-        SearchInit worker;
+void uci_ready() {
+    std::cout << "readyok" << std::endl;
+}
 
-        if (argc > 1 && !strncmp(argv[1], "bench", 5))
-        {
-            BenchMark::bench(position);
+void uci_setoption(UciParser const &parser) {
+    auto [name, value] = parser.parse_setoption();
+
+    if (name == "hash") {
+        if (!string_is_number(value))
             return;
+        TT.resize(std::stoi(value));
+    }
+
+    else if (name == "clear hash")
+        TT.reset();
+
+    else if (name == "ownbook")
+        PolyGlot::book.enabled = (value == "true");
+
+    else if (name == "bookpath")
+        PolyGlot::book.open(value);
+}
+
+void uci_stop(SearchInit &worker) {
+    if (worker.is_searching())
+        worker.end();
+}
+
+void uci_go(UciParser const &parser, Position &position, SearchInit &worker) {
+    UciGo options = parser.parse_go();
+
+    auto &search    = *worker.search;
+    search          = SearchInfo();
+    search.position = &position;
+    search.limits.stopwatch.go();
+    search.limits.max_depth = std::min(options.depth, 64);
+
+    if (options.movetime == -1) {
+        auto &t   = position.get_side() == CLR_WHITE ? options.wtime : options.btime;
+        auto &inc = position.get_side() == CLR_WHITE ? options.winc : options.binc;
+
+        if (t == -1)
+            search.limits.movetime = std::numeric_limits<int64_t>::max();
+
+        else {
+            search.limits.time_set = true;
+            search.limits.movetime = t / options.movestogo + inc - 50;
+        }
+    } else {
+        search.limits.movetime = options.movetime - 50;
+        search.limits.time_set = true;
+    }
+
+    worker.begin();
+}
+
+void uci_setposition(UciParser const &parser, Position &position) {
+    auto [fen, moves] = parser.parse_position_command();
+
+    position.set_fen(fen);
+
+    for (std::string const &move : moves) {
+        Movelist movelist;
+        position.generate_legal(movelist);
+
+        for (auto m : movelist)
+            if (m.str() == move)
+                position.apply_move(m);
+    }
+}
+}
+
+void init_uci(int argc, char **argv) {
+    UciParser command;
+    Position position;
+    SearchInit worker;
+
+    if (argc > 1 && !strncmp(argv[1], "bench", 5)) {
+        bench(position);
+        return;
+    }
+
+    while (command.take_input()) {
+        if (command == UciCommands::quit) {
+            uci_stop(worker);
+            break;
         }
 
-        while (command.take_input())
-        {
-            if (command == UciCommands::quit)
-            {
-                uci_stop(worker);
-                break;
-            }
+        else if (command == UciCommands::isready)
+            uci_ready();
 
-            else if (command == UciCommands::isready)
-                uci_ready();
+        else if (command == UciCommands::uci)
+            uci_ok();
 
-            else if (command == UciCommands::uci)
-                uci_ok();
+        else if (command == UciCommands::position)
+            uci_setposition(command, position);
 
-            else if (command == UciCommands::position)
-                uci_setposition(command, position);
+        else if (command == UciCommands::print)
+            std::cout << position << std::endl;
 
-            else if (command == UciCommands::print)
-                std::cout << position << std::endl;
+        else if (command == UciCommands::perft)
+            perft(position, command.parse_perft());
 
-            else if (command == UciCommands::perft)
-                BenchMark::perft(position, command.parse_perft());
+        else if (command == UciCommands::go)
+            uci_go(command, position, worker);
 
-            else if (command == UciCommands::go)
-                uci_go(command, position, worker);
+        else if (command == UciCommands::stop)
+            uci_stop(worker);
 
-            else if (command == UciCommands::stop)
-                uci_stop(worker);
+        else if (command == UciCommands::setoption)
+            uci_setoption(command);
 
-            else if (command == UciCommands::setoption)
-                uci_setoption(command);
+        else if (command == UciCommands::bench) {
+            TT.reset();
+            bench(position);
+        }
 
-            else if (command == UciCommands::bench)
-            {
-                TT.reset();
-                BenchMark::bench(position);
-            }
-
-            else if (command == UciCommands::ucinewgame)
-            {
-                uci_stop(worker);
-                TT.reset();
-            }
+        else if (command == UciCommands::ucinewgame) {
+            uci_stop(worker);
+            TT.reset();
         }
     }
 }

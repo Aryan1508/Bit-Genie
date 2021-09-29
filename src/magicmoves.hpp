@@ -17,19 +17,18 @@
  *
  *3. This notice may not be removed or altered from any source distribution.
  */
-// altered source 
+// altered source
 
 #pragma once
 #include <stdint.h>
 
 #define MINIMIZE_MAGIC
 
-typedef unsigned long long  U64;
+typedef unsigned long long U64;
 
 #define C64(constantU64) constantU64##ULL
 
-constexpr U64 magicmoves_r_magics[64] =
-{
+constexpr U64 magicmoves_r_magics[64] = {
     0x0080001020400080, 0x0040001000200040, 0x0080081000200080, 0x0080040800100080,
     0x0080020400080080, 0x0080010200040080, 0x0080008001000200, 0x0080002040800100,
     0x0000800020400080, 0x0000400020005000, 0x0000801000200080, 0x0000800800100080,
@@ -48,9 +47,7 @@ constexpr U64 magicmoves_r_magics[64] =
     0x0001000204080011, 0x0001000204000801, 0x0001000082000401, 0x0001FFFAABFAD1A2
 };
 
-
-constexpr uint64_t magicmoves_b_magics[64] =
-{
+constexpr uint64_t magicmoves_b_magics[64] = {
     0x0002020202020200, 0x0002020202020000, 0x0004010202000000, 0x0004040080000000,
     0x0001104000000000, 0x0000821040000000, 0x0000410410400000, 0x0000104104104000,
     0x0000040404040400, 0x0000020202020200, 0x0000040102020000, 0x0000040400800000,
@@ -69,9 +66,7 @@ constexpr uint64_t magicmoves_b_magics[64] =
     0x0000000010020200, 0x0000000404080200, 0x0000040404040400, 0x0002020202020200
 };
 
-
-constexpr U64 magicmoves_r_mask[64] =
-{
+constexpr U64 magicmoves_r_mask[64] = {
     0x000101010101017E, 0x000202020202027C, 0x000404040404047A, 0x0008080808080876,
     0x001010101010106E, 0x002020202020205E, 0x004040404040403E, 0x008080808080807E,
     0x0001010101017E00, 0x0002020202027C00, 0x0004040404047A00, 0x0008080808087600,
@@ -90,9 +85,7 @@ constexpr U64 magicmoves_r_mask[64] =
     0x6E10101010101000, 0x5E20202020202000, 0x3E40404040404000, 0x7E80808080808000
 };
 
-
-constexpr uint64_t magicmoves_b_mask[64]
-{
+constexpr uint64_t magicmoves_b_mask[64]{
     0x0040201008040200, 0x0000402010080400, 0x0000004020100A00, 0x0000000040221400,
     0x0000000002442800, 0x0000000204085000, 0x0000020408102000, 0x0002040810204000,
     0x0020100804020000, 0x0040201008040000, 0x00004020100A0000, 0x0000004022140000,
@@ -111,8 +104,7 @@ constexpr uint64_t magicmoves_b_mask[64]
     0x0028440200000000, 0x0050080402000000, 0x0020100804020000, 0x0040201008040200
 };
 
-constexpr unsigned int magicmoves_b_shift[64] =
-{
+constexpr unsigned int magicmoves_b_shift[64] = {
     58, 59, 59, 59, 59, 59, 59, 58,
     59, 59, 59, 59, 59, 59, 59, 59,
     59, 59, 57, 57, 57, 57, 59, 59,
@@ -123,8 +115,7 @@ constexpr unsigned int magicmoves_b_shift[64] =
     58, 59, 59, 59, 59, 59, 59, 58
 };
 
-constexpr unsigned int magicmoves_r_shift[64] 
-{
+constexpr unsigned int magicmoves_r_shift[64]{
     52, 53, 53, 53, 53, 53, 53, 52,
     53, 54, 54, 54, 54, 54, 54, 53,
     53, 54, 54, 54, 54, 54, 54, 53,
@@ -135,14 +126,13 @@ constexpr unsigned int magicmoves_r_shift[64]
     53, 54, 54, 53, 53, 53, 53, 53
 };
 
-
 #define MINIMAL_B_BITS_SHIFT(square) 55
 #define MINIMAL_R_BITS_SHIFT(square) 52
-#define Bmagic(square, occupancy) *(magicmoves_b_indices[square]+((((occupancy)&magicmoves_b_mask[square])*magicmoves_b_magics[square])>>magicmoves_b_shift[square]))
-#define Rmagic(square, occupancy) *(magicmoves_r_indices[square]+((((occupancy)&magicmoves_r_mask[square])*magicmoves_r_magics[square])>>magicmoves_r_shift[square]))
-#define Qmagic(square, occupancy) (Bmagic(square,occupancy)|Rmagic(square,occupancy))
+#define Bmagic(square, occupancy)    *(magicmoves_b_indices[square] + ((((occupancy)&magicmoves_b_mask[square]) * magicmoves_b_magics[square]) >> magicmoves_b_shift[square]))
+#define Rmagic(square, occupancy)    *(magicmoves_r_indices[square] + ((((occupancy)&magicmoves_r_mask[square]) * magicmoves_r_magics[square]) >> magicmoves_r_shift[square]))
+#define Qmagic(square, occupancy)    (Bmagic(square, occupancy) | Rmagic(square, occupancy))
 
-extern const U64* magicmoves_b_indices[64];
-extern const U64* magicmoves_r_indices[64];
+extern const U64 *magicmoves_b_indices[64];
+extern const U64 *magicmoves_r_indices[64];
 
-void initmagicmoves(void);
+void init_magics(void);

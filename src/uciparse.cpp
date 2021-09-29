@@ -17,18 +17,15 @@
 */
 #include "uciparse.h"
 #include "stringparse.h"
-#include "piece.h"
 #include <utility>
 
-bool UciParser::take_input()
-{
-    auto& val = std::getline(std::cin, command);
+bool UciParser::take_input() {
+    auto &val = std::getline(std::cin, command);
     trim(command);
     return bool(val);
 }
 
-int UciParser::parse_perft() const
-{
+int UciParser::parse_perft() const {
     auto options = split_string(command);
 
     if (options.size() != 2)
@@ -40,10 +37,8 @@ int UciParser::parse_perft() const
     return std::stoi(options[1]);
 }
 
-bool UciParser::operator==(UciCommands type) const
-{
-    switch (type)
-    {
+bool UciParser::operator==(UciCommands type) const {
+    switch (type) {
     case UciCommands::uci:
         return command == "uci";
 
@@ -83,57 +78,44 @@ bool UciParser::operator==(UciCommands type) const
     }
 }
 
-std::pair<std::string, std::vector<std::string>>
-
-UciParser::parse_position_command() const
-{
+std::pair<std::string, std::vector<std::string>> UciParser::parse_position_command() const {
     std::string fen;
     std::vector<std::string> moves;
 
     std::stringstream stream(command);
     std::string name;
 
-    while (stream >> name)
-    {
+    while (stream >> name) {
         if (name == "startpos")
             fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        else if (name == "fen")
-        {
+        else if (name == "fen") {
             auto last = command.find("moves");
-            if (last == std::string::npos)
-            {
+            if (last == std::string::npos) {
                 fen = command.substr(command.find("fen ") + 4);
-            }
-            else
-            {
+            } else {
                 auto start = command.find("fen ") + 4;
-                fen = command.substr(start, last - start);
+                fen        = command.substr(start, last - start);
                 continue;
             }
         }
 
-        else if (name == "moves")
-        {
-            while (stream >> name)
-            {
+        else if (name == "moves") {
+            while (stream >> name) {
                 moves.push_back(std::move(name));
             }
             break;
         }
     }
 
-    return std::pair{fen, moves};
+    return std::pair{ fen, moves };
 }
 
-UciGo UciParser::parse_go(Color side) const
-{
+UciGo UciParser::parse_go() const {
     UciGo options;
 
     auto parts = split_string(command);
-
-    for (auto key = parts.begin(); key != parts.end() - 1; key++)
-    {
+    for (auto key = parts.begin(); key != parts.end() - 1; key++) {
         std::string_view value = *(key + 1);
 
         if (*key == "infinite")
@@ -148,49 +130,43 @@ UciGo UciParser::parse_go(Color side) const
         else if (*key == "movestogo")
             options.movestogo = std::stoi(value.data());
 
-        else if (*key == "btime" && side == Black)
+        else if (*key == "btime")
             options.btime = std::stoi(value.data());
 
-        else if (*key == "wtime" && side == White)
+        else if (*key == "wtime")
             options.wtime = std::stoi(value.data());
 
-        else if (*key == "winc" && side == White)
+        else if (*key == "winc")
             options.winc = std::stoi(value.data());
 
-        else if (*key == "binc" && side == Black)
+        else if (*key == "binc")
             options.binc = std::stoi(value.data());
     }
     return options;
 }
 
 std::pair<std::string, std::string>
-UciParser::parse_setoption() const
-{
+UciParser::parse_setoption() const {
     std::stringstream stream(command);
     std::string name, value;
 
-    for (std::string token; stream >> token;)
-    {
-        if (token == "name")
-        {
+    for (std::string token; stream >> token;) {
+        if (token == "name") {
             stream >> token;
 
-            if (tolower(token) == "clear")
-            {
+            if (tolower(token) == "clear") {
                 name = std::move(token);
                 stream >> token;
                 name += " " + std::move(tolower(token));
-            }
-            else
+            } else
                 name = std::move(token);
         }
 
-        else if (token == "value")
-        {
+        else if (token == "value") {
             stream >> token;
             value = std::move(tolower(token));
             break;
         }
     }
-    return {name, value};
+    return { name, value };
 }

@@ -15,17 +15,14 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "board.h"
 #include "attacks.h"
 #include "position.h"
 
-static bool castle_path_is_clear(Position const& position, Square rook)
-{
-    return !(position.get_bb() & BitMask::castle_piece_path[rook]);
+static bool castle_path_is_clear(Position const &position, Square rook) {
+    return !(position.get_bb() & CASTLE_OCC_MASK_BB[rook]);
 }
 
-bool Position::is_legal(Move move) const
-{
+bool Position::is_legal(Move move) const {
     if (move.data == 0)
         return false;
 
@@ -33,176 +30,153 @@ bool Position::is_legal(Move move) const
     auto to   = move.to();
     auto flag = move.flag();
 
-    if (flag == Move::Flag::normal || flag == Move::Flag::promotion)
-    {
-        if (get_piece(from) == Piece::wKing || get_piece(from) == Piece::bKing) 
-        {
-            uint64_t occupancy = get_bb() ^ (1ull << from);
-            return !Attacks::square_attacked(*this, to, !side, occupancy);
+    if (flag == MVEFLAG_NORMAL || flag == MVEFLAG_PROMOTION) {
+        if (get_piece(from) == PCE_WKING || get_piece(from) == PCE_BKING) {
+            auto occupancy = get_bb() ^ (1ull << from);
+            return !square_is_attacked(*this, to, !side, occupancy);
         }
 
-        else
-        {
-            uint64_t occupancy = get_bb() ^ (1ull << from) ^ (1ull << to);
-            uint64_t enemy     = get_bb(!get_side());
+        else {
+            auto occupancy = get_bb() ^ (1ull << from) ^ (1ull << to);
+            auto enemy     = get_bb(!get_side());
+            auto captured  = get_piece(to);
 
-            Piece captured = get_piece(to);
-
-            if (captured != Piece::Empty)
-            {
+            if (captured != PCE_NULL) {
                 occupancy ^= (1ull << to);
                 enemy ^= (1ull << to);
             }
 
-            uint64_t pawns   = get_bb(PieceType::Pawn  ) & enemy;
-            uint64_t knights = get_bb(PieceType::Knight) & enemy;
-            uint64_t bishops = get_bb(PieceType::Bishop) & enemy;
-            uint64_t rooks   = get_bb(PieceType::Rook  ) & enemy;
-            uint64_t queens  = get_bb(PieceType::Queen ) & enemy;
-            
-            Square king = get_lsb(get_bb(PieceType::King, get_side()));
+            auto pawns   = get_bb(PT_PAWN) & enemy;
+            auto knights = get_bb(PT_KNIGHT) & enemy;
+            auto bishops = get_bb(PT_BISHOP) & enemy;
+            auto rooks   = get_bb(PT_ROOK) & enemy;
+            auto queens  = get_bb(PT_QUEEN) & enemy;
+            auto king    = get_lsb(get_bb(PT_KING, get_side()));
 
             bishops |= queens;
-            rooks   |= queens;
-
-            return !((BitMask::pawn_attacks[side][king] & pawns) || (Attacks::bishop(king, occupancy) & bishops) || (Attacks::rook(king, occupancy) & rooks) || (Attacks::knight(king) & knights));
+            rooks |= queens;
+            return !((generate_pawn_attacks_bb(king, side) & pawns) || (generate_bishop_attacks_bb(king, occupancy) & bishops) || (generate_rook_attacks_bb(king, occupancy) & rooks) || (generate_knight_attacks_bb(king) & knights));
         }
     }
 
-    else if (move.flag() == Move::Flag::castle)
-    {
-        return !Attacks::square_attacked(*this, to, !side);
+    else if (move.flag() == MVEFLAG_CASTLE) {
+        return !square_is_attacked(*this, to, !side);
     }
 
-    else
-    {
-        Square ep = to_sq(to ^ 8);
-        uint64_t occupancy = get_bb() ^ (1ull << from) ^ (1ull << to) ^ (1ull << ep);
-        uint64_t enemy     = get_bb(!get_side()) ^ (1ull << ep);
-
-        uint64_t pawns   = get_bb(PieceType::Pawn  ) & enemy;
-        uint64_t knights = get_bb(PieceType::Knight) & enemy;
-        uint64_t bishops = get_bb(PieceType::Bishop) & enemy;
-        uint64_t rooks   = get_bb(PieceType::Rook  ) & enemy;
-        uint64_t queens  = get_bb(PieceType::Queen ) & enemy;
-
-        Square king = get_lsb(get_bb(PieceType::King, get_side()));
+    else {
+        auto ep        = static_cast<Square>(to ^ 8);
+        auto occupancy = get_bb() ^ (1ull << from) ^ (1ull << to) ^ (1ull << ep);
+        auto enemy     = get_bb(!get_side()) ^ (1ull << ep);
+        auto pawns     = get_bb(PT_PAWN) & enemy;
+        auto knights   = get_bb(PT_KNIGHT) & enemy;
+        auto bishops   = get_bb(PT_BISHOP) & enemy;
+        auto rooks     = get_bb(PT_ROOK) & enemy;
+        auto queens    = get_bb(PT_QUEEN) & enemy;
+        auto king      = get_lsb(get_bb(PT_KING, get_side()));
 
         bishops |= queens;
         rooks |= queens;
 
-        return !((BitMask::pawn_attacks[side][king] & pawns) || (Attacks::bishop(king, occupancy) & bishops) || (Attacks::rook(king, occupancy) & rooks) || (Attacks::knight(king) & knights));
+        return !((generate_pawn_attacks_bb(king, side) & pawns) || (generate_bishop_attacks_bb(king, occupancy) & bishops) || (generate_rook_attacks_bb(king, occupancy) & rooks) || (generate_knight_attacks_bb(king) & knights));
     }
 
     return true;
 }
 
-bool Position::is_pseudolegal(Move move) const
-{
+bool Position::is_pseudolegal(Move move) const {
     if (!move.data)
         return false;
 
-    Square from = move.from();
-    Square to = move.to();
-    Move::Flag flag = move.flag();
-    Piece moving   = get_piece(from);
-    Piece captured = get_piece(to);
+    auto from     = move.from();
+    auto to       = move.to();
+    auto flag     = move.flag();
+    auto moving   = get_piece(from);
+    auto captured = get_piece(to);
 
-    if (moving == Empty)
+    if (moving == PCE_NULL)
         return false;
 
-    if (color_of(moving) != side)
+    if (compute_color(moving) != side)
         return false;
 
-    if (captured != Empty && color_of(captured) == side)
+    if (captured != PCE_NULL && compute_color(captured) == side)
         return false;
 
-    if (flag == Move::Flag::castle)
-    {
+    if (flag == MVEFLAG_CASTLE) {
         if (!test_bit(castle_rooks, to))
             return false;
 
         if (!castle_path_is_clear(*this, to))
             return false;
 
-        if (Attacks::square_attacked(*this, from, !get_side()))
+        if (square_is_attacked(*this, from, !get_side()))
             return false;
 
-        uint64_t path = BitMask::castle_attack_path[to];
-        while (path)
-        {
+        auto path = CASTLE_CHECKS_MASK_BB[to];
+        while (path) {
             Square sq = pop_lsb(path);
-            if (Attacks::square_attacked(*this, sq, !side))
+            if (square_is_attacked(*this, sq, !side))
                 return false;
         }
 
         return true;
     }
 
-    if (moving == wPawn || moving == bPawn)
-    {
-        Rank start_rank = side == White ? Rank::two : Rank::seven;
-        Direction forward = side == White ? Direction::north : Direction::south;
-        Square forward_sq = from + forward;
-        uint64_t prom_rank = side == White ? BitMask::rank7 : BitMask::rank2;
-        uint64_t from_sq_bb = 1ull << from;
+    if (moving == PCE_WPAWN || moving == PCE_BPAWN) {
+        auto start_rank = side == CLR_WHITE ? RANK_2 : RANK_7;
+        auto forward    = side == CLR_WHITE ? DIR_NORTH : DIR_SOUTH;
+        auto forward_sq = from + forward;
+        auto prom_rank  = side == CLR_WHITE ? RANK_7_BB : RANK_2_BB;
+        auto from_sq_bb = 1ull << from;
 
-        if (flag == Move::Flag::promotion)
-        {
+        if (flag == MVEFLAG_PROMOTION) {
             if ((prom_rank & from_sq_bb) == 0)
                 return false;
         }
 
-        if (from_sq_bb & prom_rank)
-        {
-            if (flag != Move::Flag::promotion)
+        if (from_sq_bb & prom_rank) {
+            if (flag != MVEFLAG_PROMOTION)
                 return false;
         }
 
-        if (flag == Move::Flag::normal || flag == Move::Flag::promotion)
-        {
-            if (get_piece(to) == Empty)
-            {
-                Direction double_push = forward + forward;
-                Square double_push_sq = from + double_push;
+        if (flag == MVEFLAG_NORMAL || flag == MVEFLAG_PROMOTION) {
+            if (get_piece(to) == PCE_NULL) {
+                auto double_push    = forward + forward;
+                auto double_push_sq = from + double_push;
 
                 if (to == forward_sq)
                     return true;
 
-                return (to == double_push_sq && get_piece(forward_sq) == Empty && rank_of(from) == start_rank);
-            }
-            else
-            {
-                return test_bit(BitMask::pawn_attacks[side][from], to);
+                return (to == double_push_sq && get_piece(static_cast<Square>(forward_sq)) == PCE_NULL && compute_rank(from) == start_rank);
+            } else {
+                return test_bit(generate_pawn_attacks_bb(from, side), to);
             }
         }
 
-        else
-        {
+        else {
             if (to != ep_sq)
                 return false;
 
-            if (!((BitMask::neighbor_files[ep_sq]) & (1ull << from)))
+            if (!((ADJ_FILES_BB[ep_sq]) & (1ull << from)))
                 return false;
 
             captured = get_piece(static_cast<Square>(to ^ 8));
 
-            if (captured == Empty || color_of(captured) == side)
+            if (captured == PCE_NULL || compute_color(captured) == side)
                 return false;
 
-            Square down_right = to - forward + Direction::east;
-            Square down_left = to - forward + Direction::west;
+            auto down_right = to - forward + DIR_EAST;
+            auto down_left  = to - forward + DIR_WEST;
 
             return (from == down_left || from == down_right);
         }
     }
 
-    else
-    {
-        if (flag != Move::Flag::normal)
+    else {
+        if (flag != MVEFLAG_NORMAL)
             return false;
 
-        uint64_t attacks = Attacks::generate(type_of(moving), from, get_bb());
+        auto attacks = generate_attacks_bb(compute_piece_type(moving), from, get_bb());
         return test_bit(attacks, to);
     }
     return false;

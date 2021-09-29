@@ -18,17 +18,11 @@
 #pragma once
 #include <stdint.h>
 
-namespace Search 
-{
-    struct Stats
-    {
-        void update();
-        void reset_iteration();
+struct SearchStats {
+    void update();
+    void reset_iteration();
 
-        uint64_t total_nodes = 0;
-        uint64_t iter_nodes = 0;
-        int ply = 0;
-        int depth = 0;
-        int seldepth = 0;
-    };
-}
+    uint64_t nodes = 0;
+    int ply        = 0;
+    int seldepth   = 0;
+};

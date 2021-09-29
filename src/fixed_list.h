@@ -18,62 +18,57 @@
 #pragma once
 #include <array>
 
-template<typename T, std::size_t S>
-class FixedList
-{
+template <typename T, std::size_t S>
+class FixedList {
 public:
     using iterator       = typename std::array<T, S>::iterator;
     using const_iterator = typename std::array<T, S>::const_iterator;
 
     FixedList() = default;
 
-    iterator begin() 
-    {
+    iterator begin() {
         return data.begin();
-    }    
+    }
 
-    iterator end() 
-    {
+    iterator end() {
         return data.begin() + height;
     }
 
-    const_iterator begin() const
-    {
+    const_iterator begin() const {
         return data.begin();
-    }    
+    }
 
-    const_iterator end() const
-    {
+    const_iterator end() const {
         return data.begin() + height;
     }
 
-    void push_back(T const& elem) 
-    {
+    void push_back(T const &elem) {
         data[height++] = elem;
     }
 
-    void pop() 
-    {
+    void pop() {
         height--;
     }
 
-    void clear()
-    {
+    void clear() {
         height = 0;
     }
 
-    std::size_t size() const  
-    {
+    std::size_t size() const {
         return height;
     }
 
-    T& back() 
-    {
+    T &back() {
         return data[height - 1];
     }
 
-    T const& operator[](std::size_t pos) const { return data[pos]; }
-    T      & operator[](std::size_t pos)       { return data[pos]; }
+    T const &operator[](std::size_t pos) const {
+        return data[pos];
+    }
+    T &operator[](std::size_t pos) {
+        return data[pos];
+    }
+
 private:
     std::array<T, S> data;
     std::size_t height = 0;

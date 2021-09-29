@@ -18,19 +18,12 @@
 #include "searchstats.h"
 #include <algorithm>
 
-namespace Search 
-{
-    void Stats::update()
-    {
-        iter_nodes++;
-        total_nodes++;
-        seldepth = std::max(seldepth, ply);
-    }
+void SearchStats::update() {
+    nodes++;
+    seldepth = std::max(seldepth, ply);
+}
 
-    void Stats::reset_iteration()
-    {
-        iter_nodes = 0;
-        ply = 0;
-        seldepth = 0;
-    }
+void SearchStats::reset_iteration() {
+    ply      = 0;
+    seldepth = 0;
 }
