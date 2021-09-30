@@ -80,7 +80,7 @@ int16_t see(Position &position, Move move) {
 
 template <bool quiet = false>
 void score_movelist(Movelist &movelist, SearchInfo &search) {
-    auto &position = *search.position;
+    auto &position = search.position;
     for (auto &move : movelist) {
         if constexpr (!quiet) {
             int score = see(position, move);
@@ -119,7 +119,7 @@ MovePicker::MovePicker(SearchInfo &s)
 }
 
 bool MovePicker::qnext(Move &move) {
-    auto &position = *search->position;
+    auto &position = search->position;
 
     if (stage == STAGE_HASH_MOVE) {
         position.generate_noisy(movelist);
@@ -143,7 +143,7 @@ bool MovePicker::qnext(Move &move) {
 }
 
 bool MovePicker::next(Move &move) {
-    auto &position = *search->position;
+    auto &position = search->position;
 
     auto can_move = [&](Move m) {
         return position.is_pseudolegal(m) && position.is_legal(m);
@@ -186,7 +186,7 @@ bool MovePicker::next(Move &move) {
 
     if (stage == STAGE_KILLER_1) {
         stage       = STAGE_KILLER_2;
-        auto killer = search->killers[search->stats.ply][0];
+        auto killer = search->killers[search->ply][0];
 
         if (can_move(killer) && !move_is_capture(position, killer)) {
             move    = killer;
@@ -197,7 +197,7 @@ bool MovePicker::next(Move &move) {
 
     if (stage == STAGE_KILLER_2) {
         stage       = STAGE_BAD_NOISY;
-        auto killer = search->killers[search->stats.ply][1];
+        auto killer = search->killers[search->ply][1];
 
         if (can_move(killer) && !move_is_capture(position, killer)) {
             move    = killer;

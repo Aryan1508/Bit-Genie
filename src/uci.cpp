@@ -22,20 +22,23 @@
 #include "position.h"
 #include "polyglot.h"
 #include "benchmark.h"
-#include "searchinit.h"
 #include "stringparse.h"
+#include "search_threads.h"
 
 #include <cstring>
 #include <algorithm>
 
-const std::string version = "9.01";
+const std::string VERSION = "9.02";
+
+SearchThreadManager THREADS;
 
 namespace {
 void uci_ok() {
-    std::cout << "id name Bit-Genie " << version << '\n';
+    std::cout << "id name Bit-Genie " << VERSION << '\n';
     std::cout << "id author Aryan Parekh" << '\n';
     std::cout << "id network " << std::hex << Network::get_hash() << std::dec << '\n';
     std::cout << "option name Hash type spin default 8 min 2 max 3000" << '\n';
+    std::cout << "option name Threads type spin default 1 min 1 max 1024" << '\n';
     std::cout << "option name Clear Hash type button" << '\n';
     std::cout << "option name OwnBook type check default false" << '\n';
     std::cout << "option name BookPath type string" << '\n';
@@ -63,25 +66,22 @@ void uci_setoption(UciParser const &parser) {
 
     else if (name == "bookpath")
         PolyGlot::book.open(value);
+
+    else if (name == "threads")
+        THREADS.set_threads(std::stoull(value));
 }
 
-void uci_stop(SearchInit &worker) {
-    if (worker.is_searching())
-        worker.end();
-}
-
-void uci_go(UciParser const &parser, Position &position, SearchInit &worker) {
+void uci_go(UciParser const &parser, Position const &position) {
     UciGo options = parser.parse_go();
 
-    auto &search    = *worker.search;
-    search          = SearchInfo();
-    search.position = &position;
+    SearchInfo search;
+    search.position = position;
     search.limits.stopwatch.go();
     search.limits.max_depth = std::min(options.depth, 64);
 
     if (options.movetime == -1) {
-        auto &t   = position.get_side() == CLR_WHITE ? options.wtime : options.btime;
-        auto &inc = position.get_side() == CLR_WHITE ? options.winc : options.binc;
+        auto &t   = search.position.get_side() == CLR_WHITE ? options.wtime : options.btime;
+        auto &inc = search.position.get_side() == CLR_WHITE ? options.winc : options.binc;
 
         if (t == -1)
             search.limits.movetime = std::numeric_limits<int64_t>::max();
@@ -95,7 +95,7 @@ void uci_go(UciParser const &parser, Position &position, SearchInit &worker) {
         search.limits.time_set = true;
     }
 
-    worker.begin();
+    THREADS.begin(search);
 }
 
 void uci_setposition(UciParser const &parser, Position &position) {
@@ -117,16 +117,15 @@ void uci_setposition(UciParser const &parser, Position &position) {
 void init_uci(int argc, char **argv) {
     UciParser command;
     Position position;
-    SearchInit worker;
 
     if (argc > 1 && !strncmp(argv[1], "bench", 5)) {
-        bench(position);
+        bench();
         return;
     }
 
     while (command.take_input()) {
         if (command == UciCommands::quit) {
-            uci_stop(worker);
+            THREADS.stop();
             break;
         }
 
@@ -146,21 +145,21 @@ void init_uci(int argc, char **argv) {
             perft(position, command.parse_perft());
 
         else if (command == UciCommands::go)
-            uci_go(command, position, worker);
+            uci_go(command, position);
 
         else if (command == UciCommands::stop)
-            uci_stop(worker);
+            THREADS.stop();
 
         else if (command == UciCommands::setoption)
             uci_setoption(command);
 
         else if (command == UciCommands::bench) {
             TT.reset();
-            bench(position);
+            bench();
         }
 
         else if (command == UciCommands::ucinewgame) {
-            uci_stop(worker);
+            THREADS.stop();
             TT.reset();
         }
     }

@@ -55,35 +55,43 @@ struct SearchResult {
 };
 
 void apply_nullmove(SearchInfo &search) {
-    search.position->apply_nullmove();
-    search.stats.ply++;
+    search.position.apply_nullmove();
+    search.ply++;
 }
 
 void revert_nullmove(SearchInfo &search) {
-    search.position->revert_nullmove();
-    search.stats.ply--;
+    search.position.revert_nullmove();
+    search.ply--;
 }
 
 void apply_move(SearchInfo &search, Move move) {
-    search.position->apply_move(move);
-    search.stats.ply++;
+    search.position.apply_move(move);
+    search.ply++;
 }
 
 void revert_move(SearchInfo &search) {
-    search.position->revert_move();
-    search.stats.ply--;
+    search.position.revert_move();
+    search.ply--;
+}
+
+void update_info(SearchInfo &search) {
+    search.nodes++;
+    search.seldepth = std::max(search.ply, search.seldepth);
+
+    if ((search.nodes & 2047) == 0)
+        search.limits.update();
 }
 
 int qsearch(SearchInfo &search, int alpha, int beta) {
     if (search.limits.stopped)
         return 0;
 
-    search.update();
-    auto &position = *search.position;
-    auto at_root   = search.stats.ply == 0;
+    update_info(search);
+    auto &position = search.position;
+    auto at_root   = search.ply == 0;
 
     if (!at_root) {
-        if (search.stats.ply >= MAX_PLY)
+        if (search.ply >= MAX_PLY)
             return position.static_evaluation();
 
         if (position.drawn())
@@ -135,11 +143,11 @@ int nmp_depth(int depth, int eval, int beta) {
 void update_tt_after_search(SearchInfo &search, SearchResult result, int depth, int original, int beta, int eval) {
     auto flag = result.score <= original ? TTFLAG_UPPER : result.score >= beta ? TTFLAG_LOWER
                                                                                : TTFLAG_EXACT;
-    TT.add(*search.position, result.best_move, mate_score_to_tt(result.score, search.stats.ply), depth, flag, eval);
+    TT.add(search.position, result.best_move, mate_score_to_tt(result.score, search.ply), depth, flag, eval);
 }
 
 void update_history_tables_on_cutoff(SearchInfo &search, Movelist const &other, Move move, int depth) {
-    auto &p = *search.position;
+    auto &p = search.position;
     if (move_is_capture(p, move))
         update_history(search.capture_history, p, move, other, depth);
     else {
@@ -147,7 +155,7 @@ void update_history_tables_on_cutoff(SearchInfo &search, Movelist const &other, 
 
         if (p.previous_move() != MOVE_NULL)
             update_history(search.counter_history, p, move, other, depth);
-        add_killer(search.killers, search.stats.ply, move);
+        add_killer(search.killers, search.ply, move);
     }
 }
 
@@ -168,7 +176,7 @@ int calculate_lmr_depth(SearchInfo &search, MovePicker &picker, Move move, int d
     R -= pv_node;
     R -= picker.stage == STAGE_KILLER_2;
     if (picker.stage == STAGE_QUIET)
-        R -= (get_history(search.history, *search.position, move) / 14000);
+        R -= (get_history(search.history, search.position, move) / 14000);
     R -= (picker.stage == STAGE_GOOD_NOISY);
     return std::clamp(new_depth - R, 1, new_depth - 1);
 }
@@ -183,27 +191,27 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
     if (search.limits.stopped)
         return 0;
 
-    if (search.stats.ply)
-        depth += search.position->king_in_check();
+    if (search.ply)
+        depth += search.position.king_in_check();
 
     if (depth <= 0)
         return qsearch(search, alpha, beta);
 
-    search.update();
+    update_info(search);
 
     SearchResult result;
     auto picker    = MovePicker(search);
-    auto &position = *search.position;
+    auto &position = search.position;
     auto &entry    = TT.retrieve(position);
     auto pv_node   = is_pv_node(alpha, beta);
     auto in_check  = position.king_in_check();
-    auto at_root   = search.stats.ply == 0;
+    auto at_root   = search.ply == 0;
     auto tthit     = entry.hash == position.get_key();
     auto move_num  = 0;
     auto original  = alpha;
 
     if (!at_root) {
-        if (search.stats.ply >= MAX_PLY)
+        if (search.ply >= MAX_PLY)
             return position.static_evaluation();
 
         if (position.drawn())
@@ -212,7 +220,7 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
 
     if (entry.depth >= depth && tthit) {
         Move move = Move(entry.move);
-        int score = tt_score_to_mate(entry.score, search.stats.ply);
+        int score = tt_score_to_mate(entry.score, search.ply);
 
         if (entry.flag == TTFLAG_EXACT ||
             (entry.flag == TTFLAG_LOWER && score >= beta) ||
@@ -224,9 +232,9 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
         }
     }
 
-    auto eval                     = tthit ? entry.seval : position.static_evaluation();
-    search.eval[search.stats.ply] = eval;
-    auto improving                = eval > search.eval[std::max(0, search.stats.ply - 2)];
+    auto eval               = tthit ? entry.seval : position.static_evaluation();
+    search.eval[search.ply] = eval;
+    auto improving          = eval > search.eval[std::max(0, search.ply - 2)];
 
     if (!pv_node && !in_check && calculate_rfp_margin(eval, depth, improving) >= beta)
         return eval;
@@ -294,7 +302,7 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
 
     if (move_num == 0) {
         if (in_check)
-            return search.stats.ply - MATE_EVAL;
+            return search.ply - MATE_EVAL;
         else
             return 0;
     }
@@ -326,25 +334,18 @@ std::string print_score(int score) {
 void print_info_string(SearchResult result, SearchInfo &search, int depth) {
     std::cout << "info";
     std::cout << " depth " << depth;
-    std::cout << " seldepth " << search.stats.seldepth;
-    std::cout << " nodes " << search.stats.nodes;
+    std::cout << " seldepth " << search.seldepth;
+    std::cout << " nodes " << search.nodes;
     std::cout << " score " << print_score(result.score);
     std::cout << " time " << search.limits.stopwatch.elapsed_time().count();
     std::cout << " pv ";
 
-    for (auto m : TT.extract_pv(*search.position, depth)) {
+    for (auto m : TT.extract_pv(search.position, depth)) {
         std::cout << m << ' ';
     }
 
     std::cout << std::endl;
 }
-}
-
-void SearchInfo::update() {
-    stats.update();
-
-    if ((stats.nodes & 2047) == 0)
-        limits.update();
 }
 
 void init_search_tables() {
@@ -359,7 +360,7 @@ void init_search_tables() {
 }
 
 void search_position(SearchInfo &search, bool log) {
-    Position &position = *search.position;
+    Position &position = search.position;
     if (PolyGlot::book.enabled) {
         Move bookmove = PolyGlot::book.probe(position);
         if (bookmove.data) {
@@ -373,7 +374,8 @@ void search_position(SearchInfo &search, bool log) {
     auto best_move       = MOVE_NULL;
 
     for (auto depth = 1; depth <= search.limits.max_depth; depth++) {
-        search.stats.reset_iteration();
+        search.ply = search.seldepth = 0;
+
         auto alpha = MIN_EVAL;
         auto beta  = MAX_EVAL;
         auto delta = window;
