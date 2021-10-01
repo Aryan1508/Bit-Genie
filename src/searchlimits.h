@@ -21,14 +21,24 @@
 
 class SearchLimits {
 public:
-    SearchLimits() = default;
+    SearchLimits() {
+        reset();
+    }
+
+    void reset() {
+        stopwatch.reset();
+        movetime  = 0;
+        max_depth = 64;
+        stopped = time_set = false;
+    }
 
     void set_movetime(int64_t);
+
     void update();
 
     StopWatch<> stopwatch;
-    int64_t movetime = -1;
-    int max_depth    = 64;
-    bool stopped     = false;
-    bool time_set    = false;
+    int64_t movetime;
+    int max_depth;
+    bool stopped;
+    bool time_set;
 };

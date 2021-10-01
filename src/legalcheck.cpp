@@ -106,6 +106,12 @@ bool Position::is_pseudolegal(Move move) const {
         if (!test_bit(castle_rooks, to))
             return false;
 
+        if (from != SQ_E1 && get_side() == CLR_WHITE)
+            return false;
+
+        if (from != SQ_E8 && get_side() == CLR_BLACK)
+            return false;
+
         if (!castle_path_is_clear(*this, to))
             return false;
 

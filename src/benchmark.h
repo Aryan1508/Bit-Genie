@@ -19,4 +19,4 @@
 #include "board.h"
 
 void perft(Position &, int depth);
-void bench(Position &);
+void bench();

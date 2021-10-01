@@ -18,21 +18,36 @@
 #pragma once
 #include "move.h"
 #include "history.h"
-#include "searchstats.h"
 #include "searchlimits.h"
+
 #include <atomic>
+#include <string.h>
 
 struct SearchInfo {
-    Position *position;
-    SearchStats stats;
+    Position position;
     SearchLimits limits;
+
+    // History-tables
     KillerTable killers                 = { MOVE_NULL };
     EvalHistory eval                    = { 0 };
     HistoryTable history                = { 0 };
     HistoryTable capture_history        = { 0 };
     CounterHistoryTable counter_history = { 0 };
 
-    void update();
+    // Counters
+    uint64_t nodes = 0;
+    int seldepth   = 0;
+    int ply        = 0;
+
+    void reset_for_search() {
+        limits.reset();
+        memset(killers, 0, sizeof(killers));
+        memset(eval, 0, sizeof(eval));
+        memset(history, 0, sizeof(history));
+        memset(capture_history, 0, sizeof(capture_history));
+        memset(counter_history, 0, sizeof(counter_history));
+        nodes = seldepth = ply = 0;
+    }
 };
 
 void init_search_tables();

@@ -67,19 +67,18 @@ void perft(Position &position, int depth) {
     std::cout << std::endl;
 }
 
-void bench(Position &position) {
+void bench() {
     StopWatch watch;
     watch.go();
     auto nodes = 0;
     for (auto const &fen : benchmark_fens) {
-        position.set_fen(fen);
-        SearchInfo info;
-        info.position         = &position;
-        info.limits.max_depth = 11;
-        search_position(info, false);
+        SearchInfo search;
+        search.limits.max_depth = 11;
+        search.position.set_fen(fen);
+        search_position(search, false);
 
-        std::cout << fen << ": " << info.stats.nodes << '\n';
-        nodes += info.stats.nodes;
+        std::cout << fen << ": " << search.nodes << '\n';
+        nodes += search.nodes;
     }
     watch.stop();
     auto elapsed = watch.elapsed_time().count();
