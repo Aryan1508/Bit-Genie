@@ -24,20 +24,24 @@
 INCBIN(Network, EVALFILE);
 
 void Network::init() {
-    auto data = reinterpret_cast<const uint32_t *>(gNetworkData);
-    hash      = *(data + 1);
+    auto data = reinterpret_cast<const float *>(gNetworkData);
 
-    data += 6;
-    std::memcpy(&hidden_weights[0], data, HIDDEN_SIZE * INPUT_SIZE * sizeof(float));
-    data += HIDDEN_SIZE * INPUT_SIZE;
+    memcpy(&hash, data, sizeof(uint32_t));
+    data++;
 
-    std::memcpy(&hidden_biases[0], data, HIDDEN_SIZE * sizeof(float));
-    data += HIDDEN_SIZE;
+    for (size_t i = 0; i < INPUT_SIZE; i++) {
+        for (size_t j = 0; j < HIDDEN_SIZE; j++) {
+            hidden_weights[i][j] = *data++;
+        }
+    }
 
-    std::memcpy(&output_weights[0], data, HIDDEN_SIZE * sizeof(float));
-    data += HIDDEN_SIZE;
+    for (size_t i = 0; i < HIDDEN_SIZE; i++)
+        hidden_biases[i] = *data++;
 
-    std::memcpy(&output_bias, data, sizeof(float));
+    for (size_t i = 0; i < HIDDEN_SIZE; i++)
+        output_weights[i] = *data++;
+
+    output_bias = *data;
 }
 
 void Network::update_hidden_layer(NetworkUpdateList const &updates) {
