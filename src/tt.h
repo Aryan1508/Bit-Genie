@@ -46,11 +46,11 @@ class TTable {
 public:
     TTable();
 
-    TTable(int mb) {
+    TTable(size_t mb) {
         resize(mb);
     }
 
-    void resize(int);
+    void resize(size_t);
 
     void add(Position const &, Move, int16_t score, uint8_t depth, TTFlag, int16_t);
 

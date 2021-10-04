@@ -19,7 +19,7 @@
 #include "position.h"
 #include <algorithm>
 
-static inline int mb_to_b(int mb) {
+static inline size_t mb_to_b(size_t mb) {
     return mb * 1024 * 1024;
 }
 
@@ -27,7 +27,7 @@ TTable::TTable() {
     resize(8);
 }
 
-void TTable::resize(int mb) {
+void TTable::resize(size_t mb) {
     entries.resize(mb_to_b(mb) / sizeof(TEntry), TEntry());
 }
 
