@@ -28,7 +28,7 @@
 #include <cstring>
 #include <algorithm>
 
-const std::string VERSION = "9.03";
+const std::string VERSION = "9.04";
 
 SearchThreadManager THREADS;
 
@@ -37,7 +37,7 @@ void uci_ok() {
     std::cout << "id name Bit-Genie " << VERSION << '\n';
     std::cout << "id author Aryan Parekh" << '\n';
     std::cout << "id network " << std::hex << Network::get_hash() << std::dec << '\n';
-    std::cout << "option name Hash type spin default 8 min 2 max 3000" << '\n';
+    std::cout << "option name Hash type spin default 8 min 2 max 262144" << '\n';
     std::cout << "option name Threads type spin default 1 min 1 max 1024" << '\n';
     std::cout << "option name Clear Hash type button" << '\n';
     std::cout << "option name OwnBook type check default false" << '\n';
