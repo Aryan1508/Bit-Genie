@@ -24,7 +24,7 @@
 class Network {
 public:
     static constexpr int INPUT_SIZE  = 768;
-    static constexpr int HIDDEN_SIZE = 128;
+    static constexpr int HIDDEN_SIZE = 256;
     static constexpr int OUTPUT_SIZE = 1;
 
     Network() {
