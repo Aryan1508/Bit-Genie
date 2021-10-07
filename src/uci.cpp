@@ -28,7 +28,7 @@
 #include <cstring>
 #include <algorithm>
 
-const std::string VERSION = "9.04";
+const std::string VERSION = "9.05";
 
 SearchThreadManager THREADS;
 
