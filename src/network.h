@@ -32,9 +32,9 @@ public:
         hidden_neurons.back().fill(0.0f);
     }
 
-    int32_t calculate_last_layer();
+    int16_t calculate_last_layer();
 
-    int32_t feed(NetworkInput const &);
+    int16_t feed(NetworkInput const &);
 
     void update_hidden_layer(NetworkUpdateList const &);
 
@@ -55,11 +55,11 @@ public:
     }
 
 private:
-    std::vector<std::array<int32_t, HIDDEN_SIZE>> hidden_neurons;
+    std::vector<std::array<int16_t, HIDDEN_SIZE>> hidden_neurons;
 
-    static std::array<std::array<int32_t, HIDDEN_SIZE>, INPUT_SIZE> hidden_weights;
-    static std::array<int32_t, HIDDEN_SIZE> hidden_biases;
-    static std::array<int32_t, HIDDEN_SIZE> output_weights;
-    static int32_t output_bias;
+    static std::array<std::array<int16_t, HIDDEN_SIZE>, INPUT_SIZE> hidden_weights;
+    static std::array<int16_t, HIDDEN_SIZE> hidden_biases;
+    static std::array<int16_t, HIDDEN_SIZE> output_weights;
+    static int16_t output_bias;
     static std::uint32_t hash;
 };
