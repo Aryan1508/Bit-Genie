@@ -4,7 +4,7 @@ CXX := g++
 
 EVALFILE = defaultnet.nn
 
-LFLAGS   := -lpthread
+LFLAGS   := -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 WFLAGS   := -Wall -Wextra
 CXXFLAGS := -std=c++17 $(WFLAGS) -O3 -DNDEBUG -flto -march=native
 RFLAGS   := -std=c++17 -O3 -DNDEBUG -static 
