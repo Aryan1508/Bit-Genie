@@ -35,7 +35,7 @@ void TTable::add(Position const &position, Move move, int16_t score, uint8_t dep
     auto hash  = position.get_key();
     auto index = hash % entries.size();
 
-    if (flag != TTFLAG_EXACT && hash == entries[index].hash && depth < entries[index].depth - 1)
+    if (flag != TTFLAG_EXACT && hash == entries[index].hash && depth < entries[index].depth - 2)
         return;
 
     if (flag == TTFLAG_EXACT || depth * 3 > entries[index].depth)
