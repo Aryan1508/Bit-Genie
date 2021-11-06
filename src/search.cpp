@@ -242,7 +242,8 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
     if (!pv_node && !in_check && depth == 1 && eval + 400 <= alpha)
         return qsearch(search, alpha, beta);
 
-    if (!pv_node && !in_check && depth >= 4 && do_null && (popcount64(position.get_bb()) >= 4) && eval + 300 >= beta) {
+    const bool is_pawn_eg = !(position.get_bb() & ~(position.get_bb(PT_KING) | position.get_bb(PT_PAWN)));
+    if (!pv_node && !in_check && depth >= 4 && do_null && (popcount64(position.get_bb()) > 5 && !is_pawn_eg) && eval + 300 >= beta) {
         apply_nullmove(search);
         int score = -pvs(search, nmp_depth(depth, eval, beta), -beta, -beta + 1, false).score;
         revert_nullmove(search);
