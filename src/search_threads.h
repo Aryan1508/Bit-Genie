@@ -28,6 +28,10 @@ public:
         set_threads(1);
     }
 
+    SearchInfo const& get_info() const {
+        return search_data[0];
+    }
+
     void set_threads(size_t count) {
         stop();
         threads.resize(count);
