@@ -50,8 +50,6 @@ struct SearchInfo {
     }
 
     void copy_history_tables(SearchInfo const &other) {
-        memcpy(killers, other.killers, sizeof(killers));
-        memcpy(eval, other.eval, sizeof(eval));
         memcpy(history, other.history, sizeof(history));
         memcpy(capture_history, other.capture_history, sizeof(capture_history));
         memcpy(counter_history, other.counter_history, sizeof(counter_history));
