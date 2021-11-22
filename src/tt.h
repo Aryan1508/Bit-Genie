@@ -52,6 +52,8 @@ public:
 
     void resize(size_t);
 
+    void add(TEntry const &);
+
     void add(Position const &, Move, int16_t score, uint8_t depth, TTFlag, int16_t);
 
     void reset() {

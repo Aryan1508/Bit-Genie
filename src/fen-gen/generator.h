@@ -16,8 +16,24 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include <string>
+#include "game.h"
+#include "cmdline.h"
 
-const std::string BG_VERSION = "9.15";
+#include <thread>
+#include <atomic>
 
-void init_uci(int argc, char **argv);
+inline int FEN_GENERATOR_THREADS = 1;
+
+class GamePool {
+public:
+    GamePool() = default;
+
+    void run(std::uint64_t target_fens);
+
+    void run_batch(std::string_view output_file, std::uint64_t target_fens, std::uint64_t seed);
+
+private:
+    std::vector<std::thread> workers;
+    std::atomic_uint64_t n_games = { 0 };
+    std::atomic_uint64_t n_fens  = { 0 };
+};

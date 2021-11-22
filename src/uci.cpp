@@ -28,13 +28,11 @@
 #include <cstring>
 #include <algorithm>
 
-const std::string VERSION = "9.14";
-
 SearchThreadManager THREADS;
 
 namespace {
 void uci_ok() {
-    std::cout << "id name Bit-Genie " << VERSION << '\n';
+    std::cout << "id name Bit-Genie " << BG_VERSION << '\n';
     std::cout << "id author Aryan Parekh" << '\n';
     std::cout << "id network " << std::hex << Network::get_hash() << std::dec << '\n';
     std::cout << "option name Hash type spin default 8 min 2 max 262144" << '\n';

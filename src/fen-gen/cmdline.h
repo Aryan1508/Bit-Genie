@@ -16,8 +16,27 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include <string>
+#include "../stringparse.h"
 
-const std::string BG_VERSION = "9.15";
+class CommandLineParser {
+public:
+    CommandLineParser(int argc, char **argv) {
+        options = std::vector<std::string>(argv, argv + argc);
+    }
 
-void init_uci(int argc, char **argv);
+    std::string get_option(std::string_view key) const {
+        for (std::size_t i = 0; i < options.size(); i++) {
+            if (options[i] == key)
+                return options[i + 1];
+        }
+
+        return "";
+    }
+
+    uint64_t get_option(std::string_view key, uint64_t default_value) const {
+        std::string value = get_option(key);
+        return value.size() ? std::stoull(value) : default_value;
+    }
+private:
+    std::vector<std::string> options;
+};

@@ -32,20 +32,24 @@ void TTable::resize(size_t mb) {
 }
 
 void TTable::add(Position const &position, Move move, int16_t score, uint8_t depth, TTFlag flag, int16_t seval) {
-    auto hash  = position.get_key();
-    auto index = hash % entries.size();
-
-    if (flag != TTFLAG_EXACT && hash == entries[index].hash && depth < entries[index].depth - 2)
-        return;
-
-    if (flag == TTFLAG_EXACT || depth * 3 > entries[index].depth)
-        entries[index] = TEntry(hash, score, move, depth, flag, seval);
+    add(TEntry(position.get_key(), score, move, depth, flag, seval));
 }
 
 TEntry &TTable::retrieve(Position const &position) {
     auto hash  = position.get_key();
     auto index = hash % entries.size();
     return entries[index];
+}
+
+void TTable::add(TEntry const &entry) {
+    auto hash  = entry.hash;
+    auto index = hash % entries.size();
+
+    if (entry.flag != TTFLAG_EXACT && hash == entries[index].hash && entry.depth < entries[index].depth - 2)
+        return;
+
+    if (entry.flag == TTFLAG_EXACT || entry.depth * 3 > entries[index].depth)
+        entries[index] = entry;
 }
 
 std::vector<Move> TTable::extract_pv(Position &position, int depth) {
