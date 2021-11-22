@@ -320,6 +320,11 @@ SearchResult search_position(SearchInfo &search, bool log) {
     auto best_move       = MOVE_NULL;
 
     for (auto depth = 1; depth <= search.limits.max_depth; depth++) {
+#ifdef FEN_GENERATOR
+    if (depth > FEN_GENERATOR_DEPTH || search.nodes > FEN_GENERATOR_NODES) {
+        break;
+    }
+#endif
         search.ply = search.seldepth = 0;
 
         auto alpha = MIN_EVAL;

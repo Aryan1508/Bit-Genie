@@ -57,7 +57,7 @@ void Game::new_game() {
     ply = 0;
     search.position.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     saved_positions.clear();
-    search.reset_for_search();
+    search.reset();
 }
 
 void Game::save_game(std::string const &result) {
@@ -72,7 +72,7 @@ SearchResult Game::search_position() {
 }
 
 void Game::run() {
-    std::string result;
+    std::string wdl_string;
     int draw_score_counter = 0, win_score_counter = 0;
 
     while (true) {
@@ -84,48 +84,49 @@ void Game::run() {
         }
 
         if (search.position.drawn()) {
-            result = DRAW_STRING;
+            wdl_string = DRAW_STRING;
             break;
         }
 
         if (is_mated()) {
             if (search.position.king_in_check())
-                result = search.position.get_side() == CLR_WHITE ? BLACK_WIN_STRING : WHITE_WIN_STRING;
+                wdl_string = search.position.get_side() == CLR_WHITE ? BLACK_WIN_STRING : WHITE_WIN_STRING;
             else
-                result = DRAW_STRING;
+                wdl_string = DRAW_STRING;
             break;
         }
 
-        auto [score, move]       = search_position();
-        int white_relative_score = search.position.get_side() == CLR_WHITE ? score : -score;
+        auto result              = search_position();
+        int white_relative_score = search.position.get_side() == CLR_WHITE ? result.score : -result.score;
 
         // TODO command line arg
-        if (score >= 1000 && ply == 8)
+        if (result.score >= 1000 && ply == 8)
             return;
 
         if (filter_position())
             save_position(white_relative_score);
 
         // TODO command line arg
-        bool is_draw_score = std::abs(score) <= 20;
-        bool is_win_score  = std::abs(score) >= 1000;
+        bool is_draw_score = std::abs(result.score) <= 20;
+        bool is_win_score  = std::abs(result.score) >= 1000;
 
         draw_score_counter = is_draw_score ? draw_score_counter + 1 : 0;
         win_score_counter  = is_win_score ? win_score_counter + 1 : 0;
 
         // TODO command line arg
         if (draw_score_counter >= 12) {
-            result = DRAW_STRING;
+            wdl_string = DRAW_STRING;
             break;
         }
 
         if (win_score_counter >= 4) {
-            result = white_relative_score > 0 ? WHITE_WIN_STRING : BLACK_WIN_STRING;
+            wdl_string = white_relative_score > 0 ? WHITE_WIN_STRING : BLACK_WIN_STRING;
             break;
         }
 
-        search.position.apply_move(move);
+        search.position.apply_move(result.best_move);
+        search.reset_counters();
         ply++;
     }
-    save_game(result);
+    save_game(wdl_string);
 }

@@ -52,13 +52,17 @@ struct SearchInfo {
     TTable local_tt = TTable(8);
 #endif  
 
-    void reset_for_search() {
+    void reset() {
         limits.reset();
+        reset_counters();
         memset(killers, 0, sizeof(killers));
         memset(eval, 0, sizeof(eval));
         memset(history, 0, sizeof(history));
         memset(capture_history, 0, sizeof(capture_history));
         memset(counter_history, 0, sizeof(counter_history));
+    }
+
+    void reset_counters() {
         nodes = seldepth = ply = 0;
     }
 
