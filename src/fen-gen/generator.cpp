@@ -18,6 +18,18 @@
 #include "generator.h"
 
 #include <chrono>
+#include <time.h>
+#include <iomanip>
+#include <sstream>
+
+std::string get_current_date_time() {
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
+    return ss.str();
+}
 
 void GamePool::run_batch(std::string_view output_file_path, std::uint64_t target_fens, std::uint64_t seed) {
     std::mt19937 rng(seed);
@@ -42,13 +54,7 @@ void GamePool::run_batch(std::string_view output_file_path, std::uint64_t target
 }
 
 void GamePool::run(std::uint64_t target_fens) {
-    std::cout << "Starting generation on " << FEN_GENERATOR_THREADS << " threads\n";
     std::random_device rd;
-
-    auto generator_start_time   = std::chrono::system_clock::now();
-    auto generator_start_time_t = std::chrono::system_clock::to_time_t(generator_start_time);
-
-    std::cout << "Started generation on " << std::ctime(&generator_start_time_t) << std::endl;
 
     std::uint64_t batch_size = target_fens / FEN_GENERATOR_THREADS;
     for (int i = 0; i < FEN_GENERATOR_THREADS; i++) {
@@ -56,21 +62,19 @@ void GamePool::run(std::uint64_t target_fens) {
         workers.emplace_back(&GamePool::run_batch, this, output_path, batch_size, rd());
     }
 
-    StopWatch watch;
-    watch.go();
+    std::cout << "\n{" << get_current_date_time() << "}: started generation\n";
 
+    std::uint64_t n_previous_fens = 0;
     while (n_fens <= (batch_size * FEN_GENERATOR_THREADS)) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        double fps = n_fens / (double)watch.elapsed_time().count() * 1000;
-        std::cout << "\rGenerated fens [ " << n_fens << " ] [ " << fps << " /s ]" << std::flush;
+        std::uint64_t n_batch_fens = n_fens - n_previous_fens;
+        std::cout << "\r{" << get_current_date_time() << "}: generating... [total=" << n_fens << ", speed=" << n_batch_fens << "]" << std::flush; 
+        n_previous_fens = n_fens;
     }
-    std::cout << std::endl;
+    std::cout << '\n';
+    std::cout << "{" << get_current_date_time() << "}: finished generation" << std::endl;
 
     for (auto &worker : workers)
         worker.join();
-
-    auto generator_end_time   = std::chrono::system_clock::now();
-    auto generator_end_time_t = std::chrono::system_clock::to_time_t(generator_end_time);
-    std::cout << "Finished generation at " << std::ctime(&generator_end_time_t) << std::endl;
 }

@@ -107,6 +107,6 @@ inline TEntry& retrieve_tt_entry(SearchInfo& search) {
     return search.local_tt.retrieve(search.position);
 }
 
-inline uint64_t FEN_GENERATOR_DEPTH = 10;
+inline int FEN_GENERATOR_DEPTH = 10;
 inline uint64_t FEN_GENERATOR_NODES = 4000;
 #endif

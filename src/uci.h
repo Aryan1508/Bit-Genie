@@ -16,5 +16,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include <string>
+
+const std::string BG_VERSION = "9.15";
 
 void init_uci(int argc, char **argv);
