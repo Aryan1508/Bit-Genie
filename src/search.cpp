@@ -37,23 +37,6 @@ int LMP_TABLE[65][2];
 // Late-move reductions
 int LMR_TABLE[65][64];
 
-constexpr int MIN_EVAL      = -32001;
-constexpr int MAX_EVAL      = -MIN_EVAL;
-constexpr int MATE_EVAL     = 32000;
-constexpr int MAX_PLY       = 64;
-constexpr int MIN_MATE_EVAL = MATE_EVAL - MAX_PLY;
-
-struct SearchResult {
-    int score      = MIN_EVAL;
-    Move best_move = MOVE_NULL;
-
-    SearchResult() = default;
-
-    SearchResult(int best_score, Move best = MOVE_NULL)
-        : score(best_score), best_move(best) {
-    }
-};
-
 void apply_nullmove(SearchInfo &search) {
     search.position.apply_nullmove();
     search.ply++;
@@ -82,45 +65,6 @@ void update_info(SearchInfo &search) {
         search.limits.update();
 }
 
-int qsearch(SearchInfo &search, int alpha, int beta) {
-    if (search.limits.stopped)
-        return 0;
-
-    update_info(search);
-    auto &position = search.position;
-    auto at_root   = search.ply == 0;
-
-    if (!at_root) {
-        if (search.ply >= MAX_PLY)
-            return position.static_evaluation();
-
-        if (position.drawn())
-            return 0;
-    }
-
-    auto stand_pat = position.static_evaluation();
-    if (stand_pat >= beta)
-        return beta;
-    alpha = std::max(alpha, stand_pat);
-
-    MovePicker picker(search);
-    for (Move move; picker.qnext(move);) {
-        apply_move(search, move);
-        auto score = -qsearch(search, -beta, -alpha);
-        revert_move(search);
-
-        if (search.limits.stopped)
-            return 0;
-
-        alpha = std::max(alpha, score);
-
-        if (alpha >= beta)
-            return beta;
-    }
-
-    return alpha;
-}
-
 bool is_pv_node(int alpha, int beta) {
     return std::abs(alpha - beta) > 1;
 }
@@ -143,7 +87,8 @@ int nmp_depth(int depth, int eval, int beta) {
 void update_tt_after_search(SearchInfo &search, SearchResult result, int depth, int original, int beta, int eval) {
     auto flag = result.score <= original ? TTFLAG_UPPER : result.score >= beta ? TTFLAG_LOWER
                                                                                : TTFLAG_EXACT;
-    TT.add(search.position, result.best_move, mate_score_to_tt(result.score, search.ply), depth, flag, eval);
+
+    add_tt_entry(search, TEntry(search.position.get_key(), mate_score_to_tt(result.score, search.ply), result.best_move, depth, flag, eval));
 }
 
 void update_history_tables_on_cutoff(SearchInfo &search, Movelist const &other, Move move, int depth) {
@@ -202,7 +147,7 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
     SearchResult result;
     auto picker    = MovePicker(search);
     auto &position = search.position;
-    auto &entry    = TT.retrieve(position);
+    auto &entry    = retrieve_tt_entry(search);
     auto pv_node   = is_pv_node(alpha, beta);
     auto in_check  = position.king_in_check();
     auto at_root   = search.ply == 0;
@@ -360,7 +305,7 @@ void init_search_tables() {
     }
 }
 
-void search_position(SearchInfo &search, bool log) {
+SearchResult search_position(SearchInfo &search, bool log) {
     Position &position = search.position;
     if (PolyGlot::book.enabled) {
         Move bookmove = PolyGlot::book.probe(position);
@@ -412,4 +357,45 @@ void search_position(SearchInfo &search, bool log) {
 conc:
     if (log)
         std::cout << "bestmove " << best_move << std::endl;
+
+    return { score, best_move };
+}
+
+int qsearch(SearchInfo &search, int alpha, int beta) {
+    if (search.limits.stopped)
+        return 0;
+
+    update_info(search);
+    auto &position = search.position;
+    auto at_root   = search.ply == 0;
+
+    if (!at_root) {
+        if (search.ply >= MAX_PLY)
+            return position.static_evaluation();
+
+        if (position.drawn())
+            return 0;
+    }
+
+    auto stand_pat = position.static_evaluation();
+    if (stand_pat >= beta)
+        return beta;
+    alpha = std::max(alpha, stand_pat);
+
+    MovePicker picker(search);
+    for (Move move; picker.qnext(move);) {
+        apply_move(search, move);
+        auto score = -qsearch(search, -beta, -alpha);
+        revert_move(search);
+
+        if (search.limits.stopped)
+            return 0;
+
+        alpha = std::max(alpha, score);
+
+        if (alpha >= beta)
+            return beta;
+    }
+
+    return alpha;
 }

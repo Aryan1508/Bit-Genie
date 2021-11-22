@@ -15,29 +15,25 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "uci.h"
-#include "search.h"
-#include "attacks.h"
-#include "zobrist.h"
-#include "network.h"
-#include "fen-gen/generator.h"
+#pragma once
+#include "game.h"
+#include "cmdline.h"
 
-int main(int argc, char **argv) {
-    init_magics();
-    init_zobrist_keys();
-    init_search_tables();
-    Network::init();
+#include <thread>
+#include <atomic>
 
-#ifndef FEN_GENERATOR 
-    init_uci(argc, argv);
-#else
-    CommandLineParser cmdline(argc, argv);
+inline int FEN_GENERATOR_THREADS = 1;
 
-    FEN_GENERATOR_THREADS = cmdline.get_option("-threads", 1);
-    FEN_GENERATOR_DEPTH   = cmdline.get_option("-depth",  10);
-    FEN_GENERATOR_NODES   = cmdline.get_option("-nodes",  4000);
+class GamePool {
+public:
+    GamePool() = default;
 
-    GamePool pool;
-    pool.run(cmdline.get_option("-fens", 100));
-#endif
-}
+    void run(std::uint64_t target_fens);
+
+    void run_batch(std::string_view output_file, std::uint64_t target_fens, std::uint64_t seed);
+
+private:
+    std::vector<std::thread> workers;
+    std::atomic_uint64_t n_games = { 0 };
+    std::atomic_uint64_t n_fens  = { 0 };
+};

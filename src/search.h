@@ -16,12 +16,21 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "tt.h"
 #include "move.h"
 #include "history.h"
 #include "searchlimits.h"
 
 #include <atomic>
 #include <string.h>
+
+inline std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);
+
+constexpr int MIN_EVAL      = -32001;
+constexpr int MAX_EVAL      = -MIN_EVAL;
+constexpr int MATE_EVAL     = 32000;
+constexpr int MAX_PLY       = 64;
+constexpr int MIN_MATE_EVAL = MATE_EVAL - MAX_PLY;
 
 struct SearchInfo {
     Position position;
@@ -38,6 +47,10 @@ struct SearchInfo {
     uint64_t nodes = 0;
     int seldepth   = 0;
     int ply        = 0;
+
+#ifdef FEN_GENERATOR 
+    TTable local_tt = TTable(8);
+#endif  
 
     void reset_for_search() {
         limits.reset();
@@ -56,8 +69,40 @@ struct SearchInfo {
     }
 };
 
+struct SearchResult {
+    int score      = MIN_EVAL;
+    Move best_move = MOVE_NULL;
+
+    SearchResult() = default;
+
+    SearchResult(int best_score, Move best = MOVE_NULL)
+        : score(best_score), best_move(best) {
+    }
+};
+
 void init_search_tables();
 
-void search_position(SearchInfo &, bool log);
+int qsearch(SearchInfo &search, int alpha, int beta);
 
-inline std::atomic_bool SEARCH_ABORT = ATOMIC_VAR_INIT(false);
+SearchResult search_position(SearchInfo &, bool log);
+
+#ifndef FEN_GENERATOR 
+inline void add_tt_entry(SearchInfo&, TEntry const& entry) {
+    TT.add(entry);
+}
+
+inline TEntry& retrieve_tt_entry(SearchInfo& search) {
+    return TT.retrieve(search.position);
+}
+#else 
+inline void add_tt_entry(SearchInfo& search, TEntry const& entry) {
+    search.local_tt.add(entry);
+}
+
+inline TEntry& retrieve_tt_entry(SearchInfo& search) {
+    return search.local_tt.retrieve(search.position);
+}
+
+inline uint64_t FEN_GENERATOR_DEPTH = 10;
+inline uint64_t FEN_GENERATOR_NODES = 4000;
+#endif

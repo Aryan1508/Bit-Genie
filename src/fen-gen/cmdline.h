@@ -15,29 +15,28 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "uci.h"
-#include "search.h"
-#include "attacks.h"
-#include "zobrist.h"
-#include "network.h"
-#include "fen-gen/generator.h"
+#pragma once
+#include "../stringparse.h"
 
-int main(int argc, char **argv) {
-    init_magics();
-    init_zobrist_keys();
-    init_search_tables();
-    Network::init();
+class CommandLineParser {
+public:
+    CommandLineParser(int argc, char **argv) {
+        options = std::vector<std::string>(argv, argv + argc);
+    }
 
-#ifndef FEN_GENERATOR 
-    init_uci(argc, argv);
-#else
-    CommandLineParser cmdline(argc, argv);
+    std::string get_option(std::string_view key) const {
+        for (std::size_t i = 0; i < options.size(); i++) {
+            if (options[i] == key)
+                return options[i + 1];
+        }
 
-    FEN_GENERATOR_THREADS = cmdline.get_option("-threads", 1);
-    FEN_GENERATOR_DEPTH   = cmdline.get_option("-depth",  10);
-    FEN_GENERATOR_NODES   = cmdline.get_option("-nodes",  4000);
+        return "";
+    }
 
-    GamePool pool;
-    pool.run(cmdline.get_option("-fens", 100));
-#endif
-}
+    uint64_t get_option(std::string_view key, uint64_t default_value) const {
+        std::string value = get_option(key);
+        return value.size() ? std::stoull(value) : default_value;
+    }
+private:
+    std::vector<std::string> options;
+};

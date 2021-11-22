@@ -151,7 +151,7 @@ bool MovePicker::next(Move &move) {
 
     if (stage == STAGE_HASH_MOVE) {
         stage       = STAGE_GEN_NOISY;
-        auto &entry = TT.retrieve(position);
+        auto &entry = retrieve_tt_entry(*search);
         auto hmove  = Move(entry.move);
 
         if (entry.hash == position.get_key() && can_move(hmove)) {
