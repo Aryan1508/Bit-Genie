@@ -156,6 +156,7 @@ bool MovePicker::next(Move &move) {
 
         if (entry.hash == position.get_key() && can_move(hmove)) {
             move      = hmove;
+            tt_move   = hmove;
             hash_move = move;
             return true;
         }
