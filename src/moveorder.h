@@ -43,7 +43,6 @@ public:
     Move hash_move      = MOVE_NULL;
     Move killer1        = MOVE_NULL;
     Move killer2        = MOVE_NULL;
-    Move tt_move        = MOVE_NULL;
 private:
     SearchInfo *search;
     Movelist::iterator current;
