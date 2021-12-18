@@ -104,26 +104,11 @@ void update_history_tables_on_cutoff(SearchInfo &search, Movelist const &other, 
     }
 }
 
-bool use_lmr(int depth, int move_i) {
-    return depth > 2 && move_i > 3;
-}
-
 void update_search_result(SearchResult &result, int score, Move move) {
     if (score > result.score) {
         result.best_move = move;
         result.score     = score;
     }
-}
-
-int calculate_lmr_depth(SearchInfo &search, MovePicker &picker, Move move, int depth, int move_i, bool pv_node) {
-    auto R         = LMR_TABLE[depth][std::min(63, move_i)];
-    auto new_depth = depth - 1;
-    R -= pv_node;
-    R -= picker.stage == STAGE_KILLER_2;
-    if (picker.stage == STAGE_QUIET)
-        R -= (get_history(search.history, search.position, move) / 14000);
-    R -= (picker.stage == STAGE_GOOD_NOISY);
-    return std::clamp(new_depth - R, 1, new_depth - 1);
 }
 
 int calculate_rfp_margin(int eval, int depth, bool improving) {
@@ -204,19 +189,30 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
         depth--;
 
     for (Move move; picker.next(move);) {
+        bool is_quiet = !move_is_capture(position, move);
+
         if (move_num > LMP_TABLE[depth][improving])
             break;
 
-        if (depth < 5 && move_is_capture(position, move) && move.score < SP_TABLE[depth])
+        if (depth < 5 && !is_quiet && move.score < SP_TABLE[depth])
             continue;
 
         move_num++;
         apply_move(search, move);
 
         auto score = 0;
-        if (use_lmr(depth, move_num)) {
-            int new_depth = calculate_lmr_depth(search, picker, move, depth, move_num, pv_node);
+        if (depth > 2 && move_num > 3) {
+            int R         = LMR_TABLE[depth][std::min(63, move_num)];
+            
+            R -= pv_node;
+            R -= move == picker.killer1 || move == picker.killer2;
 
+            if (picker.stage == STAGE_QUIET)
+                R -= get_history(search.history, search.position, move) / 14000;
+
+            R -= picker.stage == STAGE_GOOD_NOISY;
+
+            int new_depth = std::clamp(depth - 1 - R, 1, depth - 2);
             score = -pvs(search, new_depth, -alpha - 1, -alpha).score;
 
             if (score > alpha && new_depth < depth - 1)
