@@ -104,10 +104,6 @@ void update_history_tables_on_cutoff(SearchInfo &search, Movelist const &other, 
     }
 }
 
-bool use_lmr(int depth, int move_i) {
-    return depth > 2 && move_i > 3;
-}
-
 void update_search_result(SearchResult &result, int score, Move move) {
     if (score > result.score) {
         result.best_move = move;
@@ -205,7 +201,7 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
         apply_move(search, move);
 
         auto score = 0;
-        if (use_lmr(depth, move_num)) {
+        if (depth > 2 && move_num > 3) {
             int R         = LMR_TABLE[depth][std::min(63, move_num)];
             
             R -= pv_node;
