@@ -18,6 +18,6 @@
 #pragma once
 #include <string>
 
-const std::string BG_VERSION = "9.16";
+const std::string BG_VERSION = "9.17";
 
 void init_uci(int argc, char **argv);
