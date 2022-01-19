@@ -69,16 +69,6 @@ bool is_pv_node(int alpha, int beta) {
     return std::abs(alpha - beta) > 1;
 }
 
-int16_t mate_score_to_tt(int score, int ply) {
-    return score > MIN_MATE_EVAL ? score + ply : score < -MIN_MATE_EVAL ? score - ply
-                                                                        : score;
-}
-
-int16_t tt_score_to_mate(int score, int ply) {
-    return score > MIN_MATE_EVAL ? score - ply : score < -MIN_MATE_EVAL ? score + ply
-                                                                        : score;
-}
-
 int nmp_depth(int depth, int eval, int beta) {
     auto reduction = std::max(4, 3 + depth / 3) + std::clamp((eval - beta) / 256, 0, 2);
     return depth - reduction;
@@ -88,7 +78,7 @@ void update_tt_after_search(SearchInfo &search, SearchResult result, int depth, 
     auto flag = result.score <= original ? TTFLAG_UPPER : result.score >= beta ? TTFLAG_LOWER
                                                                                : TTFLAG_EXACT;
 
-    add_tt_entry(search, TEntry(search.position.get_key(), mate_score_to_tt(result.score, search.ply), result.best_move, depth, flag, eval));
+    add_tt_entry(search, TEntry(search.position.get_key(), result.score, result.best_move, depth, flag, eval));
 }
 
 void update_history_tables_on_cutoff(SearchInfo &search, Movelist const &other, Move move, int depth) {
@@ -150,15 +140,14 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
 
     if (entry.depth >= depth && tthit) {
         Move move = Move(entry.move);
-        int score = tt_score_to_mate(entry.score, search.ply);
 
         if (entry.flag == TTFLAG_EXACT ||
-            (entry.flag == TTFLAG_LOWER && score >= beta) ||
-            (entry.flag == TTFLAG_UPPER && score <= alpha)) {
-            if (score >= beta)
+            (entry.flag == TTFLAG_LOWER && entry.score >= beta) ||
+            (entry.flag == TTFLAG_UPPER && entry.score <= alpha)) {
+            if (entry.score >= beta)
                 update_history_tables_on_cutoff(search, picker.movelist, move, depth);
 
-            return { score, move };
+            return { entry.score, move };
         }
     }
 
