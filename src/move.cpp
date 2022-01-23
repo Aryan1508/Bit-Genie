@@ -74,7 +74,7 @@ void Position::revert_move() {
 void Position::apply_move(Move move) {
     history[history_ply].move         = move;
     history[history_ply].castle_rooks = castle_rooks;
-    history[history_ply].halfmoves    = halfmoves++;
+    history[history_ply].halfmoves    = halfmoves;
     history[history_ply].hash         = hash;
     history[history_ply].ep_sq        = ep_sq;
     auto &hist_captured = history[history_ply++].captured = PCE_NULL;
