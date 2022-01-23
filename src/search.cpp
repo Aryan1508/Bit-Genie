@@ -138,7 +138,7 @@ SearchResult pvs(SearchInfo &search, int depth, int alpha, int beta, bool do_nul
             return 0;
     }
 
-    if (entry.depth >= depth && tthit) {
+    if (entry.depth >= depth && tthit && !pv_node) {
         Move move = Move(entry.move);
 
         if (entry.flag == TTFLAG_EXACT ||
