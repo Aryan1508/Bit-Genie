@@ -88,8 +88,10 @@ void update_history_tables_on_cutoff(SearchInfo &search, Movelist const &other, 
     else {
         update_history(search.history, p, move, other, depth);
 
-        if (p.previous_move() != MOVE_NULL)
-            update_history(search.counter_history, p, move, other, depth);
+        if (p.previous_move() != MOVE_NULL) {
+            if (p.get_piece(move.from()) != PCE_NULL)
+                update_history(search.counter_history, p, move, other, depth);
+        }
         add_killer(search.killers, search.ply, move);
     }
 }
