@@ -22,6 +22,7 @@
 #include "moveorder.h"
 
 #include <cmath>
+#include <numeric>
 #include <sstream>
 #include <algorithm>
 
@@ -264,11 +265,16 @@ std::string print_score(int score) {
     return o.str();
 }
 
-void print_info_string(SearchResult result, SearchInfo &search, int depth) {
+void print_info_string(SearchResult result, SearchInfo &search, int depth, std::vector<uint64_t*> const& node_counters) {
+    uint64_t nodes = 0;
+
+    for (const auto &node_counter : node_counters)
+        nodes += *node_counter;
+    
     std::cout << "info";
     std::cout << " depth " << depth;
     std::cout << " seldepth " << search.seldepth;
-    std::cout << " nodes " << search.nodes;
+    std::cout << " nodes " << nodes;
     std::cout << " score " << print_score(result.score);
     std::cout << " time " << search.limits.stopwatch.elapsed_time().count();
     std::cout << " pv ";
@@ -292,7 +298,7 @@ void init_search_tables() {
     }
 }
 
-SearchResult search_position(SearchInfo &search, bool log) {
+SearchResult search_position(SearchInfo &search, bool log, std::vector<uint64_t*> node_counters) {
     Position &position = search.position;
     if (PolyGlot::book.enabled) {
         Move bookmove = PolyGlot::book.probe(position);
@@ -344,7 +350,7 @@ SearchResult search_position(SearchInfo &search, bool log) {
         best_move = result.best_move;
 
         if (log)
-            print_info_string({ score, best_move }, search, depth);
+            print_info_string({ score, best_move }, search, depth, node_counters);
     }
 conc:
     if (log)
