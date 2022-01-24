@@ -36,6 +36,10 @@ public:
         stop();
         threads.resize(count);
         search_data.resize(count);
+        node_counters.resize(count);
+
+        for(size_t i = 0;i < threads.size();i++)
+            node_counters[i] = &search_data[i].nodes;
     }
 
     void begin(SearchInfo const &info) {
@@ -48,7 +52,7 @@ public:
 
         for (size_t i = 0; i < threads.size(); i++) {
             auto is_main_thread = i == 0;
-            threads[i]          = std::thread(&search_position, std::ref(search_data[i]), is_main_thread);
+            threads[i]          = std::thread(&search_position, std::ref(search_data[i]), is_main_thread, node_counters);
         }
     }
 
@@ -68,4 +72,5 @@ public:
 private:
     std::vector<SearchInfo> search_data;
     std::vector<std::thread> threads;
+    std::vector<uint64_t*> node_counters;
 };

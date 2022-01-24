@@ -88,7 +88,7 @@ void init_search_tables();
 
 int qsearch(SearchInfo &search, int alpha, int beta);
 
-SearchResult search_position(SearchInfo &, bool log);
+SearchResult search_position(SearchInfo &, bool log, std::vector<uint64_t*> node_counters = {});
 
 #ifndef FEN_GENERATOR 
 inline void add_tt_entry(SearchInfo&, TEntry const& entry) {
