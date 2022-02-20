@@ -78,32 +78,40 @@ int16_t see(Position &position, Move move) {
     return scores[0];
 }
 
-template <bool quiet = false>
-void score_movelist(Movelist &movelist, SearchInfo &search) {
-    auto &position = search.position;
-    for (auto &move : movelist) {
-        if constexpr (!quiet) {
-            int score = see(position, move);
+void score_quiet(Move& move, SearchInfo& search) {
+    int score = 0;
 
-            score += get_history(search.capture_history, position, move) / 128;
+    score += get_history(search.history, search.position, move);
 
-            if (move.flag() == MVEFLAG_PROMOTION)
-                score += move.promoted() == PT_QUEEN ? 1000 : 300;
+    if (move.flag() == MVEFLAG_PROMOTION) {
+        score += 10000;
+    }
 
-            move.score = score;
-        } else {
-            int score = get_history(search.history, position, move);
+    if (search.position.previous_move() != MOVE_NULL) {
+        score += get_history(search.counter_history, search.position, move);
+    }
 
-            if (move.flag() == MVEFLAG_PROMOTION)
-                score += 10000;
+    score = std::clamp(score, -32768, 32767);
+    move.score = score;
+} 
 
-            if (position.previous_move() != MOVE_NULL)
-                score += get_history(search.counter_history, position, move);
+void score_capture(Move& move, SearchInfo& search) {
+    int score = 0;
 
-            score = std::clamp(score, -32767, 32767);
+    score += see(search.position, move);
+    score += get_history(search.capture_history, search.position, move) / 128;
 
-            move.score = score;
-        }
+    if (move.flag() == MVEFLAG_PROMOTION) {
+        score += move.promoted() == PT_QUEEN ? 1000 : 300;
+    }
+
+    move.score = score;
+}
+
+template<typename T>
+void score_movelist(Movelist& movelist, SearchInfo& search, T& score_func) {
+    for(Move& move : movelist) {
+        score_func(move, search);
     }
 }
 
@@ -114,17 +122,15 @@ void bubble_top_move(Movelist::iterator begin, Movelist::iterator end) {
 }
 
 MovePicker::MovePicker(SearchInfo &s)
-    : search(&s) {
+    : search(s) {
     stage = STAGE_HASH_MOVE;
 }
 
 bool MovePicker::qnext(Move &move) {
-    auto &position = search->position;
-
     if (stage == STAGE_HASH_MOVE) {
-        position.generate_noisy(movelist);
+        search.position.generate_noisy(movelist);
 
-        score_movelist<false>(movelist, *search);
+        score_movelist(movelist, search, score_capture);
         bubble_top_move(movelist.begin(), movelist.end());
         current = movelist.begin();
 
@@ -143,18 +149,16 @@ bool MovePicker::qnext(Move &move) {
 }
 
 bool MovePicker::next(Move &move) {
-    auto &position = search->position;
-
-    auto can_move = [&](Move m) {
-        return position.is_pseudolegal(m) && position.is_legal(m);
+    auto is_legal = [&](Move m) {
+        return search.position.is_pseudolegal(m) && search.position.is_legal(m);
     };
 
     if (stage == STAGE_HASH_MOVE) {
         stage       = STAGE_GEN_NOISY;
-        auto &entry = retrieve_tt_entry(*search);
+        auto &entry = retrieve_tt_entry(search);
         auto hmove  = Move(entry.move);
 
-        if (entry.hash == position.get_key() && can_move(hmove)) {
+        if (entry.hash == search.position.get_key() && is_legal(hmove)) {
             move      = hmove;
             hash_move = move;
             return true;
@@ -162,9 +166,9 @@ bool MovePicker::next(Move &move) {
     }
 
     if (stage == STAGE_GEN_NOISY) {
-        position.generate_noisy(movelist);
+        search.position.generate_noisy(movelist);
 
-        score_movelist(movelist, *search);
+        score_movelist(movelist, search, score_capture);
         current = movelist.begin();
 
         stage = STAGE_GOOD_NOISY;
@@ -180,15 +184,14 @@ bool MovePicker::next(Move &move) {
 
             return true;
         }
-
         stage = STAGE_KILLER_1;
     }
 
     if (stage == STAGE_KILLER_1) {
         stage       = STAGE_KILLER_2;
-        auto killer = search->killers[search->ply][0];
+        auto killer = search.killers[search.ply][0];
 
-        if (can_move(killer) && !move_is_capture(position, killer)) {
+        if (is_legal(killer) && !move_is_capture(search.position, killer)) {
             move    = killer;
             killer1 = move;
             return true;
@@ -197,9 +200,9 @@ bool MovePicker::next(Move &move) {
 
     if (stage == STAGE_KILLER_2) {
         stage       = STAGE_BAD_NOISY;
-        auto killer = search->killers[search->ply][1];
+        auto killer = search.killers[search.ply][1];
 
-        if (can_move(killer) && !move_is_capture(position, killer)) {
+        if (is_legal(killer) && !move_is_capture(search.position, killer)) {
             move    = killer;
             killer2 = move;
             return true;
@@ -222,9 +225,9 @@ bool MovePicker::next(Move &move) {
 
     if (stage == STAGE_GEN_QUIET && !skip_quiets) {
         movelist.clear();
-        position.generate_quiet(movelist);
+        search.position.generate_quiet(movelist);
 
-        score_movelist<true>(movelist, *search);
+        score_movelist(movelist, search, score_quiet);
         current = movelist.begin();
         stage   = STAGE_QUIET;
     }

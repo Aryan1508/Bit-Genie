@@ -44,6 +44,6 @@ public:
     Move killer1        = MOVE_NULL;
     Move killer2        = MOVE_NULL;
 private:
-    SearchInfo *search;
+    SearchInfo& search;
     Movelist::iterator current;
 };
