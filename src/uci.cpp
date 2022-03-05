@@ -87,7 +87,10 @@ void uci_go(UciParser const &parser, Position const &position) {
 
         else {
             search.limits.time_set = true;
-            search.limits.movetime = t / options.movestogo + inc - 50;
+            search.limits.movetime = t / options.movestogo - 50;
+
+            if (options.movestogo != 1) 
+                search.limits.movetime += inc;
         }
     } else {
         search.limits.movetime = options.movetime - 50;
